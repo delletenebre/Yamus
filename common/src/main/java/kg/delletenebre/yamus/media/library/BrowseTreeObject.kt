@@ -18,24 +18,16 @@ package kg.delletenebre.yamus.media.library
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
-import android.media.MediaDescription
-import android.media.browse.MediaBrowser
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaDescriptionCompat.STATUS_NOT_DOWNLOADED
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import com.bumptech.glide.Glide
-import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.target.SimpleTarget
-import com.bumptech.glide.request.transition.Transition
 import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.api.YandexMusic
@@ -43,68 +35,29 @@ import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.media.R
 import kg.delletenebre.yamus.media.extensions.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 object BrowseTreeObject {
-    const val MEDIA_LIBRARY_PATH_ROOT = "/"
-    const val MEDIA_LIBRARY_PATH_EMPTY = "@empty@"
-    const val MEDIA_LIBRARY_PATH_FAVORITE_TRACKS = "/favoriteTracks"
-    const val MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT = "__RECOMMENDED__"
-    const val MEDIA_LIBRARY_PATH_ALBUMS_ROOT = "__ALBUMS__"
-    const val MEDIA_SEARCH_SUPPORTED = "android.media.browse.SEARCH_SUPPORTED"
-    const val URI_ROOT_DRAWABLE = "android.resource://kg.delletenebre.yamus/drawable/"
-    const val NOTIFICATION_LARGE_ICON_SIZE = 200 // px
-
     private val library = mutableMapOf<String, MutableList<MediaItem>>()
     private val glideOptions = RequestOptions()
             .fallback(R.drawable.default_album_art)
             .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-    val searchableByUnknownCaller = true
+    val searchableByUnknownCaller = false
     var items = listOf<MediaItem>()
-//    private var playlist = listOf<MediaMetadataCompat>()
 
     fun init(context: Context) {
-        val rootList = mutableListOf<MediaItem>()
-        rootList.add(
+        library[MEDIA_LIBRARY_PATH_ROOT] = mutableListOf(
             createBrowsableMediaItem(
                     MEDIA_LIBRARY_PATH_FAVORITE_TRACKS,
                     context.getString(R.string.browse_title_favorite_tracks),
                     (URI_ROOT_DRAWABLE + context.resources.getResourceEntryName(R.drawable.ic_favorite)).toUri()
-            )
-        )
-        rootList.add(
+            ),
             createBrowsableMediaItem(
                     MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT,
                     context.getString(R.string.browse_title_recommended),
                     (URI_ROOT_DRAWABLE + context.resources.getResourceEntryName(R.drawable.ic_recommended)).toUri()
             )
         )
-//        rootList.add(
-//            MediaMetadataCompat.Builder().apply {
-//                id = MEDIA_LIBRARY_PATH_ALBUMS_ROOT
-//                title = context.getString(R.string.browse__title_albums)
-//                albumArtUri = URI_ROOT_DRAWABLE + context.resources.getResourceEntryName(R.drawable.ic_album)
-//                flag = MediaItem.FLAG_BROWSABLE
-//            }.build()
-//        )
-
-        library[MEDIA_LIBRARY_PATH_ROOT] = rootList
-
-//        musicSource.forEach { mediaItem ->
-//            val albumMediaId = mediaItem.album.urlEncoded
-//            val albumChildren = mediaIdToChildren[albumMediaId] ?: buildAlbumRoot(mediaItem)
-//            albumChildren += mediaItem
-//
-//            // Add the first track of each album to the 'Recommended' category
-//            if (mediaItem.trackNumber == 1L){
-//                val recommendedChildren = mediaIdToChildren[MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT]
-//                                        ?: mutableListOf()
-//                recommendedChildren += mediaItem
-//                mediaIdToChildren[MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT] = recommendedChildren
-//            }
-//        }
     }
 
     suspend fun setPlaylist(tracks: List<Track>) {
@@ -120,43 +73,65 @@ object BrowseTreeObject {
     }
 
     suspend fun getItems(path: String): MutableList<MediaItem> {
-        Log.d("ahoha", "path: ${library.containsKey(path)}")
+        Log.d("ahoha", "path: $path")
         items = if (library.containsKey(path)) {
             library[path]!!
         } else {
-            if (path == MEDIA_LIBRARY_PATH_FAVORITE_TRACKS) {
-                YandexMusic.getFavoriteTracks().map {
-                    val metadata = MediaMetadataCompat.Builder()
-                            .from(it)
-                            .apply {
-                                albumArt = loadAlbumArt(it.coverUri)
-                            }
-                            .build()
+            when {
+                path == MEDIA_LIBRARY_PATH_FAVORITE_TRACKS -> {
+                    YandexMusic.getFavoriteTracks().map {
+                        val metadata = MediaMetadataCompat.Builder()
+                                .from(it)
+                                .apply {
+                                    albumArt = loadAlbumArt(it.coverUri)
+                                }
+                                .build()
 
-                    createPlayableMediaItem(metadata.description)
-                }.toMutableList()
-            } else if (path == MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT) {
-                YandexMusic.getPersonalPlaylists().map {
-                    createBrowsableMediaItem(
-                            "$MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT/playlist/${it.data.data.uid}/${it.data.data.kind}",
-                            it.data.data.title,
-                            "test",
-                            loadAlbumArt(it.data.data.cover.uri)
-                    )
-                }.toMutableList()
-            } else if (path.startsWith("$MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT/playlist/")) {
-                val pathSegments = path.split("/")
-                YandexMusic.getPlaylist(pathSegments[2], pathSegments[3]).map {
-                    val metadata = MediaMetadataCompat.Builder()
-                            .from(it)
-                            .apply {
-                                albumArt = loadAlbumArt(it.coverUri)
-                            }
-                            .build()
-                    createPlayableMediaItem(metadata.description)
-                }.toMutableList()
-            } else {
-                mutableListOf()
+                        createPlayableMediaItem(metadata.description)
+                    }.toMutableList()
+                }
+                path == MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT -> {
+                    val result = mutableListOf<MediaItem>()
+                    result.addAll(YandexMusic.getPersonalPlaylists().map {
+                        createBrowsableMediaItem(
+                                "$MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT/playlist/${it.data.data.uid}/${it.data.data.kind}",
+                                it.data.data.title,
+                                loadAlbumArt(it.data.data.cover.uri)
+                        )
+                    })
+                    result.addAll(YandexMusic.getMixes().map {
+                        createBrowsableMediaItem(
+                                "$MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT${it.data.url}",
+                                it.data.title,
+                                loadAlbumArt(it.data.backgroundImageUri)
+                        )
+                    })
+                    result
+                }
+                path.startsWith("$MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT/playlist/") -> {
+                    val pathSegments = path.split("/")
+                    YandexMusic.getPlaylist(pathSegments[2], pathSegments[3]).map {
+                        val metadata = MediaMetadataCompat.Builder()
+                                .from(it)
+                                .apply {
+                                    albumArt = loadAlbumArt(it.coverUri)
+                                }
+                                .build()
+                        createPlayableMediaItem(metadata.description)
+                    }.toMutableList()
+                }
+                path.startsWith("$MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT/tag/") -> {
+                    val pathSegments = path.split("/")
+                    val playlistIds = YandexMusic.getPlaylistIdsByTag(pathSegments[2])
+                    YandexMusic.getPlaylists(playlistIds).map {
+                        createBrowsableMediaItem(
+                                "$MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT/playlist/${it.uid}/${it.kind}",
+                                it.title,
+                                loadAlbumArt(it.ogImage)
+                        )
+                    }.toMutableList()
+                }
+                else -> mutableListOf()
             }
         }
 
@@ -298,46 +273,72 @@ object BrowseTreeObject {
         genre = albumGenre
         mediaUri = track.id
         albumArtUri = YandexApi.getImage(track.coverUri, 400)
-//        albumArt = Glide.with(App.instance.applicationContext).applyDefaultRequestOptions(glideOptions)
-//                .asBitmap()
-//                .load(YandexApi.getImage(track.coverUri, BrowseTree.NOTIFICATION_LARGE_ICON_SIZE))
-//                .submit(BrowseTree.NOTIFICATION_LARGE_ICON_SIZE, BrowseTree.NOTIFICATION_LARGE_ICON_SIZE)
-//                .get()
-//                .into(object : CustomTarget<Bitmap>(BrowseTree.NOTIFICATION_LARGE_ICON_SIZE, BrowseTree.NOTIFICATION_LARGE_ICON_SIZE){
-//                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-//                        albumArt = resource
-//                    }
-//                    override fun onLoadCleared(placeholder: Drawable?) {
-//                        // this is called when imageView is cleared on lifecycle call or for
-//                        // some other reason.
-//                        // if you are referencing the bitmap somewhere else too other than this imageView
-//                        // clear it here as you can no longer have the bitmap
-//                    }
-//                })
-            trackNumber = 0
-            trackCount = 0
-            flag = MediaItem.FLAG_PLAYABLE
-            explicit = if (track.contentWarning == "explicit") {
-                1
-            } else {
-                0
-            }
-
-            // To make things easier for *displaying* these, set the display properties as well.
-            displayTitle = track.title
-            displaySubtitle = artistName
-            displayDescription = albumTitle
-            displayIconUri = YandexApi.getImage(track.coverUri, 400)
-
-            // Add downloadStatus to force the creation of an "extras" bundle in the resulting
-            // MediaMetadataCompat object. This is needed to send accurate metadata to the
-            // media session during updates.
-            downloadStatus = STATUS_NOT_DOWNLOADED
-
-            // Allow it to be used in the typical builder style.
-            return this
+        trackNumber = 0
+        trackCount = 0
+        flag = MediaItem.FLAG_PLAYABLE
+        explicit = if (track.contentWarning == "explicit") {
+            1
+        } else {
+            0
         }
+
+        // To make things easier for *displaying* these, set the display properties as well.
+        displayTitle = track.title
+        displaySubtitle = artistName
+        displayDescription = albumTitle
+        displayIconUri = YandexApi.getImage(track.coverUri, 400)
+
+        // Add downloadStatus to force the creation of an "extras" bundle in the resulting
+        // MediaMetadataCompat object. This is needed to send accurate metadata to the
+        // media session during updates.
+        downloadStatus = STATUS_NOT_DOWNLOADED
+
+        // Allow it to be used in the typical builder style.
+        return this
     }
+//
+//    fun MediaMetadataCompat.Builder.from(item: Playlist): MediaMetadataCompat.Builder {
+////        playlistId = track.playlistId
+//        id = track.id
+//        title = track.title
+//        artist = artistName
+//        album = albumTitle
+//        duration = track.durationMs
+//        genre = albumGenre
+//        mediaUri = track.id
+//        albumArtUri = YandexApi.getImage(track.coverUri, 400)
+//        trackNumber = 0
+//        trackCount = 0
+//        flag = MediaItem.FLAG_PLAYABLE
+//        explicit = if (track.contentWarning == "explicit") {
+//            1
+//        } else {
+//            0
+//        }
+//
+//        // To make things easier for *displaying* these, set the display properties as well.
+//        displayTitle = track.title
+//        displaySubtitle = artistName
+//        displayDescription = albumTitle
+//        displayIconUri = YandexApi.getImage(track.coverUri, 400)
+//
+//        // Add downloadStatus to force the creation of an "extras" bundle in the resulting
+//        // MediaMetadataCompat object. This is needed to send accurate metadata to the
+//        // media session during updates.
+//        downloadStatus = STATUS_NOT_DOWNLOADED
+//
+//        // Allow it to be used in the typical builder style.
+//        return this
+//    }
+
+    const val MEDIA_LIBRARY_PATH_ROOT = "/"
+    const val MEDIA_LIBRARY_PATH_EMPTY = "@empty@"
+    const val MEDIA_LIBRARY_PATH_FAVORITE_TRACKS = "/favoriteTracks"
+    const val MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT = "__RECOMMENDED__"
+    const val MEDIA_LIBRARY_PATH_ALBUMS_ROOT = "__ALBUMS__"
+    const val MEDIA_SEARCH_SUPPORTED = "android.media.browse.SEARCH_SUPPORTED"
+    const val URI_ROOT_DRAWABLE = "android.resource://kg.delletenebre.yamus/drawable/"
+    const val NOTIFICATION_LARGE_ICON_SIZE = 200 // px
 
     /** Content styling constants */
     private const val EXTRA_CONTENT_STYLE_GROUP_TITLE_HINT = "android.media.browse.CONTENT_STYLE_GROUP_TITLE_HINT"
@@ -360,4 +361,7 @@ object BrowseTreeObject {
      * metadata.
      */
     var EXTRA_METADATA_ENABLED_VALUE: Long = 1
+}
+
+
 

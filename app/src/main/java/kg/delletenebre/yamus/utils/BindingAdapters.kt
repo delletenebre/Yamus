@@ -1,9 +1,6 @@
 package kg.delletenebre.yamus.utils
 
-import android.graphics.Color
-import android.util.Log
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import kg.delletenebre.yamus.api.YandexApi

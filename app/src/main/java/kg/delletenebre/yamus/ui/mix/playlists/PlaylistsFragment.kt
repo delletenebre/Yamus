@@ -11,14 +11,11 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import kg.delletenebre.yamus.R
 import androidx.recyclerview.widget.RecyclerView
+import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.api.response.Playlist
 import kg.delletenebre.yamus.ui.playlist.PlaylistFragment
-import kg.delletenebre.yamus.ui.playlist.PlaylistViewModel
 import kg.delletenebre.yamus.utils.Converter
-import kg.delletenebre.yamus.utils.InjectorUtils
-import kg.delletenebre.yamus.viewmodels.MainActivityViewModel
 import kg.delletenebre.yamus.views.GridSpacingItemDecoration
 
 class PlaylistsFragment : Fragment() {

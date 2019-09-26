@@ -23,7 +23,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat.MediaItem
@@ -32,25 +31,15 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
-import kg.delletenebre.yamus.media.extensions.flag
-import kg.delletenebre.yamus.media.library.BrowseTree
-import kg.delletenebre.yamus.media.library.MusicSource
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.ExoPlayerFactory
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.Timeline
+import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
-import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.media.datasource.YandexDataSourceFactory
 import kg.delletenebre.yamus.media.library.BrowseTreeObject
-import kg.delletenebre.yamus.media.library.YandexSource
 import kotlinx.coroutines.*
 
 open class MusicService : MediaBrowserServiceCompat() {
@@ -67,22 +56,9 @@ open class MusicService : MediaBrowserServiceCompat() {
     protected lateinit var mediaController: MediaControllerCompat
     protected lateinit var mediaSessionConnector: MediaSessionConnector
 
-    /**
-     * This must be `by lazy` because the source won't initially be ready.
-     * See [MusicService.onLoadChildren] to see where it's accessed (and first
-     * constructed).
-     */
-//    private val browseTree: BrowseTree by lazy {
-//        BrowseTree(applicationContext)
-//    }
-//    private val browseTree: BrowseTreeObject = BrowseTreeObject
-
     private var isForegroundService = false
 
-//    private val remoteJsonSource: Uri =
-//        Uri.parse("https://storage.googleapis.com/uamp/catalog.json")
-
-    private val uAmpAudioAttributes = AudioAttributes.Builder()
+    private val audioAttributes = AudioAttributes.Builder()
         .setContentType(C.CONTENT_TYPE_MUSIC)
         .setUsage(C.USAGE_MEDIA)
         .build()
@@ -93,7 +69,7 @@ open class MusicService : MediaBrowserServiceCompat() {
      */
     private val exoPlayer: ExoPlayer by lazy {
         ExoPlayerFactory.newSimpleInstance(this).apply {
-            setAudioAttributes(uAmpAudioAttributes, true)
+            setAudioAttributes(this@MusicService.audioAttributes, true)
         }
     }
 
@@ -129,23 +105,11 @@ open class MusicService : MediaBrowserServiceCompat() {
         becomingNoisyReceiver =
             BecomingNoisyReceiver(context = this, sessionToken = mediaSession.sessionToken)
 
-        // The media library is built from a remote JSON file. We'll create the source here,
-        // and then use a suspend function to perform the download off the main thread.
-//        mediaSource = YandexSource(context = this)//, source = remoteJsonSource)
-//        serviceScope.launch {
-//            mediaSource.load()
-//        }
-
         // ExoPlayer will manage the MediaSession for us.
         mediaSessionConnector = MediaSessionConnector(mediaSession).also { connector ->
             val dataSourceFactory = YandexDataSourceFactory(YAMUS_USER_AGENT)
             dataSourceFactory.defaultRequestProperties
                     .set("X-Yandex-Music-Client", YAMUS_HEADER_X_YANDEX_MUSIC_CLIENT)
-//            val playbackPreparer = YamusPlaybackPreparer(
-//                browseTree,
-//                exoPlayer,
-//                dataSourceFactory
-//            )
             val playbackPreparer = YamusPlaybackPreparer(
                     exoPlayer,
                     dataSourceFactory
@@ -199,7 +163,7 @@ open class MusicService : MediaBrowserServiceCompat() {
         val isKnownCaller = packageValidator.isKnownCaller(clientPackageName, clientUid)
         val rootExtras = Bundle().apply {
             putBoolean(
-                BrowseTree.MEDIA_SEARCH_SUPPORTED,
+                BrowseTreeObject.MEDIA_SEARCH_SUPPORTED,
                 isKnownCaller || BrowseTreeObject.searchableByUnknownCaller
             )
             putBoolean(CONTENT_STYLE_SUPPORTED, true)
@@ -210,9 +174,9 @@ open class MusicService : MediaBrowserServiceCompat() {
 
         return if (isKnownCaller) {
             // The caller is allowed to browse, so return the root.
-            BrowserRoot(BrowseTree.MEDIA_LIBRARY_PATH_ROOT, rootExtras)
+            BrowserRoot(BrowseTreeObject.MEDIA_LIBRARY_PATH_ROOT, rootExtras)
         } else {
-            BrowserRoot(BrowseTree.MEDIA_LIBRARY_PATH_EMPTY, rootExtras)
+            BrowserRoot(BrowseTreeObject.MEDIA_LIBRARY_PATH_EMPTY, rootExtras)
         }
     }
 

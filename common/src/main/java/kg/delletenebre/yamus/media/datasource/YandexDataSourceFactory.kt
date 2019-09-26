@@ -1,7 +1,8 @@
 package kg.delletenebre.yamus.media.datasource
 
-import com.google.android.exoplayer2.upstream.*
+import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.HttpDataSource.BaseFactory
+import com.google.android.exoplayer2.upstream.TransferListener
 
 class YandexDataSourceFactory(
         var userAgent: String,

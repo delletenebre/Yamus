@@ -16,19 +16,13 @@
 
 package kg.delletenebre.yamus.media.library
 
-import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import androidx.annotation.IntDef
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
+import androidx.annotation.IntDef
 import kg.delletenebre.yamus.media.MusicService
-import kg.delletenebre.yamus.media.extensions.album
-import kg.delletenebre.yamus.media.extensions.albumArtist
-import kg.delletenebre.yamus.media.extensions.artist
-import kg.delletenebre.yamus.media.extensions.containsCaseInsensitive
-import kg.delletenebre.yamus.media.extensions.genre
-import kg.delletenebre.yamus.media.extensions.title
+import kg.delletenebre.yamus.media.extensions.*
 
 /**
  * Interface used by [MusicService] for looking up [MediaMetadataCompat] objects.

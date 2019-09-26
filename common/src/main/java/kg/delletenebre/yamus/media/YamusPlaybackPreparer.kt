@@ -19,22 +19,20 @@ package kg.delletenebre.yamus.media
 import android.net.Uri
 import android.os.Bundle
 import android.os.ResultReceiver
-import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
-import kg.delletenebre.yamus.media.library.AbstractMusicSource
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
+import com.google.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
+import kg.delletenebre.yamus.media.library.AbstractMusicSource
 import kg.delletenebre.yamus.media.library.BrowseTreeObject
-import com.google.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
-
 
 
 /**

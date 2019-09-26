@@ -1,25 +1,25 @@
 package kg.delletenebre.yamus.ui.home
 
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.appcompat.widget.Toolbar
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.api.YandexApi
-import kg.delletenebre.yamus.views.PersonalPlaylistView
-import android.text.format.DateUtils
-import androidx.core.os.bundleOf
-import androidx.recyclerview.widget.RecyclerView
 import kg.delletenebre.yamus.api.response.Mix
 import kg.delletenebre.yamus.ui.playlist.PlaylistFragment
 import kg.delletenebre.yamus.utils.Converter
 import kg.delletenebre.yamus.views.GridSpacingItemDecoration
+import kg.delletenebre.yamus.views.PersonalPlaylistView
 import java.text.SimpleDateFormat
 import java.util.*
 

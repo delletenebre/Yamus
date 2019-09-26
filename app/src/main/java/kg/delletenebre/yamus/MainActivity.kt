@@ -4,24 +4,17 @@ import android.app.Activity
 import android.content.Intent
 import android.media.AudioManager
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kg.delletenebre.yamus.api.YandexUser
-import kg.delletenebre.yamus.fragments.MediaItemFragment
 import kg.delletenebre.yamus.ui.login.LoginActivity
-import kg.delletenebre.yamus.viewmodels.MainActivityViewModel
-import androidx.navigation.Navigation
-import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.utils.InjectorUtils
+import kg.delletenebre.yamus.viewmodels.MainActivityViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -32,7 +25,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+        if (android.os.Build.VERSION.SDK_INT >= 28){
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
 
         setContentView(R.layout.activity_main)
 

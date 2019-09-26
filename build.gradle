@@ -3,9 +3,9 @@
 buildscript {
     ext {
         // App SDK versions.
-        compileSdkVersion = 28
+        compileSdkVersion = 29
         minSdkVersion = 23
-        targetSdkVersion = 28
+        targetSdkVersion = 29
 
         // Dependency versions.
         glide_version = '4.9.0'

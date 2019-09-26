@@ -9,7 +9,6 @@ import androidx.cardview.widget.CardView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.ui.playlist.PlaylistFragment
