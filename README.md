@@ -1,48 +1,33 @@
-Universal Android Music Player Sample
-=====================================
+Yamus
+=====
 
-The goal of this sample is to show how to implement an audio media app that works
-across multiple form factors and provide a consistent user experience
-on Android phones, tablets, Android Auto, Android Wear, Android TV, Google Cast devices,
-and with the Google Assistant.
+Альтернативный клиент для сервиса Яндекс Музыка с поддержкой Android Auto.
 
+Требования
+----------
 
-Pre-requisites
---------------
+- Android Studio 3.2 и выше
+- Минимальная версия Android SDK 23 (Android 6.0 Marshmallow), т.к. используется библиотека
+[androidx.security:security-crypto](https://developer.android.com/jetpack/androidx/releases/security)
 
-- Android Studio 3.x
+Поддерживаемые функции
+----------------------
 
-Getting Started
----------------
+- [ ] Рекомендации:
+    - [x] Плейлист дня
+    - [x] Дежавю
+    - [x] Премьера
+    - [ ] Новые релизы
+    - [ ] Плейлисты с новинками
+    - [ ] Чарт
+    - [x] Подборки
+- [x] Избранные треки
+- [ ] Радио
 
-This sample uses the Gradle build system. To build this project, use the
-"gradlew build" command or use "Import Project" in Android Studio.
-
-Support
+Лицензия
 -------
 
-- Google+ Community: https://plus.google.com/communities/105153134372062985968
-- Stack Overflow: http://stackoverflow.com/questions/tagged/android
-
-If you've found an error in this sample, please
-[file an issue](https://github.com/googlesamples/android-UniversalMusicPlayer/issues)
-
-Patches are encouraged, and may be submitted by forking this project and
-submitting a pull request through GitHub. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for more
-details.
-
-Music
------
-
-Music provided by the [Free Music Archive](http://freemusicarchive.org/).
-
-- [Irsen's Tale](http://freemusicarchive.org/music/Kai_Engel/Irsens_Tale/) by
-[Kai Engel](http://freemusicarchive.org/music/Kai_Engel/).
-- [Wake Up](http://freemusicarchive.org/music/The_Kyoto_Connection/Wake_Up_1957/) by
-[The Kyoto Connection](http://freemusicarchive.org/music/The_Kyoto_Connection/).
-
-License
--------
+Плеер основан на проекте [Universal Android Music Player](https://github.com/googlesamples/android-UniversalMusicPlayer)
 
 Copyright 2017 Google Inc.
 
