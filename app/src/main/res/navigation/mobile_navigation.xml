@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/fragmentHome">
+
+    <fragment
+        android:id="@+id/fragmentHome"
+        android:name="kg.delletenebre.yamus.ui.home.HomeFragment"
+        android:label="@string/title_home"
+        tools:layout="@layout/fragment_home" >
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentMyMusic"
+        android:name="kg.delletenebre.yamus.ui.mymusic.MyMusicFragment"
+        android:label="@string/title_my_music"
+        tools:layout="@layout/fragment_my_music" />
+
+    <fragment
+        android:id="@+id/fragmentProfile"
+        android:name="kg.delletenebre.yamus.ui.profile.ProfileFragment"
+        android:label="@string/title_profile"
+        tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/fragmentPlaylist"
+        android:name="kg.delletenebre.yamus.ui.playlist.PlaylistFragment"
+        android:label="@string/title_playlist"
+        tools:layout="@layout/fragment_playlist">
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentMixPlaylists"
+        android:name="kg.delletenebre.yamus.ui.mix.playlists.PlaylistsFragment"
+        android:label="@string/title_playlist"
+        tools:layout="@layout/fragment_playlists">
+    </fragment>
+</navigation>

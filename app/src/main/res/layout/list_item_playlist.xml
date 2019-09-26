@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data>
+        <variable
+            name="viewHolder"
+            type="kg.delletenebre.yamus.ui.playlist.PlaylistAdapter.ViewHolder" />
+        <variable
+            name="item"
+            type="kg.delletenebre.yamus.api.response.Track" />
+    </data>
+
+    <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="true"
+            android:clickable="true"
+            android:background="?attr/selectableItemBackground"
+            android:onClick="@{() -> viewHolder.onClick(item)}">
+
+        <ImageView
+                android:id="@+id/cover"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:padding="8dp"
+                app:glideImgSrc="@{item.coverUri}"
+                app:glideImgSize="@{100}"/>
+
+        <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{item.title}" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/artist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/darker_gray"
+                    android:text="@{item.artists[0].name}" />
+
+        </LinearLayout>
+
+        <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/settings"
+                android:layout_width="48dp"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_more_vert" />
+
+    </LinearLayout>
+
+</layout>

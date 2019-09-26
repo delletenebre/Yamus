@@ -1,0 +1,58 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlinx-serialization'
+
+android {
+    compileSdkVersion rootProject.compileSdkVersion
+
+    defaultConfig {
+        versionCode 1
+        versionName "1.0"
+
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        targetCompatibility = '1.8'
+    }
+
+}
+
+dependencies {
+    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlin_coroutines"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines"
+    api "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.13.0"
+    api "androidx.media:media:1.1.0"
+    api "androidx.security:security-crypto:1.0.0-alpha02"
+
+    // Room
+    def room_version = '2.2.0-rc01'
+    api "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+
+    // Gson
+    api "com.google.code.gson:gson:2.8.5"
+
+    // ExoPlayer dependencies
+    def exoplayer_version = '2.10.4'
+    api "com.google.android.exoplayer:exoplayer-core:$exoplayer_version"
+    api "com.google.android.exoplayer:exoplayer-ui:$exoplayer_version"
+    api "com.google.android.exoplayer:extension-mediasession:$exoplayer_version"
+
+    // OkHttp
+    api "com.squareup.okhttp3:okhttp:4.2.0"
+
+    // Glide dependencies
+    api "com.github.bumptech.glide:glide:$glide_version"
+    kapt "com.github.bumptech.glide:compiler:$glide_version"
+}

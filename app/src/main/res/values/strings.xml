@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Yamus</string>
+
+    <string name="skip_back_10s">Skip back 10s</string>
+    <string name="skip_forward_10s">Skip forward 10s</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+
+    <string name="menu_music_queue">Queue</string>
+    <string name="album_art_alt">Album art</string>
+    <string name="duration_unknown">--:--</string>
+    <string name="duration_format">%d:%02d</string>
+
+    <!-- Main Activity -->
+    <!-- bottom menu -->
+    <string name="title_home">Home</string>
+    <string name="title_my_music">My Music</string>
+    <string name="title_player">Player</string>
+
+    <!-- Login Activity -->
+    <string name="login_activity_header">Yandex</string>
+    <string name="login_activity_subheader">Войдите, чтобы продолжить</string>
+    <string name="title_activity_login">Sign in</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+
+    <!-- Home Fragment -->
+    <string name="personal_playlist_subtitle">Updated %1$s</string>
+
+    <!-- Profile Fragment -->
+    <string name="title_profile">Profile</string>
+        <!-- Menu -->
+        <string name="menu_profile_logout">Logout</string>
+
+    <!-- My Music Fragment -->
+    <string name="card_title_favorite_tracks">My favorites</string>
+
+    <!-- Playlist Fragment -->
+    <string name="title_playlist">Playlist</string>
+
+    <!-- Playlists Fragment -->
+    <string name="title_playlists">Playlists</string>
+
+
+    <plurals name="tracks_count">
+        <item quantity="zero">%d tracks</item>
+        <item quantity="one">%d track</item>
+        <item quantity="other">%d tracks</item>
+    </plurals>
+
+    <!-- Menu -->
+    <!-- Menu Main -->
+    <string name="menu_main_profile">Profile</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

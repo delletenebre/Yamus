@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Notificaiton -->
+        <!-- Notificaiton Channel -->
+        <string name="notification_channel">Now Playing</string>
+        <string name="notification_channel_description">Shows what music is currently playing in UAMP</string>
+
+        <!-- Notification actions -->
+        <string name="notification_skip_to_previous">Skip to previous track</string>
+        <string name="notification_skip_to_next">Skip to next track</string>
+        <string name="notification_play">Play</string>
+        <string name="notification_pause">Pause</string>
+
+    <!-- Error messages -->
+    <string name="error_media_not_found">Could not locate requested media.</string>
+
+    <!-- Allowed caller template -->
+    <string name="allowed_caller_log">
+        Caller has a valid certificate, but its package doesn\'t match any expected package for the
+        given certificate. To allow this caller, add the following to the allowed callers list:\n
+        <![CDATA[
+        <signature name=\"%1$s\" package=\"%2$s\">\n\t<key>%3$s</key>\n</signature>\n
+        ]]>
+    </string>
+
+    <!-- Browse Tree -->
+    <string name="browse_title_favorite_tracks">My favorites</string>
+    <string name="browse_title_recommended">Recommended</string>
+    <string name="browse__title_albums">Albums</string>
+</resources>
