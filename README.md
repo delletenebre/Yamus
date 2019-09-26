@@ -24,12 +24,14 @@ Yamus
 - [x] Избранные треки
 - [ ] Радио
 
+Библиотеки
+----------
+
+- Плеер основан на проекте [Universal Android Music Player](https://github.com/googlesamples/android-UniversalMusicPlayer)
+- [Неофициальная Python библиотека для API Yandex Music](https://github.com/MarshalX/yandex-music-api)
+
 Лицензия
 -------
-
-Плеер основан на проекте [Universal Android Music Player](https://github.com/googlesamples/android-UniversalMusicPlayer)
-
-Copyright 2017 Google Inc.
 
 Licensed to the Apache Software Foundation (ASF) under one or more contributor
 license agreements.  See the NOTICE file distributed with this work for
