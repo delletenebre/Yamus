@@ -1,5 +1,6 @@
 package kg.delletenebre.yamus.utils
 
+import android.graphics.Color
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
@@ -18,5 +19,10 @@ object BindingAdapters {
         Glide.with(this.context)
                 .load(YandexApi.getImage(imageUrl, size))
                 .into(this)
+    }
+
+    @JvmStatic @BindingAdapter("backgroundColor")
+    fun ImageView.backgroundColor(color: String) {
+        this.setBackgroundColor(Color.parseColor(color))
     }
 }

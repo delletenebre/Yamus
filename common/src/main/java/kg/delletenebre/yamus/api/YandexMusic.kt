@@ -112,6 +112,71 @@ object YandexMusic {
         return result
     }
 
+    suspend fun getPersonalStations(): List<Station> {
+        var result = listOf<Station>()
+
+        val url = "/rotor/stations/dashboard"
+
+        withContext(Dispatchers.IO) {
+            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
+                if (response.isSuccessful) {
+                    if (response.body != null) {
+                        val responseBody = response.body!!.string()
+                        try {
+                            val stations = JSONObject(responseBody)
+                                    .getJSONObject("result")
+                                    .getJSONArray("stations")
+
+                            result = Json.nonstrict.parse(
+                                    ArrayListSerializer(Station.serializer()),
+                                    stations.toString()
+                            )
+
+                            Log.d("ahoha", "Response: $responseBody")
+                        } catch (exception: Exception) {
+                            exception.printStackTrace()
+                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
+                        }
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
+    suspend fun getStations(language: String = "ru"): List<Station> {
+        var result = listOf<Station>()
+
+        val url = "/rotor/stations/list?language=$language"
+
+        withContext(Dispatchers.IO) {
+            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
+                if (response.isSuccessful) {
+                    if (response.body != null) {
+                        val responseBody = response.body!!.string()
+                        try {
+                            val stations = JSONObject(responseBody)
+                                    .getJSONArray("result")
+
+                            result = Json.nonstrict.parse(
+                                    ArrayListSerializer(Station.serializer()),
+                                    stations.toString()
+                            )
+
+                            Log.d("ahoha", "Response: $responseBody")
+                        } catch (exception: Exception) {
+                            exception.printStackTrace()
+                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
+                        }
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
     @UnstableDefault
     suspend fun getPersonalPlaylists(): List<PersonalPlaylists> {
         var result = listOf<PersonalPlaylists>()

@@ -4,8 +4,19 @@
         android:id="@+id/fragmentHome"
         android:icon="@drawable/ic_library_music"
         android:title="@string/title_home" />
+
+    <item
+        android:id="@+id/fragmentStations"
+        android:icon="@drawable/ic_radio_tower"
+        android:title="@string/title_stations" />
+
     <item
         android:id="@+id/fragmentMyMusic"
         android:icon="@drawable/ic_favorite"
         android:title="@string/title_my_music" />
+
+    <item
+        android:id="@+id/fragmentSearch"
+        android:icon="@drawable/ic_search"
+        android:title="@string/title_search" />
 </menu>

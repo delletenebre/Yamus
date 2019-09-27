@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.api.YandexApi
@@ -70,7 +71,8 @@ class HomeFragment : Fragment() {
 
         mixesContainer = root.findViewById(R.id.mixesContainer)
         val spacing = Converter.dp2px(16, activity!!)
-        mixesContainer.addItemDecoration(GridSpacingItemDecoration(2, spacing, true))
+        val spanCount = (mixesContainer.layoutManager as GridLayoutManager).spanCount
+        mixesContainer.addItemDecoration(GridSpacingItemDecoration(spanCount, spacing, true))
         mixesAdapter = MixesAdapter(mutableListOf(), object: MixesAdapter.ItemListener {
             override fun onClick(item: Mix, position: Int) {
                 val url = item.data.url.split("/")

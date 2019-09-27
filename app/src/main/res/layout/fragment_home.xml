@@ -40,12 +40,8 @@
 
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:text="Mixes"
-                android:textSize="16sp"
-                android:textStyle="bold"
+                style="@style/AppHeader"
+                android:text="@string/mixes"
                 android:layout_marginTop="16dp" />
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/mixesContainer"

@@ -9,14 +9,25 @@
         android:id="@+id/fragmentHome"
         android:name="kg.delletenebre.yamus.ui.home.HomeFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" >
-    </fragment>
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/fragmentStations"
+        android:name="kg.delletenebre.yamus.ui.stations.StationsFragment"
+        android:label="@string/title_stations"
+        tools:layout="@layout/fragment_stations" />
 
     <fragment
         android:id="@+id/fragmentMyMusic"
         android:name="kg.delletenebre.yamus.ui.mymusic.MyMusicFragment"
         android:label="@string/title_my_music"
         tools:layout="@layout/fragment_my_music" />
+
+    <fragment
+        android:id="@+id/fragmentSearch"
+        android:name="kg.delletenebre.yamus.ui.search.SearchFragment"
+        android:label="@string/title_search"
+        tools:layout="@layout/fragment_search" />
 
     <fragment
         android:id="@+id/fragmentProfile"
