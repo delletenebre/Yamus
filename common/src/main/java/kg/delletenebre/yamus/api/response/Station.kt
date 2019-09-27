@@ -12,6 +12,10 @@ data class Station(
         @SerialName("station")
         val data: Data = Data()
 ) {
+    fun getId(): String {
+        return "${data.id.type}:${data.id.tag}"
+    }
+
     @Serializable
     data class AdParams(
         val adVolume: Int = 0,

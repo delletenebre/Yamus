@@ -82,13 +82,9 @@ object YandexUser {
     }
 
     suspend fun updateAccountStatus(): Boolean {
-        val request = Request.Builder()
-            .url("${YandexApi.API_URL_MUSIC}/rotor/account/status")
-            .addHeader("Authorization", "OAuth $token")
-            .build()
-
+        val url = "/rotor/account/status"
         return withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(request).execute().use { response ->
+            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
                 if (response.isSuccessful) {
                     if (response.body != null) {
                         try {
@@ -114,7 +110,8 @@ object YandexUser {
         YandexApi.prefs.edit()
                 .putInt(YandexApi.PREFERENCE_KEY_USER_UID, uid)
                 .putString(YandexApi.PREFERENCE_KEY_USER_TOKEN, token)
-                .putString(YandexApi.PREFERENCE_KEY_USER_ACCOUNT, Json.stringify(AccountStatus.serializer(), account))
+                .putString(YandexApi.PREFERENCE_KEY_USER_ACCOUNT,
+                        Json.stringify(AccountStatus.serializer(), account))
                 .apply()
     }
 

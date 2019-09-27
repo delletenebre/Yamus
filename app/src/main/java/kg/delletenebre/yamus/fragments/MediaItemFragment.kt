@@ -42,7 +42,7 @@ class MediaItemFragment : Fragment() {
     private lateinit var mediaItemFragmentViewModel: MediaItemFragmentViewModel
 
     private val listAdapter = MediaItemAdapter { clickedItem ->
-        mainActivityViewModel.mediaItemClicked(clickedItem)
+        //mainActivityViewModel.mediaItemClicked(clickedItem)
     }
 
     companion object {

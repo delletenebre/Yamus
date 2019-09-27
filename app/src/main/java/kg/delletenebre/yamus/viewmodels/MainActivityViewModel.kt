@@ -22,9 +22,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import kg.delletenebre.yamus.MainActivity
 import kg.delletenebre.yamus.MediaItemData
+import kg.delletenebre.yamus.api.response.Station
 import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.common.MediaSessionConnection
-import kg.delletenebre.yamus.fragments.NowPlayingFragment
 import kg.delletenebre.yamus.media.extensions.id
 import kg.delletenebre.yamus.media.extensions.isPlayEnabled
 import kg.delletenebre.yamus.media.extensions.isPlaying
@@ -46,16 +46,16 @@ class MainActivityViewModel(
      * are notified of the change as usual with [LiveData], but only one [Observer]
      * will actually read the data. For more information, check the [Event] class.
      */
-    val navigateToMediaItem: LiveData<Event<String>> get() = _navigateToMediaItem
-    private val _navigateToMediaItem = MutableLiveData<Event<String>>()
+//    val navigateToMediaItem: LiveData<Event<String>> get() = _navigateToMediaItem
+//    private val _navigateToMediaItem = MutableLiveData<Event<String>>()
 
     /**
      * This [LiveData] object is used to notify the MainActivity that the main
      * content fragment needs to be swapped. Information about the new fragment
      * is conveniently wrapped by the [Event] class.
      */
-    val navigateToFragment: LiveData<Event<FragmentNavigationRequest>> get() = _navigateToFragment
-    private val _navigateToFragment = MutableLiveData<Event<FragmentNavigationRequest>>()
+//    val navigateToFragment: LiveData<Event<FragmentNavigationRequest>> get() = _navigateToFragment
+//    private val _navigateToFragment = MutableLiveData<Event<FragmentNavigationRequest>>()
 
     /**
      * This method takes a [MediaItemData] and routes it depending on whether it's
@@ -65,20 +65,24 @@ class MainActivityViewModel(
      * If the item is browsable, handle it by sending an event to the Activity to
      * browse to it, otherwise play it.
      */
-    fun mediaItemClicked(clickedItem: MediaItemData) {
-        if (clickedItem.browsable) {
-            browseToItem(clickedItem)
-        } else {
-            playMedia(clickedItem, pauseAllowed = false)
-            showFragment(NowPlayingFragment.newInstance())
-        }
-    }
+//    fun mediaItemClicked(clickedItem: MediaItemData) {
+//        if (clickedItem.browsable) {
+//            browseToItem(clickedItem)
+//        } else {
+//            playMedia(clickedItem, pauseAllowed = false)
+//            showFragment(NowPlayingFragment.newInstance())
+//        }
+//    }
 
     fun mediaItemClicked(clickedTrack: Track, playlist: List<Track>) {
         viewModelScope.launch {
             BrowseTreeObject.setPlaylist(playlist)
             playMedia(clickedTrack, pauseAllowed = true)
         }
+    }
+
+    fun stationClicked(station: Station) {
+        playStation(station)
     }
 
 
@@ -89,18 +93,18 @@ class MainActivityViewModel(
      * @param backStack if true, add this transaction to the back stack
      * @param tag the name to use for this fragment in the stack
      */
-    fun showFragment(fragment: Fragment, backStack: Boolean = true, tag: String? = null) {
-        _navigateToFragment.value = Event(FragmentNavigationRequest(fragment, backStack, tag))
-    }
+//    fun showFragment(fragment: Fragment, backStack: Boolean = true, tag: String? = null) {
+//        _navigateToFragment.value = Event(FragmentNavigationRequest(fragment, backStack, tag))
+//    }
 
 
     /**
      * This posts a browse [Event] that will be handled by the
      * observer in [MainActivity].
      */
-    private fun browseToItem(mediaItem: MediaItemData) {
-        _navigateToMediaItem.value = Event(mediaItem.mediaId)
-    }
+//    private fun browseToItem(mediaItem: MediaItemData) {
+//        _navigateToMediaItem.value = Event(mediaItem.mediaId)
+//    }
 
     /**
      * This method takes a [MediaItemData] and does one of the following:
@@ -108,29 +112,29 @@ class MainActivityViewModel(
      * - If the item *is* the active item, check whether "pause" is a permitted command. If it is,
      *   then pause playback, otherwise send "play" to resume playback.
      */
-    fun playMedia(mediaItem: MediaItemData, pauseAllowed: Boolean = true) {
-        val nowPlaying = mediaSessionConnection.nowPlaying.value
-        val transportControls = mediaSessionConnection.transportControls
-
-        val isPrepared = mediaSessionConnection.playbackState.value?.isPrepared ?: false
-        if (isPrepared && mediaItem.mediaId == nowPlaying?.id) {
-            mediaSessionConnection.playbackState.value?.let { playbackState ->
-                when {
-                    playbackState.isPlaying ->
-                        if (pauseAllowed) transportControls.pause() else Unit
-                    playbackState.isPlayEnabled -> transportControls.play()
-                    else -> {
-                        Log.w(
-                            TAG, "Playable item clicked but neither play nor pause are enabled!" +
-                                    " (mediaId=${mediaItem.mediaId})"
-                        )
-                    }
-                }
-            }
-        } else {
-            transportControls.playFromMediaId(mediaItem.mediaId, null)
-        }
-    }
+//    fun playMedia(mediaItem: MediaItemData, pauseAllowed: Boolean = true) {
+//        val nowPlaying = mediaSessionConnection.nowPlaying.value
+//        val transportControls = mediaSessionConnection.transportControls
+//
+//        val isPrepared = mediaSessionConnection.playbackState.value?.isPrepared ?: false
+//        if (isPrepared && mediaItem.mediaId == nowPlaying?.id) {
+//            mediaSessionConnection.playbackState.value?.let { playbackState ->
+//                when {
+//                    playbackState.isPlaying ->
+//                        if (pauseAllowed) transportControls.pause() else Unit
+//                    playbackState.isPlayEnabled -> transportControls.play()
+//                    else -> {
+//                        Log.w(
+//                            TAG, "Playable item clicked but neither play nor pause are enabled!" +
+//                                    " (mediaId=${mediaItem.mediaId})"
+//                        )
+//                    }
+//                }
+//            }
+//        } else {
+//            transportControls.playFromMediaId(mediaItem.mediaId, null)
+//        }
+//    }
 
     fun playMedia(track: Track, pauseAllowed: Boolean = true) {
         val nowPlaying = mediaSessionConnection.nowPlaying.value
@@ -160,6 +164,33 @@ class MainActivityViewModel(
             }
         } else {
             transportControls.playFromMediaId(track.id, null)
+        }
+    }
+
+    fun playStation(station: Station) {
+        val nowPlayingStation = mediaSessionConnection.nowPlayingStation.value
+        val transportControls = mediaSessionConnection.transportControls
+
+        val isPrepared = mediaSessionConnection.playbackState.value?.isPrepared ?: false
+        if (isPrepared && station.getId() == nowPlayingStation?.getId()) {
+            mediaSessionConnection.playbackState.value?.let { playbackState ->
+                when {
+                    playbackState.isPlaying -> {
+                        transportControls.pause()
+                    }
+                    playbackState.isPlayEnabled -> {
+                        transportControls.play()
+                    }
+                    else -> {
+                        Log.w(
+                                TAG, "Playable item clicked but neither play nor pause are enabled!" +
+                                " (Station: {type} ${station.data.id.type}, {tag} ${station.data.id.tag})"
+                        )
+                    }
+                }
+            }
+        } else {
+            transportControls.playFromMediaId("/station/${station.getId()}", null)
         }
     }
 

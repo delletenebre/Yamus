@@ -7,7 +7,6 @@ import kg.delletenebre.yamus.api.response.*
 import kg.delletenebre.yamus.media.extensions.md5
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.internal.ArrayListSerializer
 import kotlinx.serialization.json.Json
 import okhttp3.FormBody
@@ -86,7 +85,6 @@ object YandexMusic {
         return result
     }
 
-    @UnstableDefault
     suspend fun getFeed(): Feed {
         var result = Feed()
 
@@ -177,7 +175,38 @@ object YandexMusic {
         return result
     }
 
-    @UnstableDefault
+    suspend fun getStationTracks(type: String, tag: String): StationTracks {
+        var result = StationTracks()
+
+        val url = "/rotor/station/$type:$tag/tracks?settings2=true"
+
+        withContext(Dispatchers.IO) {
+            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
+                if (response.isSuccessful) {
+                    if (response.body != null) {
+                        val responseBody = response.body!!.string()
+                        try {
+                            val stations = JSONObject(responseBody)
+                                    .getJSONObject("result")
+
+                            result = Json.nonstrict.parse(
+                                    StationTracks.serializer(),
+                                    stations.toString()
+                            )
+
+                            Log.d("ahoha", "Response: $responseBody")
+                        } catch (exception: Exception) {
+                            exception.printStackTrace()
+                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
+                        }
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
     suspend fun getPersonalPlaylists(): List<PersonalPlaylists> {
         var result = listOf<PersonalPlaylists>()
 
@@ -353,7 +382,6 @@ object YandexMusic {
         return result
     }
 
-    @UnstableDefault
     suspend fun getTracks(tracksIds: List<String>)
             : List<Track> {
         var result = listOf<Track>()
@@ -424,7 +452,6 @@ object YandexMusic {
         return result
     }
 
-    @UnstableDefault
     suspend fun getTrack(trackId: String): Track {
         var result: Track = Track("0")
 

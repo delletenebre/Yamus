@@ -39,9 +39,6 @@ class StationsFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
-        val context = activity ?: return
-
         viewModel = ViewModelProvider(this).get(StationsViewModel::class.java)
     }
 

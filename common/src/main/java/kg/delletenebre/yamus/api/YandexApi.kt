@@ -47,6 +47,8 @@ object YandexApi {
         val request = Request.Builder()
                 .url("$API_URL_MUSIC$url")
                 .addHeader("Authorization", "OAuth ${YandexUser.token}")
+                .addHeader("X-Yandex-Music-Client", "WindowsPhone/3.20")
+                .addHeader("User-Agent", "Windows 10")
         if (formBody != null) {
             request.post(formBody)
         }

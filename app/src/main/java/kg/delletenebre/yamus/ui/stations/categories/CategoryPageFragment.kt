@@ -13,9 +13,13 @@ import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.api.response.Station
 import kg.delletenebre.yamus.ui.stations.StationsViewModel
 import kg.delletenebre.yamus.utils.Converter
+import kg.delletenebre.yamus.utils.InjectorUtils
+import kg.delletenebre.yamus.viewmodels.MainActivityViewModel
 import kg.delletenebre.yamus.views.GridSpacingItemDecoration
 
 class CategoryPageFragment(private val category: CategoryTab) : Fragment() {
+    private lateinit var mainViewModel: MainActivityViewModel
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.station_category_fragment, container, false)
@@ -23,6 +27,11 @@ class CategoryPageFragment(private val category: CategoryTab) : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val context = activity ?: return
+
+        mainViewModel = ViewModelProvider(context, InjectorUtils.provideMainActivityViewModel(context))
+                .get(MainActivityViewModel::class.java)
 
         val viewModel = ViewModelProvider(parentFragment!!).get(StationsViewModel::class.java)
         val stationsContainer = view.findViewById<RecyclerView>(R.id.stationsContainer)
@@ -32,15 +41,8 @@ class CategoryPageFragment(private val category: CategoryTab) : Fragment() {
 
         val stationsAdapter = CategoriesAdapter(object: CategoriesAdapter.ItemListener {
             override fun onClick(item: Station, position: Int) {
-//                val url = item.data.url.split("/")
-//                val type = url[1]
-//                val id = url[2]
-//                val bundle = bundleOf(
-//                        "title" to item.data.title,
-//                        "type" to type,
-//                        "id" to id
-//                )
-//                findNavController().navigate(R.id.fragmentMixPlaylists, bundle)
+                mainViewModel.stationClicked(item)
+                //YandexMusic.getStationTracks(item.data.id.type, item.data.id.tag)
             }
         })
         stationsContainer.adapter = stationsAdapter

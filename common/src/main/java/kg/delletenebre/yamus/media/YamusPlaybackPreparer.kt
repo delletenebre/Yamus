@@ -60,36 +60,42 @@ class YamusPlaybackPreparer(
      * [MediaSessionCompat.Callback.onPlayFromMediaId], otherwise it's
      * [MediaSessionCompat.Callback.onPrepareFromMediaId].
      */
-    override fun onPrepareFromMediaId(mediaId: String?, playWhenReady: Boolean, extras: Bundle?) {
-        val itemToPlay = BrowseTreeObject.items.find { item ->
-            item.mediaId == mediaId
-        }
-        if (itemToPlay == null) {
-            Log.w(TAG, "Content not found: MediaID=$mediaId")
-
-            // TODO: Notify caller of the error.
+    override fun onPrepareFromMediaId(mediaId: String, playWhenReady: Boolean, extras: Bundle?) {
+        Log.d("ahoha", "onPrepareFromMediaId")
+        if (mediaId.startsWith("/station/")) {
+            val stationId = mediaId.split("/")[2]
+            Log.d("ahoha", stationId)
         } else {
-            val mediaItems = BrowseTreeObject.items.map {
-                val extractorsFactory = DefaultExtractorsFactory()
-                extractorsFactory.setTsExtractorFlags(DefaultTsPayloadReaderFactory.FLAG_ALLOW_NON_IDR_KEYFRAMES)
-                extractorsFactory.setConstantBitrateSeekingEnabled(true)
-
-                ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory)
-                        .setTag(it.description)
-                        .createMediaSource(it.description.mediaUri)
+            val itemToPlay = BrowseTreeObject.items.find { item ->
+                item.mediaId == mediaId
             }
+            if (itemToPlay == null) {
+                Log.w(TAG, "Content not found: MediaID=$mediaId")
 
-            val mediaSource = ConcatenatingMediaSource()
-            mediaSource.addMediaSources(mediaItems)
+                // TODO: Notify caller of the error.
+            } else {
+                val mediaItems = BrowseTreeObject.items.map {
+                    val extractorsFactory = DefaultExtractorsFactory()
+                    extractorsFactory.setTsExtractorFlags(DefaultTsPayloadReaderFactory.FLAG_ALLOW_NON_IDR_KEYFRAMES)
+                    extractorsFactory.setConstantBitrateSeekingEnabled(true)
 
-            // Since the playlist was probably based on some ordering (such as tracks
-            // on an album), find which window index to play first so that the song the
-            // user actually wants to hear plays first.
-            val initialWindowIndex = BrowseTreeObject.items.indexOf(itemToPlay)
+                    ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory)
+                            .setTag(it.description)
+                            .createMediaSource(it.description.mediaUri)
+                }
 
-            exoPlayer.seekTo(initialWindowIndex, 0)
-            exoPlayer.prepare(mediaSource, false, true)
-            exoPlayer.playWhenReady = true
+                val mediaSource = ConcatenatingMediaSource()
+                mediaSource.addMediaSources(mediaItems)
+
+                // Since the playlist was probably based on some ordering (such as tracks
+                // on an album), find which window index to play first so that the song the
+                // user actually wants to hear plays first.
+                val initialWindowIndex = BrowseTreeObject.items.indexOf(itemToPlay)
+
+                exoPlayer.seekTo(initialWindowIndex, 0)
+                exoPlayer.prepare(mediaSource, false, true)
+                exoPlayer.playWhenReady = true
+            }
         }
     }
 
