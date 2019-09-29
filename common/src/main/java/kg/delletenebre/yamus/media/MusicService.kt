@@ -26,7 +26,6 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat.MediaItem
-import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -34,19 +33,21 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
-import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.ExoPlayerFactory
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
-import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
-import kg.delletenebre.yamus.media.datasource.YandexDataSourceFactory
+import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.media.library.BrowseTreeObject
+import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kotlinx.coroutines.*
 
 open class MusicService : MediaBrowserServiceCompat() {
     private lateinit var becomingNoisyReceiver: BecomingNoisyReceiver
     private lateinit var notificationManager: NotificationManagerCompat
     private lateinit var notificationBuilder: NotificationBuilder
-//    private lateinit var mediaSource: MusicSource
     private lateinit var packageValidator: PackageValidator
 
     private val serviceJob = SupervisorJob()
@@ -55,6 +56,7 @@ open class MusicService : MediaBrowserServiceCompat() {
     protected lateinit var mediaSession: MediaSessionCompat
     protected lateinit var mediaController: MediaControllerCompat
     protected lateinit var mediaSessionConnector: MediaSessionConnector
+
 
     private var isForegroundService = false
 
@@ -70,6 +72,59 @@ open class MusicService : MediaBrowserServiceCompat() {
     private val exoPlayer: ExoPlayer by lazy {
         ExoPlayerFactory.newSimpleInstance(this).apply {
             setAudioAttributes(this@MusicService.audioAttributes, true)
+            addListener(object : Player.EventListener {
+//                override fun onTracksChanged(trackGroups: TrackGroupArray?, trackSelections: TrackSelectionArray?) {}
+//                override fun onLoadingChanged(isLoading: Boolean) {}
+//                override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {}
+//                override fun onRepeatModeChanged(repeatMode: Int) {}
+//                override fun onPlayerError(error: ExoPlaybackException?) {}
+//                override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {}
+                override fun onPositionDiscontinuity(reason: Int) {
+                    if (reason == Player.DISCONTINUITY_REASON_PERIOD_TRANSITION
+                            || reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
+                        if (CurrentPlaylist.station != null) {
+                            val stationId = CurrentPlaylist.id
+                            serviceScope.launch {
+                                val trackId = CurrentPlaylist.tracks[1].getTrackId()
+                                YandexMusic.getStationFeedback(
+                                        stationId,
+                                        YandexMusic.STATION_FEEDBACK_TYPE_TRACK_STARTED,
+                                        CurrentPlaylist.batchId,
+                                        trackId
+                                )
+                            }
+
+                            if (reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
+                                serviceScope.launch {
+                                    val trackId = CurrentPlaylist.tracks[0].getTrackId()
+                                    YandexMusic.getStationFeedback(
+                                            stationId,
+                                            YandexMusic.STATION_FEEDBACK_TYPE_SKIP,
+                                            CurrentPlaylist.batchId,
+                                            trackId,
+                                            60
+                                    )
+                                }
+                            }
+
+                            if (exoPlayer.currentWindowIndex == 2) {
+                                CurrentPlaylist.removeTrack(0)
+                            }
+
+                            if (CurrentPlaylist.tracks.size == 3) {
+                                serviceScope.launch {
+                                    val queue = CurrentPlaylist.tracks[1].id
+                                    val stationTracks = YandexMusic.getStationTracks(stationId, queue)
+                                    val tracks = stationTracks.sequence.map {
+                                        it.track
+                                    }
+                                    CurrentPlaylist.addTracksToPlaylist(tracks)
+                                }
+                            }
+                        }
+                    }
+                }
+            })
         }
     }
 
@@ -107,14 +162,7 @@ open class MusicService : MediaBrowserServiceCompat() {
 
         // ExoPlayer will manage the MediaSession for us.
         mediaSessionConnector = MediaSessionConnector(mediaSession).also { connector ->
-            val dataSourceFactory = YandexDataSourceFactory(YAMUS_USER_AGENT)
-            dataSourceFactory.defaultRequestProperties
-                    .set("X-Yandex-Music-Client", YAMUS_HEADER_X_YANDEX_MUSIC_CLIENT)
-            val playbackPreparer = YamusPlaybackPreparer(
-                    exoPlayer,
-                    dataSourceFactory
-            )
-
+            val playbackPreparer = YamusPlaybackPreparer(exoPlayer)
             connector.setPlayer(exoPlayer)
             connector.setPlaybackPreparer(playbackPreparer)
             connector.setQueueNavigator(YamusQueueNavigator(mediaSession))
@@ -308,14 +356,20 @@ open class MusicService : MediaBrowserServiceCompat() {
  * Helper class to retrieve the the Metadata necessary for the ExoPlayer MediaSession connection
  * extension to call [MediaSessionCompat.setMetadata].
  */
-private class YamusQueueNavigator(
-    mediaSession: MediaSessionCompat
-) : TimelineQueueNavigator(mediaSession) {
-    private val window = Timeline.Window()
-    override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat =
-        player.currentTimeline
-            .getWindow(windowIndex, window, true).tag as MediaDescriptionCompat
-}
+//private class YamusQueueNavigator(
+//    mediaSession: MediaSessionCompat
+//) : TimelineQueueNavigator(mediaSession) {
+//    private val window = Timeline.Window()
+//    override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat =
+//        player.currentTimeline
+//            .getWindow(windowIndex, window, true).tag as MediaDescriptionCompat
+//
+//    override fun onSkipToNext(player: Player?, controlDispatcher: ControlDispatcher?) {
+//        Log.d("ahoha", "onSkipToNext")
+//
+//        super.onSkipToNext(player, controlDispatcher)
+//    }
+//}
 
 /**
  * Helper class for listening for when headphones are unplugged (or the audio
@@ -364,6 +418,3 @@ private const val CONTENT_STYLE_PLAYABLE_HINT = "android.media.browse.CONTENT_ST
 private const val CONTENT_STYLE_SUPPORTED = "android.media.browse.CONTENT_STYLE_SUPPORTED"
 private const val CONTENT_STYLE_LIST = 1
 private const val CONTENT_STYLE_GRID = 2
-
-private const val YAMUS_USER_AGENT = "Yandex-Music-API"
-private const val YAMUS_HEADER_X_YANDEX_MUSIC_CLIENT = "WindowsPhone/3.20"

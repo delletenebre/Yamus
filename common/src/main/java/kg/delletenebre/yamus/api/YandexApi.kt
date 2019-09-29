@@ -6,8 +6,11 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import kg.delletenebre.yamus.api.database.YandexDatabase
 import okhttp3.FormBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 
 object YandexApi {
     const val CLIENT_ID = "23cabbbdc6cd418abb4b39c32c41195d"
@@ -25,6 +28,7 @@ object YandexApi {
     lateinit var database: YandexDatabase
 
     val httpClient = OkHttpClient()
+    var jsonContentType = "application/json; charset=utf-8".toMediaTypeOrNull()
 
 
     fun init(context: Context) {
@@ -54,6 +58,17 @@ object YandexApi {
         }
 
 
+        return request.build()
+    }
+
+    fun getRequest(url: String, jsonData: JSONObject): Request {
+        val formBody = jsonData.toString().toRequestBody(jsonContentType)
+        val request = Request.Builder()
+                .url("$API_URL_MUSIC$url")
+                .post(formBody)
+                .addHeader("Authorization", "OAuth ${YandexUser.token}")
+                .addHeader("X-Yandex-Music-Client", "WindowsPhone/3.20")
+                .addHeader("User-Agent", "Windows 10")
         return request.build()
     }
 }

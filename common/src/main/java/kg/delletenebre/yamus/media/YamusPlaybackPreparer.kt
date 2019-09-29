@@ -21,27 +21,20 @@ import android.os.Bundle
 import android.os.ResultReceiver
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
-import com.google.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory
-import com.google.android.exoplayer2.source.ConcatenatingMediaSource
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.upstream.DataSource
 import kg.delletenebre.yamus.media.library.AbstractMusicSource
-import kg.delletenebre.yamus.media.library.BrowseTreeObject
+import kg.delletenebre.yamus.media.library.CurrentPlaylist
 
 
 /**
  * Class to bridge Yamus to the ExoPlayer MediaSession extension.
  */
-class YamusPlaybackPreparer(
-        private val exoPlayer: ExoPlayer,
-        private val dataSourceFactory: DataSource.Factory
-) : MediaSessionConnector.PlaybackPreparer {
+class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
+    : MediaSessionConnector.PlaybackPreparer {
+
     override fun getSupportedPrepareActions(): Long =
             PlaybackStateCompat.ACTION_PREPARE_FROM_MEDIA_ID or
                     PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
@@ -61,41 +54,14 @@ class YamusPlaybackPreparer(
      * [MediaSessionCompat.Callback.onPrepareFromMediaId].
      */
     override fun onPrepareFromMediaId(mediaId: String, playWhenReady: Boolean, extras: Bundle?) {
-        Log.d("ahoha", "onPrepareFromMediaId")
-        if (mediaId.startsWith("/station/")) {
-            val stationId = mediaId.split("/")[2]
-            Log.d("ahoha", stationId)
+        if (mediaId == "/station") {
+            exoPlayer.prepare(CurrentPlaylist.mediaSource)
+            exoPlayer.playWhenReady = true
         } else {
-            val itemToPlay = BrowseTreeObject.items.find { item ->
-                item.mediaId == mediaId
-            }
-            if (itemToPlay == null) {
-                Log.w(TAG, "Content not found: MediaID=$mediaId")
-
-                // TODO: Notify caller of the error.
-            } else {
-                val mediaItems = BrowseTreeObject.items.map {
-                    val extractorsFactory = DefaultExtractorsFactory()
-                    extractorsFactory.setTsExtractorFlags(DefaultTsPayloadReaderFactory.FLAG_ALLOW_NON_IDR_KEYFRAMES)
-                    extractorsFactory.setConstantBitrateSeekingEnabled(true)
-
-                    ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory)
-                            .setTag(it.description)
-                            .createMediaSource(it.description.mediaUri)
-                }
-
-                val mediaSource = ConcatenatingMediaSource()
-                mediaSource.addMediaSources(mediaItems)
-
-                // Since the playlist was probably based on some ordering (such as tracks
-                // on an album), find which window index to play first so that the song the
-                // user actually wants to hear plays first.
-                val initialWindowIndex = BrowseTreeObject.items.indexOf(itemToPlay)
-
-                exoPlayer.seekTo(initialWindowIndex, 0)
-                exoPlayer.prepare(mediaSource, false, true)
-                exoPlayer.playWhenReady = true
-            }
+            val position = extras?.getInt("position") ?: 0
+            exoPlayer.seekTo(position, 0)
+            exoPlayer.prepare(CurrentPlaylist.mediaSource, false, true)
+            exoPlayer.playWhenReady = true
         }
     }
 

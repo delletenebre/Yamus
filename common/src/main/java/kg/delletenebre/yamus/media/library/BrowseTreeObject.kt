@@ -28,6 +28,7 @@ import android.util.Log
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.api.YandexMusic
@@ -44,6 +45,10 @@ object BrowseTreeObject {
             .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
     val searchableByUnknownCaller = false
     var items = listOf<MediaItem>()
+
+    var playlist = ConcatenatingMediaSource()
+    var playedTracksCount = 0
+    var stationId = ""
 
     fun init(context: Context) {
         library[MEDIA_LIBRARY_PATH_ROOT] = mutableListOf(
@@ -138,7 +143,7 @@ object BrowseTreeObject {
         return items.toMutableList()
     }
 
-    private suspend fun loadAlbumArt(url: String): Bitmap {
+    suspend fun loadAlbumArt(url: String): Bitmap {
         return withContext(Dispatchers.IO) {
             Glide.with(App.instance.applicationContext)
                     .applyDefaultRequestOptions(glideOptions)
@@ -182,7 +187,7 @@ object BrowseTreeObject {
 //        }
 //    }
 
-    private fun createBrowsableMediaItem(
+    fun createBrowsableMediaItem(
             mediaDescription: MediaDescriptionCompat
     ): MediaItem {
         val extras = Bundle()
@@ -191,7 +196,7 @@ object BrowseTreeObject {
         return MediaItem(mediaDescription, MediaItem.FLAG_BROWSABLE)
     }
 
-    private fun createBrowsableMediaItem(
+    fun createBrowsableMediaItem(
             mediaId: String,
             folderName: String,
             iconUri: Uri
@@ -203,7 +208,7 @@ object BrowseTreeObject {
         return createBrowsableMediaItem(mediaDescriptionBuilder.build())
     }
 
-    private fun createBrowsableMediaItem(
+    fun createBrowsableMediaItem(
             mediaId: String,
             folderName: String,
             iconBitmap: Bitmap
@@ -215,7 +220,7 @@ object BrowseTreeObject {
         return createBrowsableMediaItem(mediaDescriptionBuilder.build())
     }
 
-    private fun createBrowsableMediaItem(
+    fun createBrowsableMediaItem(
             mediaId: String,
             folderName: String,
             subtitle: String,
@@ -229,7 +234,7 @@ object BrowseTreeObject {
         return createBrowsableMediaItem(mediaDescriptionBuilder.build())
     }
 
-    private fun createPlayableMediaItem(
+    fun createPlayableMediaItem(
             mediaDescription: MediaDescriptionCompat
     ): MediaItem {
         val extras = Bundle()
@@ -237,7 +242,7 @@ object BrowseTreeObject {
         extras.putInt(CONTENT_STYLE_PLAYABLE_HINT, CONTENT_STYLE_GRID_ITEM_HINT_VALUE)
         return MediaItem(mediaDescription, MediaItem.FLAG_PLAYABLE)
     }
-    private fun createPlayableMediaItem(
+    fun createPlayableMediaItem(
             mediaId: String,
             folderName: String,
             iconBitmap: Bitmap
@@ -341,12 +346,12 @@ object BrowseTreeObject {
     const val NOTIFICATION_LARGE_ICON_SIZE = 200 // px
 
     /** Content styling constants */
-    private const val EXTRA_CONTENT_STYLE_GROUP_TITLE_HINT = "android.media.browse.CONTENT_STYLE_GROUP_TITLE_HINT"
-    private const val CONTENT_STYLE_BROWSABLE_HINT = "android.media.browse.CONTENT_STYLE_BROWSABLE_HINT"
-    private const val CONTENT_STYLE_PLAYABLE_HINT = "android.media.browse.CONTENT_STYLE_PLAYABLE_HINT"
-    private const val CONTENT_STYLE_SUPPORTED = "android.media.browse.CONTENT_STYLE_SUPPORTED"
-    private const val CONTENT_STYLE_LIST_ITEM_HINT_VALUE = 1
-    private const val CONTENT_STYLE_GRID_ITEM_HINT_VALUE = 2
+    const val EXTRA_CONTENT_STYLE_GROUP_TITLE_HINT = "android.media.browse.CONTENT_STYLE_GROUP_TITLE_HINT"
+    const val CONTENT_STYLE_BROWSABLE_HINT = "android.media.browse.CONTENT_STYLE_BROWSABLE_HINT"
+    const val CONTENT_STYLE_PLAYABLE_HINT = "android.media.browse.CONTENT_STYLE_PLAYABLE_HINT"
+    const val CONTENT_STYLE_SUPPORTED = "android.media.browse.CONTENT_STYLE_SUPPORTED"
+    const val CONTENT_STYLE_LIST_ITEM_HINT_VALUE = 1
+    const val CONTENT_STYLE_GRID_ITEM_HINT_VALUE = 2
 
     // Bundle extra indicating that a song contains explicit content.
     var EXTRA_IS_EXPLICIT = "android.media.IS_EXPLICIT"

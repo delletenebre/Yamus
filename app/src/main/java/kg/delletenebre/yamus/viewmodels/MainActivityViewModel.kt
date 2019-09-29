@@ -16,12 +16,13 @@
 
 package kg.delletenebre.yamus.viewmodels
 
+import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.util.Log
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import kg.delletenebre.yamus.MainActivity
 import kg.delletenebre.yamus.MediaItemData
+import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.api.response.Station
 import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.common.MediaSessionConnection
@@ -29,7 +30,7 @@ import kg.delletenebre.yamus.media.extensions.id
 import kg.delletenebre.yamus.media.extensions.isPlayEnabled
 import kg.delletenebre.yamus.media.extensions.isPlaying
 import kg.delletenebre.yamus.media.extensions.isPrepared
-import kg.delletenebre.yamus.media.library.BrowseTreeObject
+import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kg.delletenebre.yamus.utils.Event
 import kotlinx.coroutines.launch
 
@@ -65,7 +66,7 @@ class MainActivityViewModel(
      * If the item is browsable, handle it by sending an event to the Activity to
      * browse to it, otherwise play it.
      */
-//    fun mediaItemClicked(clickedItem: MediaItemData) {
+//    fun trackClicked(clickedItem: MediaItemData) {
 //        if (clickedItem.browsable) {
 //            browseToItem(clickedItem)
 //        } else {
@@ -74,15 +75,25 @@ class MainActivityViewModel(
 //        }
 //    }
 
-    fun mediaItemClicked(clickedTrack: Track, playlist: List<Track>) {
+    fun trackClicked(clickedTrack: Track, tracks: List<Track>, position: Int = 0) {
         viewModelScope.launch {
-            BrowseTreeObject.setPlaylist(playlist)
-            playMedia(clickedTrack, pauseAllowed = true)
+            CurrentPlaylist.batchId = ""
+            CurrentPlaylist.updatePlaylist("playlist", tracks, null)
+            playTracks(clickedTrack, position, pauseAllowed = true)
         }
     }
 
     fun stationClicked(station: Station) {
-        playStation(station)
+        viewModelScope.launch {
+            val stationId = station.getId()
+            val stationTracks = YandexMusic.getStationTracks(stationId)
+            val tracks = stationTracks.sequence.map { it.track }
+            CurrentPlaylist.batchId = stationTracks.batchId
+            CurrentPlaylist.updatePlaylist(stationId, tracks, station)
+            YandexMusic.getStationFeedback(stationId)
+
+            playStation(stationId)
+        }
     }
 
 
@@ -136,7 +147,7 @@ class MainActivityViewModel(
 //        }
 //    }
 
-    fun playMedia(track: Track, pauseAllowed: Boolean = true) {
+    fun playTracks(track: Track, position: Int, pauseAllowed: Boolean = true) {
         val nowPlaying = mediaSessionConnection.nowPlaying.value
         val transportControls = mediaSessionConnection.transportControls
 
@@ -163,16 +174,20 @@ class MainActivityViewModel(
                 }
             }
         } else {
-            transportControls.playFromMediaId(track.id, null)
+            val extras = Bundle()
+            with(extras) {
+                putInt("position", position)
+                putString("trackId", track.id)
+            }
+
+            transportControls.playFromMediaId("/track/${track.id}/$position", extras)
         }
     }
 
-    fun playStation(station: Station) {
-        val nowPlayingStation = mediaSessionConnection.nowPlayingStation.value
+    fun playStation(stationId: String) {
         val transportControls = mediaSessionConnection.transportControls
-
         val isPrepared = mediaSessionConnection.playbackState.value?.isPrepared ?: false
-        if (isPrepared && station.getId() == nowPlayingStation?.getId()) {
+        if (isPrepared && stationId == CurrentPlaylist.id) {
             mediaSessionConnection.playbackState.value?.let { playbackState ->
                 when {
                     playbackState.isPlaying -> {
@@ -184,13 +199,13 @@ class MainActivityViewModel(
                     else -> {
                         Log.w(
                                 TAG, "Playable item clicked but neither play nor pause are enabled!" +
-                                " (Station: {type} ${station.data.id.type}, {tag} ${station.data.id.tag})"
+                                " (Station: $stationId"
                         )
                     }
                 }
             }
         } else {
-            transportControls.playFromMediaId("/station/${station.getId()}", null)
+            transportControls.playFromMediaId("/station", null)
         }
     }
 
@@ -232,10 +247,10 @@ class MainActivityViewModel(
  * Helper class used to pass fragment navigation requests between MainActivity
  * and its corresponding ViewModel.
  */
-data class FragmentNavigationRequest(
-    val fragment: Fragment,
-    val backStack: Boolean = false,
-    val tag: String? = null
-)
+//data class FragmentNavigationRequest(
+//    val fragment: Fragment,
+//    val backStack: Boolean = false,
+//    val tag: String? = null
+//)
 
 private const val TAG = "MainActivitytVM"

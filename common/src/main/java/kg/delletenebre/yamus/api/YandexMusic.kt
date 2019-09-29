@@ -12,9 +12,15 @@ import kotlinx.serialization.json.Json
 import okhttp3.FormBody
 import okhttp3.Request
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 object YandexMusic {
+    const val STATION_FEEDBACK_TYPE_RADIO_STARTED = "radioStarted"
+    const val STATION_FEEDBACK_TYPE_TRACK_STARTED = "trackStarted"
+    const val STATION_FEEDBACK_TYPE_SKIP = "skip"
+
     suspend fun getFavoriteTracks(): List<Track> {
         return withContext(Dispatchers.IO) {
             val tracksIds = getFavoriteTracksIds()
@@ -73,7 +79,7 @@ object YandexMusic {
                             }
                         }
 
-                        Log.d("ahoha", "Response: $responseJson")
+//                        Log.d("ahoha", "Response: $responseJson")
                     } catch (e: Exception) {
                         e.printStackTrace()
                         Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
@@ -97,7 +103,7 @@ object YandexMusic {
                         val responseBody = response.body!!.string()
                         try {
                             result = Json.nonstrict.parse(Feed.serializer(), responseBody)
-                            Log.d("ahoha", "Response: $responseBody")
+//                            Log.d("ahoha", "Response: $responseBody")
                         } catch (exception: Exception) {
                             exception.printStackTrace()
                             Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
@@ -130,7 +136,7 @@ object YandexMusic {
                                     stations.toString()
                             )
 
-                            Log.d("ahoha", "Response: $responseBody")
+//                            Log.d("ahoha", "Response: $responseBody")
                         } catch (exception: Exception) {
                             exception.printStackTrace()
                             Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
@@ -162,7 +168,7 @@ object YandexMusic {
                                     stations.toString()
                             )
 
-                            Log.d("ahoha", "Response: $responseBody")
+//                            Log.d("ahoha", "Response: $responseBody")
                         } catch (exception: Exception) {
                             exception.printStackTrace()
                             Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
@@ -175,10 +181,13 @@ object YandexMusic {
         return result
     }
 
-    suspend fun getStationTracks(type: String, tag: String): StationTracks {
+    suspend fun getStationTracks(stationId: String, queue: String = ""): StationTracks {
         var result = StationTracks()
 
-        val url = "/rotor/station/$type:$tag/tracks?settings2=true"
+        var url = "/rotor/station/$stationId/tracks?settings2=true"
+        if (queue.isNotEmpty()) {
+            url = "$url&queue=$queue"
+        }
 
         withContext(Dispatchers.IO) {
             YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
@@ -194,7 +203,7 @@ object YandexMusic {
                                     stations.toString()
                             )
 
-                            Log.d("ahoha", "Response: $responseBody")
+//                            Log.d("ahoha", "Response: $responseBody")
                         } catch (exception: Exception) {
                             exception.printStackTrace()
                             Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
@@ -205,6 +214,39 @@ object YandexMusic {
         }
 
         return result
+    }
+
+    suspend fun getStationFeedback(stationId: String = "",
+                                   type: String = STATION_FEEDBACK_TYPE_RADIO_STARTED,
+                                   batchId: String = "",
+                                   trackId: String = "",
+                                   totalPlayedSeconds: Int = 60) {
+        var url = "/rotor/station/$stationId/feedback"
+
+        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault())
+        val now = formatter.format(Date(System.currentTimeMillis()))
+
+        val jsonData = JSONObject()
+        with(jsonData) {
+            put("type", type)
+            put("timestamp", now)
+        }
+
+        if (batchId.isNotEmpty()) {
+            url = "$url?batch-id=$batchId"
+            jsonData.put("trackId", trackId)
+            if (type == STATION_FEEDBACK_TYPE_SKIP) {
+                jsonData.put("totalPlayedSeconds", totalPlayedSeconds)
+            }
+        }
+
+        withContext(Dispatchers.IO) {
+            YandexApi.httpClient.newCall(YandexApi.getRequest(url, jsonData)).execute().use { response ->
+                if (!response.isSuccessful) {
+                    Log.e("ahoha", "Could not get feedback response: ${response.message}")
+                }
+            }
+        }
     }
 
     suspend fun getPersonalPlaylists(): List<PersonalPlaylists> {
@@ -225,7 +267,7 @@ object YandexMusic {
                                     .getJSONArray("entities")
 
                             result = Json.nonstrict.parse(ArrayListSerializer(PersonalPlaylists.serializer()), entities.toString())
-                            Log.d("ahoha", "Response: $responseBody")
+//                            Log.d("ahoha", "Response: $responseBody")
                         } catch (exception: Exception) {
                             exception.printStackTrace()
                             Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
@@ -259,7 +301,7 @@ object YandexMusic {
                                     ArrayListSerializer(Mix.serializer()),
                                     entities.toString()
                             )
-                            Log.d("ahoha", "Response: $responseBody")
+//                            Log.d("ahoha", "Response: $responseBody")
                         } catch (exception: Exception) {
                             exception.printStackTrace()
                             Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
@@ -300,7 +342,7 @@ object YandexMusic {
                                     }.toList()
                             )
 
-                            Log.d("ahoha", "Response: $responseBody")
+//                            Log.d("ahoha", "Response: $responseBody")
                         } catch (exception: Exception) {
                             exception.printStackTrace()
                             Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
@@ -333,7 +375,7 @@ object YandexMusic {
                                 "${it.uid}:${it.kind}"
                             }
 
-                            Log.d("ahoha", "Response: $responseBody")
+//                            Log.d("ahoha", "Response: $responseBody")
                         } catch (exception: Exception) {
                             exception.printStackTrace()
                             Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
@@ -369,7 +411,7 @@ object YandexMusic {
                                     playlists.toString()
                             )
 
-                            Log.d("ahoha", "Response: $responseBody")
+//                            Log.d("ahoha", "Response: $responseBody")
                         } catch (exception: Exception) {
                             exception.printStackTrace()
                             Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
@@ -438,7 +480,7 @@ object YandexMusic {
 //                                            )
 //                                }
 
-                            Log.d("ahoha", "Response: $responseJson")
+//                            Log.d("ahoha", "Response: $responseJson")
                         } catch (exception: Exception) {
                             exception.printStackTrace()
                             Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
@@ -495,7 +537,7 @@ object YandexMusic {
                                                 )
                                             )
                                 }
-                                Log.d("ahoha", "Response: $responseJson")
+//                                Log.d("ahoha", "Response: $responseJson")
                             } catch (exception: Exception) {
                                 exception.printStackTrace()
                                 Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
@@ -555,7 +597,7 @@ object YandexMusic {
                         val json = Json.parse(DownloadVariants.serializer(), responseBody)
                         //val result = json.result.sortedWith(Comparator { b, a -> compareValuesBy(a, b, { it.codec }, { it.bitrateInKbps }) })
                         val result = json.result.sortedByDescending { it.bitrateInKbps }.sortedBy { it.codec }
-                        Log.d("ahoha", result.toString())
+//                        Log.d("ahoha", result.toString())
                         return result
                     } catch (t: Throwable) {
                         Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
@@ -576,49 +618,5 @@ object YandexMusic {
         val sign = ("XGRlBW9FXlekgbPrRHuSiA${downloadInfo.path.substring(1)}${downloadInfo.s}").md5()
         return "https://$host/get-mp3/$sign/${downloadInfo.ts}${downloadInfo.path}"
     }
-
-//    fun MediaMetadataCompat.Builder.from(yandexTrack: Tracks.Track): MediaMetadataCompat.Builder {
-//        var artistName = ""
-//        if (yandexTrack.artists.isNotEmpty()) {
-//            artistName = yandexTrack.artists[0].name
-//        }
-//
-//        var albumTitle = ""
-//        var albumGenre = ""
-//        if (yandexTrack.albums.isNotEmpty()) {
-//            val trackAlbum = yandexTrack.albums[0]
-//            albumTitle = trackAlbum.title
-//            albumGenre = trackAlbum.genre
-//
-//        }
-//
-//        playlistId = yandexTrack.playlistId
-//        id = yandexTrack.id
-//        title = yandexTrack.title
-//        artist = artistName
-//        album = albumTitle
-//        duration = yandexTrack.durationMs.toLong()
-//        genre = albumGenre
-//        mediaUri = "https://storage.googleapis.com/uamp/The_Kyoto_Connection_-_Wake_Up/01_-_Intro_-_The_Way_Of_Waking_Up_feat_Alan_Watts.mp3"
-//        albumArtUri = yandexTrack.coverUri
-//        trackNumber = 0
-//        trackCount = 0
-//        flag = MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
-//
-//
-//        // To make things easier for *displaying* these, set the display properties as well.
-//        displayTitle = yandexTrack.title
-//        displaySubtitle = artistName
-//        displayDescription = albumTitle
-//        displayIconUri = ""
-//
-//        // Add downloadStatus to force the creation of an "extras" bundle in the resulting
-//        // MediaMetadataCompat object. This is needed to send accurate metadata to the
-//        // media session during updates.
-//        downloadStatus = STATUS_NOT_DOWNLOADED
-//
-//        // Allow it to be used in the typical builder style.
-//        return this
-//    }
 }
 

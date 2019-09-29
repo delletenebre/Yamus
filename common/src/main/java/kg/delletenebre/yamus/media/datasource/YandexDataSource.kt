@@ -199,7 +199,6 @@ class YandexDataSource(
 
     @Throws(IOException::class)
     private fun makeConnection(dataSpec: DataSpec): HttpURLConnection {
-        Log.d("ahoha", dataSpec.uri.toString())
         var url = URL(YandexMusic.getDirectUrl(dataSpec.uri.toString()))//URL(dataSpec.uri.toString())
 
         @HttpMethod var httpMethod = dataSpec.httpMethod

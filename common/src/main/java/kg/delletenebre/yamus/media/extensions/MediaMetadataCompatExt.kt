@@ -282,14 +282,14 @@ inline var MediaMetadataCompat.Builder.flag: Int
 //                .createMediaSource(mediaUri)
 //
 ///**
-// * Extension method for building a [ConcatenatingMediaSource] given a [List]
+// * Extension method for building a [MyMediaSource] given a [List]
 // * of [MediaMetadataCompat] objects.
 // */
 //fun List<MediaMetadataCompat>.toMediaSource(
 //        dataSourceFactory: DataSource.Factory
-//): ConcatenatingMediaSource {
+//): MyMediaSource {
 //
-//    val concatenatingMediaSource = ConcatenatingMediaSource()
+//    val concatenatingMediaSource = MyMediaSource()
 //    forEach {
 //        concatenatingMediaSource.addMediaSource(it.toMediaSource(dataSourceFactory))
 //    }
@@ -298,9 +298,9 @@ inline var MediaMetadataCompat.Builder.flag: Int
 
 //fun List<MediaItem>.toMediaSource(
 //        dataSourceFactory: DataSource.Factory
-//): ConcatenatingMediaSource {
+//): MyMediaSource {
 //
-//    val concatenatingMediaSource = ConcatenatingMediaSource()
+//    val concatenatingMediaSource = MyMediaSource()
 //    forEach {
 //        concatenatingMediaSource.addMediaSource(it.toMediaSource(dataSourceFactory))
 //    }

@@ -54,7 +54,7 @@ class PlaylistFragment : Fragment() {
         recyclerView = root.findViewById(R.id.playlist)
         playlistAdapter = PlaylistAdapter(arrayListOf(), object: PlaylistAdapter.PlaylistTrackListener {
             override fun onClick(track: Track, position: Int) {
-                mainViewModel.mediaItemClicked(track, playlistAdapter.items)
+                mainViewModel.trackClicked(track, playlistAdapter.items, position)
 
                 //val tracksIdsMap: List<String> = playlistAdapter.trackShorts.map { it.id }
 //                val playerIntent = Intent(activity, PlayerService::class.java)

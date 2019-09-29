@@ -37,4 +37,12 @@ data class Track(
             val gain: Double = 0.0,
             val peak: Int = 0
     )
+
+    fun getTrackId(): String {
+        var result = id
+        if (albums.isNotEmpty()) {
+            result += ":${albums[0].id}"
+        }
+        return result
+    }
 }
