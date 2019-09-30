@@ -26,5 +26,12 @@
     <!-- Browse Tree -->
     <string name="browse_title_favorite_tracks">My favorites</string>
     <string name="browse_title_recommended">Recommended</string>
-    <string name="browse__title_albums">Albums</string>
+    <string name="browse_title_stations">Stations</string>
+
+    <string name="stations_activity">Activity</string>
+    <string name="stations_mood">Mood</string>
+    <string name="stations_genre">Genre</string>
+    <string name="stations_epoch">Era</string>
+    <string name="stations_other">Other</string>
+
 </resources>

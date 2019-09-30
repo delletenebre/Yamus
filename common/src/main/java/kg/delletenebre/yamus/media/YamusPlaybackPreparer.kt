@@ -25,8 +25,13 @@ import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.media.library.AbstractMusicSource
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 /**
@@ -54,13 +59,26 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
      * [MediaSessionCompat.Callback.onPrepareFromMediaId].
      */
     override fun onPrepareFromMediaId(mediaId: String, playWhenReady: Boolean, extras: Bundle?) {
-        if (mediaId == "/station") {
-            exoPlayer.prepare(CurrentPlaylist.mediaSource)
-            exoPlayer.playWhenReady = true
+        if (mediaId.startsWith("/station")) {
+            GlobalScope.launch {
+                val stationId = mediaId.split("/")[2]
+                val stationTracks = YandexMusic.getStationTracks(stationId)
+                val tracks = stationTracks.sequence.map { it.track }
+                CurrentPlaylist.batchId = stationTracks.batchId
+                CurrentPlaylist.updatePlaylist(stationId, tracks, CurrentPlaylist.TYPE_STATION)
+                YandexMusic.getStationFeedback(stationId)
+
+                withContext(Dispatchers.Main) {
+                    exoPlayer.prepare(CurrentPlaylist.mediaSource)
+                    exoPlayer.playWhenReady = true
+                }
+            }
         } else {
-            val position = extras?.getInt("position") ?: 0
-            exoPlayer.seekTo(position, 0)
+            val position = CurrentPlaylist.tracks.indexOfFirst {
+                it.id == mediaId
+            }
             exoPlayer.prepare(CurrentPlaylist.mediaSource, false, true)
+            exoPlayer.seekTo(position, 0)
             exoPlayer.playWhenReady = true
         }
     }

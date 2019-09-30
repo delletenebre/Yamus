@@ -11,7 +11,6 @@ import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.YandexApi
-import kg.delletenebre.yamus.api.response.Station
 import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.media.R
 import kg.delletenebre.yamus.media.datasource.YandexDataSourceFactory
@@ -27,13 +26,12 @@ object CurrentPlaylist {
     private const val YAMUS_USER_AGENT = "Yandex-Music-API"
     private const val YAMUS_HEADER_X_YANDEX_MUSIC_CLIENT = "WindowsPhone/3.20"
 
-
     var id: String = ""
     var batchId: String = ""
-    var tracks: MutableList<Track> = mutableListOf()
     var type: String = TYPE_NONE
-    var station: Station? = null
+    var tracks: MutableList<Track> = mutableListOf()
     var mediaSource = ConcatenatingMediaSource()
+    var tracksMetadata: MutableList<MediaMetadataCompat> = mutableListOf()
 
     private val dataSourceFactory = YandexDataSourceFactory(YAMUS_USER_AGENT)
 
@@ -42,36 +40,42 @@ object CurrentPlaylist {
                 .set("X-Yandex-Music-Client", YAMUS_HEADER_X_YANDEX_MUSIC_CLIENT)
     }
 
-    suspend fun updatePlaylist(id: String, tracks: List<Track>, station: Station? = null) {
+    suspend fun updatePlaylist(id: String, tracks: List<Track>, type: String = TYPE_NONE) {
         this.id = id
-        this.station = station
+        this.type = type
         this.tracks.clear()
         this.tracks.addAll(tracks)
-        mediaSource.clear()
-        mediaSource.addMediaSources(CurrentPlaylist.tracks.map {
+        tracksMetadata.clear()
+        tracksMetadata.addAll(this.tracks.map {
             MediaMetadataCompat.Builder()
                     .from(it)
                     .apply {
                         albumArt = loadAlbumArt(it.coverUri)
                     }
                     .build()
-        }.toMediaSource())
+        })
+        mediaSource.clear()
+        mediaSource.addMediaSources(tracksMetadata.toMediaSource())
     }
 
     suspend fun addTracksToPlaylist(tracks: List<Track>) {
         this.tracks.addAll(tracks)
-        mediaSource.addMediaSources(tracks.map {
+
+        val newMetadata = tracks.map {
             MediaMetadataCompat.Builder()
                     .from(it)
                     .apply {
                         albumArt = loadAlbumArt(it.coverUri)
                     }
                     .build()
-        }.toMediaSource())
+        }
+        tracksMetadata.addAll(newMetadata)
+        mediaSource.addMediaSources(newMetadata.toMediaSource())
     }
 
     fun removeTrack(index: Int) {
         tracks.removeAt(index)
+        tracksMetadata.removeAt(index)
         mediaSource.removeMediaSource(index)
     }
 
@@ -82,8 +86,8 @@ object CurrentPlaylist {
                             .fallback(R.drawable.default_album_art)
                             .diskCacheStrategy(DiskCacheStrategy.RESOURCE))
                     .asBitmap()
-                    .load(YandexApi.getImage(url, BrowseTreeObject.NOTIFICATION_LARGE_ICON_SIZE))
-                    .submit(BrowseTreeObject.NOTIFICATION_LARGE_ICON_SIZE, BrowseTreeObject.NOTIFICATION_LARGE_ICON_SIZE)
+                    .load(YandexApi.getImage(url, AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE))
+                    .submit(AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE, AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE)
                     .get()
         }
     }
@@ -132,15 +136,9 @@ object CurrentPlaylist {
         return this
     }
 
-    inline val MediaMetadataCompat.fullDescription: MediaDescriptionCompat
-        get() =
-            description.also {
-                it.extras?.putAll(bundle)
-            }
-
     private fun MediaMetadataCompat.toMediaSource() =
             ProgressiveMediaSource.Factory(dataSourceFactory)
-                    .setTag(fullDescription)
+                    .setTag(description)
                     .createMediaSource(mediaUri)
 
     private fun List<MediaMetadataCompat>.toMediaSource(): List<ProgressiveMediaSource> {

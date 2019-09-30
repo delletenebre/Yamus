@@ -40,7 +40,7 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import kg.delletenebre.yamus.api.YandexMusic
-import kg.delletenebre.yamus.media.library.BrowseTreeObject
+import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kotlinx.coroutines.*
 
@@ -82,7 +82,7 @@ open class MusicService : MediaBrowserServiceCompat() {
                 override fun onPositionDiscontinuity(reason: Int) {
                     if (reason == Player.DISCONTINUITY_REASON_PERIOD_TRANSITION
                             || reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
-                        if (CurrentPlaylist.station != null) {
+                        if (CurrentPlaylist.type == CurrentPlaylist.TYPE_STATION) {
                             val stationId = CurrentPlaylist.id
                             serviceScope.launch {
                                 val trackId = CurrentPlaylist.tracks[1].getTrackId()
@@ -211,20 +211,19 @@ open class MusicService : MediaBrowserServiceCompat() {
         val isKnownCaller = packageValidator.isKnownCaller(clientPackageName, clientUid)
         val rootExtras = Bundle().apply {
             putBoolean(
-                BrowseTreeObject.MEDIA_SEARCH_SUPPORTED,
-                isKnownCaller || BrowseTreeObject.searchableByUnknownCaller
+                AndroidAutoBrowser.MEDIA_SEARCH_SUPPORTED,
+                isKnownCaller || AndroidAutoBrowser.SEARCHABLE_BY_UNKNOWN_CALLER
             )
             putBoolean(CONTENT_STYLE_SUPPORTED, true)
             putInt(CONTENT_STYLE_BROWSABLE_HINT, CONTENT_STYLE_GRID)
             putInt(CONTENT_STYLE_PLAYABLE_HINT, CONTENT_STYLE_LIST)
-            putString(CONTENT_STYLE_GROUP_TITLE_HINT, "Albums")
+            //putString(CONTENT_STYLE_GROUP_TITLE_HINT, "Albums")
         }
 
         return if (isKnownCaller) {
-            // The caller is allowed to browse, so return the root.
-            BrowserRoot(BrowseTreeObject.MEDIA_LIBRARY_PATH_ROOT, rootExtras)
+            BrowserRoot(AndroidAutoBrowser.MEDIA_LIBRARY_PATH_ROOT, rootExtras)
         } else {
-            BrowserRoot(BrowseTreeObject.MEDIA_LIBRARY_PATH_EMPTY, rootExtras)
+            BrowserRoot(AndroidAutoBrowser.MEDIA_LIBRARY_PATH_EMPTY, rootExtras)
         }
     }
 
@@ -233,7 +232,7 @@ open class MusicService : MediaBrowserServiceCompat() {
         result: Result<List<MediaItem>>
     ) {
         serviceScope.launch {
-            result.sendResult(BrowseTreeObject.getItems(path))
+            result.sendResult(AndroidAutoBrowser.getItems(path))
         }
 
         result.detach()

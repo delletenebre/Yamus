@@ -2,7 +2,7 @@ package kg.delletenebre.yamus
 
 import android.app.Application
 import kg.delletenebre.yamus.api.YandexApi
-import kg.delletenebre.yamus.media.library.BrowseTreeObject
+import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
 
 internal class App : Application() {
 
@@ -10,7 +10,7 @@ internal class App : Application() {
         super.onCreate()
         instance = this
         YandexApi.init(this)
-        BrowseTreeObject.init(this)
+        AndroidAutoBrowser.init(this)
 //        GlobalScope.launch {
 //            YandexUser.login("nezhinskikh.s@yandex.ru", "Ahohas%9724")
 //        }

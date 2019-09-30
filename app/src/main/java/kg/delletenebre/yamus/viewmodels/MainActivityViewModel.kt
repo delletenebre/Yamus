@@ -16,13 +16,11 @@
 
 package kg.delletenebre.yamus.viewmodels
 
-import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.util.Log
 import androidx.lifecycle.*
 import kg.delletenebre.yamus.MainActivity
 import kg.delletenebre.yamus.MediaItemData
-import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.api.response.Station
 import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.common.MediaSessionConnection
@@ -58,41 +56,23 @@ class MainActivityViewModel(
 //    val navigateToFragment: LiveData<Event<FragmentNavigationRequest>> get() = _navigateToFragment
 //    private val _navigateToFragment = MutableLiveData<Event<FragmentNavigationRequest>>()
 
-    /**
-     * This method takes a [MediaItemData] and routes it depending on whether it's
-     * browsable (i.e.: it's the parent media item of a set of other media items,
-     * such as an album), or not.
-     *
-     * If the item is browsable, handle it by sending an event to the Activity to
-     * browse to it, otherwise play it.
-     */
-//    fun trackClicked(clickedItem: MediaItemData) {
-//        if (clickedItem.browsable) {
-//            browseToItem(clickedItem)
-//        } else {
-//            playMedia(clickedItem, pauseAllowed = false)
-//            showFragment(NowPlayingFragment.newInstance())
-//        }
-//    }
-
-    fun trackClicked(clickedTrack: Track, tracks: List<Track>, position: Int = 0) {
+    fun trackClicked(clickedTrack: Track, tracks: List<Track>) {
         viewModelScope.launch {
             CurrentPlaylist.batchId = ""
-            CurrentPlaylist.updatePlaylist("playlist", tracks, null)
-            playTracks(clickedTrack, position, pauseAllowed = true)
+            CurrentPlaylist.updatePlaylist("playlist", tracks, CurrentPlaylist.TYPE_TRACKS)
+            playTracks(clickedTrack, pauseAllowed = true)
         }
     }
 
     fun stationClicked(station: Station) {
         viewModelScope.launch {
-            val stationId = station.getId()
-            val stationTracks = YandexMusic.getStationTracks(stationId)
-            val tracks = stationTracks.sequence.map { it.track }
-            CurrentPlaylist.batchId = stationTracks.batchId
-            CurrentPlaylist.updatePlaylist(stationId, tracks, station)
-            YandexMusic.getStationFeedback(stationId)
-
-            playStation(stationId)
+//            val stationId = station.getId()
+//            val stationTracks = YandexMusic.getStationTracks(stationId)
+//            val tracks = stationTracks.sequence.map { it.track }
+//            CurrentPlaylist.batchId = stationTracks.batchId
+//            CurrentPlaylist.updatePlaylist(stationId, tracks, CurrentPlaylist.TYPE_STATION)
+//            YandexMusic.getStationFeedback(stationId)
+            playStation(station.getId())
         }
     }
 
@@ -147,7 +127,7 @@ class MainActivityViewModel(
 //        }
 //    }
 
-    fun playTracks(track: Track, position: Int, pauseAllowed: Boolean = true) {
+    fun playTracks(track: Track, pauseAllowed: Boolean = true) {
         val nowPlaying = mediaSessionConnection.nowPlaying.value
         val transportControls = mediaSessionConnection.transportControls
 
@@ -174,13 +154,7 @@ class MainActivityViewModel(
                 }
             }
         } else {
-            val extras = Bundle()
-            with(extras) {
-                putInt("position", position)
-                putString("trackId", track.id)
-            }
-
-            transportControls.playFromMediaId("/track/${track.id}/$position", extras)
+            transportControls.playFromMediaId(track.id, null)
         }
     }
 
@@ -205,7 +179,7 @@ class MainActivityViewModel(
                 }
             }
         } else {
-            transportControls.playFromMediaId("/station", null)
+            transportControls.playFromMediaId("/station/$stationId", null)
         }
     }
 
