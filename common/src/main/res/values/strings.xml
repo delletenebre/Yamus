@@ -34,4 +34,9 @@
     <string name="stations_epoch">Era</string>
     <string name="stations_other">Other</string>
 
+    <!-- CUSTOM ACTIONS -->
+    <string name="custom_action_dislike">Do not recommend this track</string>
+    <string name="custom_action_favorite_add">Add to favorites</string>
+    <string name="custom_action_favorite_remove">Remove from favorites</string>
+
 </resources>

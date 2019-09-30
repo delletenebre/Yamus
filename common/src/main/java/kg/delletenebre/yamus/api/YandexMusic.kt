@@ -22,18 +22,11 @@ object YandexMusic {
     const val STATION_FEEDBACK_TYPE_SKIP = "skip"
 
     suspend fun getFavoriteTracks(): List<Track> {
-        return withContext(Dispatchers.IO) {
-            val tracksIds = getFavoriteTracksIds()
-            if (tracksIds.isNotEmpty()) {
-                getTracks(tracksIds)
-            } else {
-                listOf()
-            }
-        }
+        return getTracks(YandexUser.likedTracksIds)
     }
 
-    private fun getFavoriteTracksIds(): List<String> {
-        val result = mutableListOf<String>()
+    suspend fun getLikedTracksIds(): List<String> {
+        var result = listOf<String>()
         var currentRevision = 0
         val cachedFavoriteTracksIds = YandexApi.database.favoriteTracksIdsDao().getFirst()
         if (cachedFavoriteTracksIds != null) {
@@ -42,47 +35,46 @@ object YandexMusic {
 
         val url = "/users/${YandexUser.uid}/likes/tracks?if-modified-since-revision=$currentRevision"
 
-        YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
-            if (response.isSuccessful) {
-                if (response.body != null) {
-                    val responseBody = response.body!!.string()
-                    try {
-                        val responseJson = JSONObject(responseBody)
+        withContext(Dispatchers.IO) {
+            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
+                if (response.isSuccessful) {
+                    if (response.body != null) {
+                        val responseBody = response.body!!.string()
+                        try {
+                            val responseJson = JSONObject(responseBody)
 
-                        when (val resultJson = responseJson.get("result")) {
-                            is String -> {
-                                val tracksIds = cachedFavoriteTracksIds!!.tracksIds.split(",")
-                                result.addAll(0, tracksIds.toMutableList())
-                            }
-                            is JSONObject -> {
-                                val library = Json.parse(
-                                    Library.serializer(),
-                                    resultJson.getJSONObject("library").toString()
-                                )
-                                library.tracks.forEach { track ->
-                                    var trackId = track.id
-                                    if (track.albumId.isNotBlank()) {
-                                        trackId = "$trackId:${track.albumId}"
+                            when (val resultJson = responseJson.get("result")) {
+                                is String -> {
+                                    val tracksIds = cachedFavoriteTracksIds!!.tracksIds.split(",")
+                                    result = tracksIds
+                                }
+                                is JSONObject -> {
+                                    val library = Json.parse(
+                                            Library.serializer(),
+                                            resultJson.getJSONObject("library").toString()
+                                    )
+                                    result = library.tracks.map {
+                                        var trackId = it.id
+                                        if (it.albumId.isNotEmpty()) {
+                                            trackId = "$trackId:${it.albumId}"
+                                        }
+                                        trackId
                                     }
 
-                                    result.add(trackId)
+                                    YandexApi.database.favoriteTracksIdsDao()
+                                            .insert(
+                                                    FavoriteTracksIdsEntity(
+                                                            library.revision,
+                                                            result.joinToString(","),
+                                                            library.tracks.size
+                                                    )
+                                            )
                                 }
-
-                                YandexApi.database.favoriteTracksIdsDao()
-                                    .insert(
-                                        FavoriteTracksIdsEntity(
-                                            library.revision,
-                                            result.joinToString(","),
-                                            library.tracks.size
-                                        )
-                                    )
                             }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
                         }
-
-//                        Log.d("ahoha", "Response: $responseJson")
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
                     }
                 }
             }
@@ -422,6 +414,38 @@ object YandexMusic {
         }
 
         return result
+    }
+
+    suspend fun addLiked(trackId: String) {
+        val url = "/users/${YandexUser.uid}/likes/tracks/add-multiple"
+
+        val formBody = FormBody.Builder()
+                .add("track-ids", trackId)
+                .build()
+
+        withContext(Dispatchers.IO) {
+            YandexApi.httpClient.newCall(YandexApi.getRequest(url, formBody)).execute().use { response ->
+                if (!response.isSuccessful) {
+                    Log.e("ahoha", "Could not get feedback response: ${response.message}")
+                }
+            }
+        }
+    }
+
+    suspend fun removeLiked(trackId: String) {
+        val url = "/users/${YandexUser.uid}/likes/tracks/remove"
+
+        val formBody = FormBody.Builder()
+                .add("track-ids", trackId)
+                .build()
+
+        withContext(Dispatchers.IO) {
+            YandexApi.httpClient.newCall(YandexApi.getRequest(url, formBody)).execute().use { response ->
+                if (!response.isSuccessful) {
+                    Log.e("ahoha", "Could not get feedback response: ${response.message}")
+                }
+            }
+        }
     }
 
     suspend fun getTracks(tracksIds: List<String>)

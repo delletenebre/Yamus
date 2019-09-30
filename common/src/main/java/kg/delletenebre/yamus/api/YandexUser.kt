@@ -17,6 +17,7 @@ object YandexUser {
     var uid: Int
     var token: String
     var account: AccountStatus
+    var likedTracksIds: List<String> = listOf()
 
     init {
         uid = YandexApi.prefs.getInt(YandexApi.PREFERENCE_KEY_USER_UID, 0)
@@ -25,6 +26,15 @@ object YandexUser {
         val accountJson = YandexApi.prefs.getString(YandexApi.PREFERENCE_KEY_USER_ACCOUNT, emptyAccount)!!
         account = Json.nonstrict.parse(AccountStatus.serializer(), accountJson)
     }
+
+    suspend fun init() {
+        updateLikedTracks()
+    }
+
+    suspend fun updateLikedTracks() {
+        likedTracksIds = YandexMusic.getLikedTracksIds()
+    }
+
 
     fun isAuth(): Boolean {
         return token.isNotBlank()

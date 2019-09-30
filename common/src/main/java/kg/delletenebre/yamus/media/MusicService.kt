@@ -40,6 +40,8 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import kg.delletenebre.yamus.api.YandexMusic
+import kg.delletenebre.yamus.media.actions.DislikeActionProvider
+import kg.delletenebre.yamus.media.actions.FavoriteActionProvider
 import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kotlinx.coroutines.*
@@ -143,6 +145,7 @@ open class MusicService : MediaBrowserServiceCompat() {
         mediaSession = MediaSessionCompat(this, "MusicService")
             .apply {
                 setSessionActivity(sessionActivityPendingIntent)
+                setCallback(YamusMediaSessionCallback())
                 isActive = true
             }
 
@@ -162,10 +165,13 @@ open class MusicService : MediaBrowserServiceCompat() {
 
         // ExoPlayer will manage the MediaSession for us.
         mediaSessionConnector = MediaSessionConnector(mediaSession).also { connector ->
-            val playbackPreparer = YamusPlaybackPreparer(exoPlayer)
             connector.setPlayer(exoPlayer)
-            connector.setPlaybackPreparer(playbackPreparer)
+            connector.setPlaybackPreparer(YamusPlaybackPreparer(exoPlayer))
             connector.setQueueNavigator(YamusQueueNavigator(mediaSession))
+            connector.setCustomActionProviders(
+                    FavoriteActionProvider(this),
+                    DislikeActionProvider(this)
+            )
         }
 
         packageValidator = PackageValidator(this, R.xml.allowed_media_browser_callers)
@@ -287,6 +293,7 @@ open class MusicService : MediaBrowserServiceCompat() {
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             mediaController.playbackState?.let { updateNotification(it) }
+
         }
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
@@ -350,25 +357,6 @@ open class MusicService : MediaBrowserServiceCompat() {
         }
     }
 }
-
-/**
- * Helper class to retrieve the the Metadata necessary for the ExoPlayer MediaSession connection
- * extension to call [MediaSessionCompat.setMetadata].
- */
-//private class YamusQueueNavigator(
-//    mediaSession: MediaSessionCompat
-//) : TimelineQueueNavigator(mediaSession) {
-//    private val window = Timeline.Window()
-//    override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat =
-//        player.currentTimeline
-//            .getWindow(windowIndex, window, true).tag as MediaDescriptionCompat
-//
-//    override fun onSkipToNext(player: Player?, controlDispatcher: ControlDispatcher?) {
-//        Log.d("ahoha", "onSkipToNext")
-//
-//        super.onSkipToNext(player, controlDispatcher)
-//    }
-//}
 
 /**
  * Helper class for listening for when headphones are unplugged (or the audio

@@ -28,7 +28,6 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.media.MediaBrowserServiceCompat
-import kg.delletenebre.yamus.api.response.Station
 import kg.delletenebre.yamus.common.MediaSessionConnection.MediaBrowserConnectionCallback
 import kg.delletenebre.yamus.media.NETWORK_FAILURE
 
@@ -60,8 +59,6 @@ class MediaSessionConnection(context: Context, serviceComponent: ComponentName) 
         .apply { postValue(EMPTY_PLAYBACK_STATE) }
     val nowPlaying = MutableLiveData<MediaMetadataCompat>()
         .apply { postValue(NOTHING_PLAYING) }
-    val nowPlayingStation = MutableLiveData<Station?>()
-            .apply { postValue(null) }
 
     val transportControls: MediaControllerCompat.TransportControls
         get() = mediaController.transportControls

@@ -18,6 +18,7 @@ package kg.delletenebre.yamus.media.extensions
 
 import android.os.SystemClock
 import android.support.v4.media.session.PlaybackStateCompat
+import kg.delletenebre.yamus.media.library.CurrentPlaylist
 
 /**
  * Useful extension methods for [PlaybackStateCompat].
@@ -46,7 +47,8 @@ inline val PlaybackStateCompat.isSkipToNextEnabled
     get() = actions and PlaybackStateCompat.ACTION_SKIP_TO_NEXT != 0L
 
 inline val PlaybackStateCompat.isSkipToPreviousEnabled
-    get() = actions and PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS != 0L
+    get() = CurrentPlaylist.type != CurrentPlaylist.TYPE_STATION
+            && (actions and PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS != 0L)
 
 inline val PlaybackStateCompat.stateName
     get() = when (state) {
