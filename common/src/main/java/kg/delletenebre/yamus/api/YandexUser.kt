@@ -18,6 +18,7 @@ object YandexUser {
     var token: String
     var account: AccountStatus
     var likedTracksIds: List<String> = listOf()
+    var dislikedTracksIds: List<String> = listOf()
 
     init {
         uid = YandexApi.prefs.getInt(YandexApi.PREFERENCE_KEY_USER_UID, 0)
@@ -27,14 +28,23 @@ object YandexUser {
         account = Json.nonstrict.parse(AccountStatus.serializer(), accountJson)
     }
 
-    suspend fun init() {
-        updateLikedTracks()
+    suspend fun updateUserTracks(type: String = "") {
+        if (isAuth()) {
+            when (type) {
+                YandexMusic.USER_TRACKS_TYPE_LIKE -> {
+                    likedTracksIds = YandexMusic.getUserTracksIds(YandexMusic.USER_TRACKS_TYPE_LIKE)
+                }
+                YandexMusic.USER_TRACKS_TYPE_DISLIKE -> {
+                    dislikedTracksIds = YandexMusic.getUserTracksIds(YandexMusic.USER_TRACKS_TYPE_DISLIKE)
+                }
+                else -> {
+                    Log.d("ahoha", "updateUserTracks else")
+                    likedTracksIds = YandexMusic.getUserTracksIds(YandexMusic.USER_TRACKS_TYPE_LIKE)
+                    dislikedTracksIds = YandexMusic.getUserTracksIds(YandexMusic.USER_TRACKS_TYPE_DISLIKE)
+                }
+            }
+        }
     }
-
-    suspend fun updateLikedTracks() {
-        likedTracksIds = YandexMusic.getLikedTracksIds()
-    }
-
 
     fun isAuth(): Boolean {
         return token.isNotBlank()

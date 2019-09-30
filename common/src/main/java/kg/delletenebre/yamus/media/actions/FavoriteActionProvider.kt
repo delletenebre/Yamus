@@ -40,26 +40,27 @@ class FavoriteActionProvider(val context: Context): MediaSessionConnector.Custom
         return null
     }
 
-    override fun onCustomAction(player: Player, controlDispatcher: ControlDispatcher, action: String, extras: Bundle) {
+    override fun onCustomAction(player: Player, controlDispatcher: ControlDispatcher,
+                                action: String, extras: Bundle) {
         if (CurrentPlaylist.tracks.isNotEmpty()) {
 //            Log.d("ahoha", "trackId: ${(player.currentTag as MediaDescriptionCompat).mediaId}")
             val trackId = CurrentPlaylist.tracks[player.currentWindowIndex].getTrackId()
             when (action) {
                 ACTION_FAVORITE_REMOVE -> {
                     GlobalScope.launch {
-                        YandexMusic.removeLiked(trackId)
-                        YandexUser.updateLikedTracks()
+                        YandexMusic.removeLike(trackId)
                         withContext(Dispatchers.Main) {
-                            controlDispatcher.dispatchSeekTo(player, player.currentWindowIndex, player.currentPosition)
+                            controlDispatcher.dispatchSeekTo(player, player.currentWindowIndex,
+                                    player.currentPosition)
                         }
                     }
                 }
                 ACTION_FAVORITE_ADD -> {
                     GlobalScope.launch {
-                        YandexMusic.addLiked(trackId)
-                        YandexUser.updateLikedTracks()
+                        YandexMusic.addLike(trackId)
                         withContext(Dispatchers.Main) {
-                            controlDispatcher.dispatchSeekTo(player, player.currentWindowIndex, player.currentPosition)
+                            controlDispatcher.dispatchSeekTo(player, player.currentWindowIndex,
+                                    player.currentPosition)
                         }
                     }
                 }

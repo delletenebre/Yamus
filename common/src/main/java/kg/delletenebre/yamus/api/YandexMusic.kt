@@ -1,8 +1,8 @@
 package kg.delletenebre.yamus.api
 
 import android.util.Log
-import kg.delletenebre.yamus.api.database.table.FavoriteTracksIdsEntity
 import kg.delletenebre.yamus.api.database.table.TrackEntity
+import kg.delletenebre.yamus.api.database.table.UserTracksIdsEntity
 import kg.delletenebre.yamus.api.response.*
 import kg.delletenebre.yamus.media.extensions.md5
 import kotlinx.coroutines.Dispatchers
@@ -20,20 +20,25 @@ object YandexMusic {
     const val STATION_FEEDBACK_TYPE_RADIO_STARTED = "radioStarted"
     const val STATION_FEEDBACK_TYPE_TRACK_STARTED = "trackStarted"
     const val STATION_FEEDBACK_TYPE_SKIP = "skip"
+    const val USER_TRACKS_TYPE_LIKE = "like"
+    const val USER_TRACKS_TYPE_DISLIKE = "dislike"
+    const val USER_TRACKS_ACTION_ADD = "add-multiple"
+    const val USER_TRACKS_ACTION_REMOVE = "remove"
 
     suspend fun getFavoriteTracks(): List<Track> {
         return getTracks(YandexUser.likedTracksIds)
     }
 
-    suspend fun getLikedTracksIds(): List<String> {
+    suspend fun getUserTracksIds(type: String): List<String> {
         var result = listOf<String>()
         var currentRevision = 0
-        val cachedFavoriteTracksIds = YandexApi.database.favoriteTracksIdsDao().getFirst()
-        if (cachedFavoriteTracksIds != null) {
-            currentRevision = cachedFavoriteTracksIds.revision
+        val cachedTracksIds = YandexApi.database.userTracksIds().get(type)
+        if (cachedTracksIds != null) {
+            currentRevision = cachedTracksIds.revision
+            Log.d("ahoha", "type: $type, currentRevision: $currentRevision")
         }
 
-        val url = "/users/${YandexUser.uid}/likes/tracks?if-modified-since-revision=$currentRevision"
+        val url = "/users/${YandexUser.uid}/${type}s/tracks?if-modified-since-revision=$currentRevision"
 
         withContext(Dispatchers.IO) {
             YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
@@ -42,10 +47,10 @@ object YandexMusic {
                         val responseBody = response.body!!.string()
                         try {
                             val responseJson = JSONObject(responseBody)
-
+                            Log.d("ahoha", "responseJson: $responseJson")
                             when (val resultJson = responseJson.get("result")) {
                                 is String -> {
-                                    val tracksIds = cachedFavoriteTracksIds!!.tracksIds.split(",")
+                                    val tracksIds = cachedTracksIds!!.tracksIds.split(",")
                                     result = tracksIds
                                 }
                                 is JSONObject -> {
@@ -61,9 +66,10 @@ object YandexMusic {
                                         trackId
                                     }
 
-                                    YandexApi.database.favoriteTracksIdsDao()
+                                    YandexApi.database.userTracksIds()
                                             .insert(
-                                                    FavoriteTracksIdsEntity(
+                                                    UserTracksIdsEntity(
+                                                            type,
                                                             library.revision,
                                                             result.joinToString(","),
                                                             library.tracks.size
@@ -71,8 +77,8 @@ object YandexMusic {
                                             )
                                 }
                             }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                        } catch (t: Throwable) {
+                            t.printStackTrace()
                             Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
                         }
                     }
@@ -416,8 +422,8 @@ object YandexMusic {
         return result
     }
 
-    suspend fun addLiked(trackId: String) {
-        val url = "/users/${YandexUser.uid}/likes/tracks/add-multiple"
+    suspend fun updateUserTrack(action: String, type: String, trackId: String) {
+        val url = "/users/${YandexUser.uid}/${type}s/tracks/$action"
 
         val formBody = FormBody.Builder()
                 .add("track-ids", trackId)
@@ -430,52 +436,46 @@ object YandexMusic {
                 }
             }
         }
+
+        YandexUser.updateUserTracks(type)
     }
 
-    suspend fun removeLiked(trackId: String) {
-        val url = "/users/${YandexUser.uid}/likes/tracks/remove"
+    suspend fun addLike(trackId: String) {
+        updateUserTrack(
+                USER_TRACKS_ACTION_ADD,
+                USER_TRACKS_TYPE_LIKE,
+                trackId
+        )
+    }
 
-        val formBody = FormBody.Builder()
-                .add("track-ids", trackId)
-                .build()
+    suspend fun removeLike(trackId: String) {
+        updateUserTrack(
+                USER_TRACKS_ACTION_REMOVE,
+                USER_TRACKS_TYPE_LIKE,
+                trackId
+        )
+    }
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url, formBody)).execute().use { response ->
-                if (!response.isSuccessful) {
-                    Log.e("ahoha", "Could not get feedback response: ${response.message}")
-                }
-            }
-        }
+    suspend fun addDislike(trackId: String) {
+        updateUserTrack(
+                USER_TRACKS_ACTION_ADD,
+                USER_TRACKS_TYPE_DISLIKE,
+                trackId
+        )
+    }
+
+    suspend fun removeDislike(trackId: String) {
+        updateUserTrack(
+                USER_TRACKS_ACTION_REMOVE,
+                USER_TRACKS_TYPE_DISLIKE,
+                trackId
+        )
     }
 
     suspend fun getTracks(tracksIds: List<String>)
             : List<Track> {
         var result = listOf<Track>()
-//
-//        val ids = mutableListOf<String>()
-//        tracksIds.forEach {
-//            ids.add(it.split(":")[0])
-//        }
-//
-//        val tracksIdsNotInDb = ids
-//        val cachedTracks = YandexApi.database.trackDao().findByIds(ids)
-//        if (cachedTracks.isNotEmpty()) {
-//            cachedTracks.forEach {
-//                // Парсим трек из БД
-//                result.add(Json.nonstrict.parse(Tracks.Track.serializer(), it.data))
-//
-//                if (tracksIdsNotInDb.contains(it.id)) {
-//                    // Необходимо найти id треков, которых нет в базе данных (нет в кэше)
-//                    tracksIdsNotInDb.remove(it.id)
-//                }
-//            }
-//        }
-//
-//        if (tracksIdsNotInDb.isNotEmpty()) {
 
-//            tracksIds.forEach { trackId ->
-//                formBody.add("track-ids", trackId)
-//            }
         val url = "/tracks"
         val formBody = FormBody.Builder()
                 .add("with-positions", "True")
@@ -488,22 +488,9 @@ object YandexMusic {
                     if (response.body != null) {
                         val responseBody = response.body!!.string()
                         try {
-                            val responseJson = JSONObject(responseBody)
+                            //val responseJson = JSONObject(responseBody)
                             val json = Json.nonstrict.parse(Tracks.serializer(), responseBody)
-                            //https://music.yandex.ru/api/v2.1/handlers/track/51144270:7114036/web-radio-user-main/download/m?hq=1&external-domain=music.yandex.ru&overembed=no&__t=1568719202530
                             result = json.result
-//                                result.addAll(0, json.result)
-//                                json.result.forEach {
-//                                    YandexApi.database.trackDao()
-//                                            .insert(
-//                                                    TrackEntity(
-//                                                            it.id,
-//                                                            Json.nonstrict.stringify(Tracks.Track.serializer(), it),
-//                                                            System.currentTimeMillis()
-//                                                    )
-//                                            )
-//                                }
-
 //                            Log.d("ahoha", "Response: $responseJson")
                         } catch (exception: Exception) {
                             exception.printStackTrace()

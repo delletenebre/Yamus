@@ -73,10 +73,6 @@ class MainActivity : AppCompatActivity() {
         if (!YandexUser.isAuth()) {
             val intent = Intent(this, LoginActivity::class.java)
             startActivityForResult(intent, 1)
-        } else {
-            GlobalScope.launch {
-                YandexUser.updateAccountStatus()
-            }
         }
     }
 
@@ -87,6 +83,12 @@ class MainActivity : AppCompatActivity() {
             if (resultCode != Activity.RESULT_OK) {
                 val intent = Intent(this, LoginActivity::class.java)
                 startActivityForResult(intent, 1)
+            } else {
+                GlobalScope.launch {
+                    YandexUser.updateUserTracks()
+                }
+                navigationController.navigate(R.id.fragmentProfile)
+                navigationController.popBackStack()
             }
         }
     }

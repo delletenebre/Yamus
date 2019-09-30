@@ -4,18 +4,18 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import kg.delletenebre.yamus.api.database.dao.FavoriteTracksIdsDao
 import kg.delletenebre.yamus.api.database.dao.TrackDao
-import kg.delletenebre.yamus.api.database.table.FavoriteTracksIdsEntity
+import kg.delletenebre.yamus.api.database.dao.UserTracksIdsDao
 import kg.delletenebre.yamus.api.database.table.TrackEntity
+import kg.delletenebre.yamus.api.database.table.UserTracksIdsEntity
 
 @Database(
-    entities = [TrackEntity::class, FavoriteTracksIdsEntity::class],
-    version = 3
+    entities = [TrackEntity::class, UserTracksIdsEntity::class],
+    version = 4
 )
 abstract class YandexDatabase : RoomDatabase(){
     abstract fun trackDao(): TrackDao
-    abstract fun favoriteTracksIdsDao(): FavoriteTracksIdsDao
+    abstract fun userTracksIds(): UserTracksIdsDao
 
     companion object {
         @Volatile private var instance: YandexDatabase? = null

@@ -4,9 +4,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "favorite_tracks_ids")
-data class FavoriteTracksIdsEntity (
+@Entity(tableName = "user_tracks_ids")
+data class UserTracksIdsEntity (
         @PrimaryKey(autoGenerate = false)
+        var type: String = "",
+
         var revision: Int = 0,
 
         @ColumnInfo(name = "tracks_ids")

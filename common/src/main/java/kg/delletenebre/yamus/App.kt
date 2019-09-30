@@ -15,7 +15,7 @@ internal class App : Application() {
         YandexApi.init(this)
         AndroidAutoBrowser.init(this)
         GlobalScope.launch {
-            YandexUser.init()
+            YandexUser.updateUserTracks()
         }
 //        Log.d("ahoha", "token: ${YandexUser.token}")
     }

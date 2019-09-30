@@ -6,10 +6,16 @@ import android.support.v4.media.session.PlaybackStateCompat
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.media.R
+import kg.delletenebre.yamus.media.library.CurrentPlaylist
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class DislikeActionProvider(val context: Context): MediaSessionConnector.CustomActionProvider {
-    override fun getCustomAction(player: Player?): PlaybackStateCompat.CustomAction {
+    override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction {
         return PlaybackStateCompat.CustomAction
                 .Builder(
                         "ACTION_DISLIKE",
@@ -19,13 +25,17 @@ class DislikeActionProvider(val context: Context): MediaSessionConnector.CustomA
                 .build()
     }
 
-    override fun onCustomAction(player: Player?, controlDispatcher: ControlDispatcher?, action: String?, extras: Bundle?) {
-//        GlobalScope.launch {
-//            YandexMusic.addLiked(trackId)
-//            YandexUser.updateLikedTracks()
-//            withContext(Dispatchers.Main) {
-//                controlDispatcher.dispatchSeekTo(player, player.currentWindowIndex, player.currentPosition)
-//            }
-//        }
+    override fun onCustomAction(player: Player, controlDispatcher: ControlDispatcher, action: String, extras: Bundle) {
+        val trackId = CurrentPlaylist.tracks[player.currentWindowIndex].getTrackId()
+        GlobalScope.launch {
+            YandexMusic.addDislike(trackId)
+            withContext(Dispatchers.Main) {
+                if (player.hasNext()) {
+                    controlDispatcher.dispatchSeekTo(player, player.currentWindowIndex + 1, 0)
+                } else {
+                    player.stop()
+                }
+            }
+        }
     }
 }
