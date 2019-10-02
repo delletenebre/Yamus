@@ -74,7 +74,7 @@ class NowPlayingFragmentViewModel(
         postValue(0L)
     }
     val mediaButtonRes = MutableLiveData<Int>().apply {
-        postValue(kg.delletenebre.yamus.R.drawable.ic_album_black_24dp)
+        postValue(kg.delletenebre.yamus.R.drawable.ic_album)
     }
 
     private var updatePosition = true
@@ -172,8 +172,8 @@ class NowPlayingFragmentViewModel(
         // Update the media button resource ID
         mediaButtonRes.postValue(
             when (playbackState.isPlaying) {
-                true -> R.drawable.ic_pause_black_24dp
-                else -> R.drawable.ic_play_arrow_black_24dp
+                true -> R.drawable.ic_pause
+                else -> R.drawable.ic_play
             }
         )
     }

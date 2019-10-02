@@ -69,6 +69,7 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
                 YandexMusic.getStationFeedback(stationId)
 
                 withContext(Dispatchers.Main) {
+                    exoPlayer.shuffleModeEnabled = false
                     exoPlayer.prepare(CurrentPlaylist.mediaSource)
                     exoPlayer.playWhenReady = true
                 }

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="tracks_count">
+        <item quantity="one">%d трек</item>
+        <item quantity="few">%d трека</item>
+        <item quantity="many">%d треков</item>
+    </plurals>
+
+    <string name="app_name">Ямуз</string>
+    <string name="skip_back_10s">Skip back 10s</string>
+    <string name="skip_forward_10s">Skip forward 10s</string>
+
+    <string name="play">Воспроизвести</string>
+    <string name="pause">Пауза</string>
+    <string name="menu_music_queue">Queue</string>
+    <string name="album_art_alt">Album art</string>
+
+    <!-- Main Activity -->
+    <!-- bottom menu -->
+    <string name="duration_unknown">--:--</string>
+    <string name="duration_format">%d:%02d</string>
+    <string name="title_home">Главная</string>
+
+    <!-- Login Activity -->
+    <string name="title_my_music">Моя музыка</string>
+    <string name="title_player">Player</string>
+    <string name="login_activity_header">Яндекс</string>
+    <string name="login_activity_subheader">Войдите, чтобы продолжить</string>
+    <string name="title_activity_login">Вход</string>
+    <string name="prompt_email">Имя пользователя или Email</string>
+    <string name="prompt_password">Пароль</string>
+    <string name="action_sign_in">Войти</string>
+    <string name="action_sign_in_short">Войти</string>
+
+    <!-- Home Fragment -->
+    <!-- Playlists Fragment -->
+    <string name="personal_playlist_subtitle">Обновлён %1$s</string>
+
+
+    <!-- Stations -->
+    <string name="mixes">Подборки</string>
+    <string name="card_title_liked_tracks">Мне нравится</string>
+    <string name="title_stations">Радио</string>
+    <string name="stations_tab_recommended">Рекомендуемые</string>
+    <string name="stations_tab_activity">Занятия</string>
+    <string name="stations_tab_mood">Настроения</string>
+    <string name="stations_tab_genre">Жанры</string>
+    <string name="stations_tab_era">Эпохи</string>
+    <string name="stations_tab_other">Разное</string>
+
+
+    <!-- My Music Fragment -->
+    <string name="menu_profile_logout">Выход</string>
+    <string name="my_music_list_playlists">Плейлисты</string>
+    <string name="my_music_list_albums">Альбомы</string>
+    <string name="my_music_list_artists">Исполнители</string>
+    <string name="my_music_list_dislikes">Непонравившиеся треки</string>
+
+
+    <!-- Search Fragment -->
+    <string name="title_search">Поиск</string>
+
+
+    <!-- Profile Fragment -->
+    <string name="title_profile">Профиль</string>
+
+
+    <string name="title_playlists">Плейлисты</string>
+
+
+    <!-- Playlist Fragment -->
+    <string name="stations_catalog">Каталог станций</string>
+    <string name="title_playlist">Плейлист</string>
+    <string name="content_description_explicit">Ненормативная лексика</string>
+
+    <!-- Menu -->
+    <!-- Menu Main -->
+    <string name="menu_main_profile">Профиль</string>
+
+</resources>

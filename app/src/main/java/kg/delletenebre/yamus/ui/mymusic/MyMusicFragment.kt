@@ -1,6 +1,7 @@
 package kg.delletenebre.yamus.ui.mymusic
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,8 +12,11 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.api.UserModel
+import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.databinding.FragmentMyMusicBinding
 import kg.delletenebre.yamus.ui.playlist.PlaylistFragment
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class MyMusicFragment : Fragment() {
     private lateinit var binding: FragmentMyMusicBinding
@@ -24,6 +28,7 @@ class MyMusicFragment : Fragment() {
     ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_my_music,
                 container,false)
+        binding.fragment = this
         binding.userModel = UserModel
         binding.likedTracksButton.setOnClickListener {
             val bundle = bundleOf(
@@ -49,6 +54,27 @@ class MyMusicFragment : Fragment() {
                 }
             }
             super.onOptionsItemSelected(it)
+        }
+    }
+
+    fun onClickListItem(type: String) {
+        when(type) {
+            "albums" -> {
+                GlobalScope.launch {
+                    val albums = YandexMusic.getLikedAlbums()
+                    albums.forEach {
+                        Log.d("ahoha", "album: ${it.title}")
+                    }
+                }
+            }
+            "artists" -> {
+                GlobalScope.launch {
+                    val artists = YandexMusic.getLikedArtists()
+                    artists.forEach {
+                        Log.d("ahoha", "artist: ${it.name}")
+                    }
+                }
+            }
         }
     }
 }

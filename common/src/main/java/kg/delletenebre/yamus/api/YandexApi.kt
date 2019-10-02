@@ -1,9 +1,5 @@
 package kg.delletenebre.yamus.api
 
-import android.content.Context
-import android.content.SharedPreferences
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
 import kg.delletenebre.yamus.api.database.YandexDatabase
 import okhttp3.FormBody
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -20,24 +16,8 @@ object YandexApi {
     const val API_URL_OAUTH = "https://oauth.yandex.ru"
     const val API_URL_LOGIN = "https://login.yandex.ru"
 
-    lateinit var prefs: SharedPreferences
-    lateinit var database: YandexDatabase
-
+    val database: YandexDatabase = YandexDatabase.invoke()
     val httpClient = OkHttpClient()
-    var jsonContentType = "application/json; charset=utf-8".toMediaTypeOrNull()
-
-
-    fun init(context: Context) {
-        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
-        prefs = EncryptedSharedPreferences.create(
-                "yandex_user_prefs",
-                masterKeyAlias,
-                context,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-        database = YandexDatabase.invoke()
-    }
 
     fun getImage(url: String, size: Int): String {
         return "https://${url.replace("/%%", "/${size}x$size")}"
@@ -54,7 +34,8 @@ object YandexApi {
     }
 
     fun getRequest(url: String, jsonData: JSONObject): Request {
-        val formBody = jsonData.toString().toRequestBody(jsonContentType)
+        val formBody = jsonData.toString()
+                .toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
         return getRequest(
                 Request.Builder()
                         .url("$API_URL_MUSIC$url")

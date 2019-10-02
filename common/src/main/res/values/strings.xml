@@ -38,6 +38,8 @@
     <string name="custom_action_dislike">Do not recommend this track</string>
     <string name="custom_action_favorite_add">Add to favorites</string>
     <string name="custom_action_favorite_remove">Remove from favorites</string>
+    <string name="custom_action_shuffle_mode_enabled">Shuffle mode enabled</string>
+    <string name="custom_action_shuffle_mode_disabled">Shuffle mode disabled</string>
 
     <!-- HTTP MESSAGES -->
     <string name="unknown_response_format">Unknown response format</string>

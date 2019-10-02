@@ -43,7 +43,7 @@
         android:layout_gravity="center"
         android:tint="@color/colorAccent"
         android:visibility="gone"
-        app:srcCompat="@drawable/ic_signal_wifi_off_black_24dp" />
+        app:srcCompat="@drawable/ic_signal_wifi_off" />
 
 </FrameLayout>
 

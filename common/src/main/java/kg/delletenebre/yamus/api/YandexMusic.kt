@@ -562,6 +562,59 @@ object YandexMusic {
         return result
     }
 
+    suspend fun getLikedAlbums(): List<Album> {
+        val result = mutableListOf<Album>()
+        val url = "/users/${UserModel.getUid()}/likes/albums?rich=true"
+
+        withContext(Dispatchers.IO) {
+            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
+                if (response.isSuccessful) {
+                    if (response.body != null) {
+                        val responseBody = response.body!!.string()
+                        try {
+                            val albumsJson = JSONObject(responseBody).getJSONArray("result")
+                            result.clear()
+                            if (albumsJson.length() > 0) {
+                                for (i in 0 until albumsJson.length()) {
+                                    val album = albumsJson.getJSONObject(i).getJSONObject("album")
+                                    result.add(Json.nonstrict.parse(Album.serializer(), album.toString()))
+                                }
+                            }
+                        } catch (t: Throwable) {
+                            t.printStackTrace()
+                        }
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
+    suspend fun getLikedArtists(): List<Artist> {
+        var result = listOf<Artist>()
+        val url = "/users/${UserModel.getUid()}/likes/artists?with-timestamps=false"
+
+        withContext(Dispatchers.IO) {
+            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
+                if (response.isSuccessful) {
+                    if (response.body != null) {
+                        val responseBody = response.body!!.string()
+                        try {
+                            val artistsJson = JSONObject(responseBody).getJSONArray("result")
+                            result = Json.nonstrict.parse(ArrayListSerializer(Artist.serializer()),
+                                    artistsJson.toString())
+                        } catch (t: Throwable) {
+                            t.printStackTrace()
+                        }
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
     fun getDirectUrl(trackId: String): String {
         val downloadVariants = getDownloadVariants(trackId)
 

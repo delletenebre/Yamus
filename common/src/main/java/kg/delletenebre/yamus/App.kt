@@ -2,7 +2,6 @@ package kg.delletenebre.yamus
 
 import android.app.Application
 import kg.delletenebre.yamus.api.UserModel
-import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
 
 internal class App : Application() {
@@ -10,9 +9,8 @@ internal class App : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        YandexApi.init(this)
-        UserModel.init(this)
-        AndroidAutoBrowser.init(this)
+        UserModel.init(instance.applicationContext)
+        AndroidAutoBrowser.init(instance.applicationContext)
 //        GlobalScope.launch {
 //            YandexUser.updateUserTracks()
 //        }

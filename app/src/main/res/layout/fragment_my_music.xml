@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
     <data>
+        <variable name="viewModel" type="kg.delletenebre.yamus.ui.mymusic.MyMusicViewModel"/>
         <variable name="userModel" type="kg.delletenebre.yamus.api.UserModel"/>
+        <variable name="fragment" type="kg.delletenebre.yamus.ui.mymusic.MyMusicFragment"/>
     </data>
 
     <LinearLayout
@@ -53,12 +55,45 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="16sp"
-                        android:text="@{@plurals/liked_tracks_card_subtitle(userModel.likedTracksIds.size, userModel.likedTracksIds.size)}"/>
+                        android:text="@{@plurals/tracks_count(userModel.likedTracksIds.size, userModel.likedTracksIds.size)}"/>
 
                 </LinearLayout>
 
             </LinearLayout>
 
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include layout="@layout/my_mysic_list_item"
+                    app:title="@{@string/my_music_list_playlists}"
+                    app:icon="@{@drawable/ic_playlist}"
+                    android:onClick='@{() -> fragment.onClickListItem("playlists")}' />
+
+                <include layout="@layout/my_mysic_list_item"
+                    app:title="@{@string/my_music_list_albums}"
+                    app:icon="@{@drawable/ic_album}"
+                    android:onClick='@{() -> fragment.onClickListItem("albums")}' />
+
+                <include layout="@layout/my_mysic_list_item"
+                    app:title="@{@string/my_music_list_artists}"
+                    app:icon="@{@drawable/ic_artist}"
+                    android:onClick='@{() -> fragment.onClickListItem("artists")}' />
+
+                <include layout="@layout/my_mysic_list_item"
+                    app:title="@{@string/my_music_list_dislikes}"
+                    app:icon="@{@drawable/ic_music_note_off}"
+                    android:onClick='@{() -> fragment.onClickListItem("dislikes")}' />
+
+            </LinearLayout>
         </androidx.cardview.widget.CardView>
 
     </LinearLayout>

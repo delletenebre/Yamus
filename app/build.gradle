@@ -7,8 +7,8 @@ android {
     compileSdkVersion rootProject.compileSdkVersion
     defaultConfig {
         applicationId "kg.delletenebre.yamus"
-        versionCode 7
-        versionName "19.10.01"
+        versionCode 9
+        versionName "19.10.03"
 
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion

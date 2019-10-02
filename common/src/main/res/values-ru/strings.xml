@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Notificaiton -->
+    <!-- Notificaiton Channel -->
+    <string name="notification_channel">Сейчас играет</string>
+    <string name="notification_channel_description">Показать!!!</string>
+
+    <!-- Notification actions -->
+    <string name="notification_skip_to_previous">Предыдущий</string>
+    <string name="notification_skip_to_next">Следующий</string>
+    <string name="notification_play">Воспроизведение</string>
+    <string name="notification_pause">Пауза</string>
+
+    <!-- Error messages -->
+    <string name="error_media_not_found">Could not locate requested media.</string>
+
+    <!-- Allowed caller template -->
+    <string name="allowed_caller_log">
+        Caller has a valid certificate, but its package doesn\'t match any expected package for the
+        given certificate. To allow this caller, add the following to the allowed callers list:\n
+        <![CDATA[
+        <signature name=\"%1$s\" package=\"%2$s\">\n\t<key>%3$s</key>\n</signature>\n
+        ]]>
+    </string>
+
+    <!-- Browse Tree -->
+    <string name="browse_title_favorite_tracks">Моя музыка</string>
+    <string name="browse_title_recommended">Рекомендуемое</string>
+    <string name="browse_title_stations">Радио</string>
+
+    <string name="stations_activity">Занятия</string>
+    <string name="stations_mood">Настроения</string>
+    <string name="stations_genre">Жанры</string>
+    <string name="stations_epoch">Эпохи</string>
+    <string name="stations_other">Разное</string>
+
+    <!-- CUSTOM ACTIONS -->
+    <string name="custom_action_dislike">Не рекомендовать этот трек</string>
+    <string name="custom_action_favorite_add">Добавить в избранное</string>
+    <string name="custom_action_favorite_remove">Удалить из избранного</string>
+    <string name="custom_action_shuffle_mode_enabled">Случайный поряд включен</string>
+    <string name="custom_action_shuffle_mode_disabled">Случайный поряд выключен</string>
+
+    <!-- HTTP MESSAGES -->
+    <string name="unknown_response_format">Неизвестный формат ответа</string>
+    <string name="user_not_found">Пользователь не распознан</string>
+</resources>

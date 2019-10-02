@@ -91,7 +91,7 @@ class NowPlayingFragment : Fragment() {
     private fun updateUI(view: View, metadata: NowPlayingMetadata) {
         val albumArtView = view.findViewById<ImageView>(R.id.albumArt)
         if (metadata.albumArtUri == Uri.EMPTY) {
-            albumArtView.setImageResource(R.drawable.ic_album_black_24dp)
+            albumArtView.setImageResource(R.drawable.ic_album)
         } else {
             Glide.with(view)
                     .load(metadata.albumArtUri)

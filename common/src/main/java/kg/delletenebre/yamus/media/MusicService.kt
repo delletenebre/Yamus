@@ -42,6 +42,8 @@ import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.media.actions.DislikeActionProvider
 import kg.delletenebre.yamus.media.actions.FavoriteActionProvider
+import kg.delletenebre.yamus.media.actions.RepeatModeActionProvider
+import kg.delletenebre.yamus.media.actions.ShuffleModeActionProvider
 import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kotlinx.coroutines.*
@@ -147,7 +149,6 @@ open class MusicService : MediaBrowserServiceCompat() {
                 setSessionActivity(sessionActivityPendingIntent)
                 isActive = true
             }
-
         sessionToken = mediaSession.sessionToken
 
         // Because ExoPlayer will manage the MediaSession, add the service as a callback for
@@ -168,6 +169,8 @@ open class MusicService : MediaBrowserServiceCompat() {
             connector.setPlaybackPreparer(YamusPlaybackPreparer(exoPlayer))
             connector.setQueueNavigator(YamusQueueNavigator(mediaSession))
             connector.setCustomActionProviders(
+                    RepeatModeActionProvider(this),
+                    ShuffleModeActionProvider(this),
                     FavoriteActionProvider(this),
                     DislikeActionProvider(this)
             )
