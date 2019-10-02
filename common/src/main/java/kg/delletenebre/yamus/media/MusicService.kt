@@ -145,7 +145,6 @@ open class MusicService : MediaBrowserServiceCompat() {
         mediaSession = MediaSessionCompat(this, "MusicService")
             .apply {
                 setSessionActivity(sessionActivityPendingIntent)
-                setCallback(YamusMediaSessionCallback())
                 isActive = true
             }
 

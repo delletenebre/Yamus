@@ -26,7 +26,7 @@ object YandexMusic {
     const val USER_TRACKS_ACTION_REMOVE = "remove"
 
     suspend fun getFavoriteTracks(): List<Track> {
-        return getTracks(YandexUser.likedTracksIds)
+        return getTracks(UserModel.getLikedIds())
     }
 
     suspend fun getUserTracksIds(type: String): List<String> {
@@ -38,7 +38,7 @@ object YandexMusic {
             Log.d("ahoha", "type: $type, currentRevision: $currentRevision")
         }
 
-        val url = "/users/${YandexUser.uid}/${type}s/tracks?if-modified-since-revision=$currentRevision"
+        val url = "/users/${UserModel.getUid()}/${type}s/tracks?if-modified-since-revision=$currentRevision"
 
         withContext(Dispatchers.IO) {
             YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
@@ -423,7 +423,7 @@ object YandexMusic {
     }
 
     suspend fun updateUserTrack(action: String, type: String, trackId: String) {
-        val url = "/users/${YandexUser.uid}/${type}s/tracks/$action"
+        val url = "/users/${UserModel.getUid()}/${type}s/tracks/$action"
 
         val formBody = FormBody.Builder()
                 .add("track-ids", trackId)
@@ -437,7 +437,7 @@ object YandexMusic {
             }
         }
 
-        YandexUser.updateUserTracks(type)
+        UserModel.updateUserTracks(type)
     }
 
     suspend fun addLike(trackId: String) {
@@ -522,7 +522,7 @@ object YandexMusic {
                     .add("track-ids", trackId)
             val request = Request.Builder()
                     .url("${YandexApi.API_URL_MUSIC}/tracks")
-                    .addHeader("Authorization", "OAuth ${YandexUser.token}")
+                    .addHeader("Authorization", "OAuth ${UserModel.getToken()}")
                     .post(formBody.build())
                     .build()
 
@@ -577,7 +577,7 @@ object YandexMusic {
 
             val request = Request.Builder()
                     .url("${downloadVariant.downloadInfoUrl}&format=json")
-                    .addHeader("Authorization", "OAuth ${YandexUser.token}")
+                    .addHeader("Authorization", "OAuth ${UserModel.getToken()}")
                     .build()
 
             YandexApi.httpClient.newCall(request).execute().use { response ->

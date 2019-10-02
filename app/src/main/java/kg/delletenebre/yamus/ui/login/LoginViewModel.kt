@@ -3,20 +3,22 @@ package kg.delletenebre.yamus.ui.login
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kg.delletenebre.yamus.api.YandexUser
+import kg.delletenebre.yamus.api.UserModel
 import kotlinx.coroutines.launch
 
 
 class LoginViewModel : ViewModel() {
 
-    val loadingState = MutableLiveData<Boolean>()
-    val loginResult = MutableLiveData<YandexUser.LoginResult>()
+    val isLoading = MutableLiveData<Boolean>().apply {
+        value = false
+    }
+    val loginResult = MutableLiveData<UserModel.HttpResult>()
 
     fun login(username: String, password: String) {
         viewModelScope.launch {
-            loadingState.postValue(true)
-            loginResult.postValue(YandexUser.login(username, password))
-            loadingState.postValue(false)
+            isLoading.value = true
+            loginResult.postValue(UserModel.login(username, password))
+            isLoading.value = false
         }
     }
 }

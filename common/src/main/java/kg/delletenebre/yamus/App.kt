@@ -1,11 +1,9 @@
 package kg.delletenebre.yamus
 
 import android.app.Application
+import kg.delletenebre.yamus.api.UserModel
 import kg.delletenebre.yamus.api.YandexApi
-import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 internal class App : Application() {
 
@@ -13,10 +11,11 @@ internal class App : Application() {
         super.onCreate()
         instance = this
         YandexApi.init(this)
+        UserModel.init(this)
         AndroidAutoBrowser.init(this)
-        GlobalScope.launch {
-            YandexUser.updateUserTracks()
-        }
+//        GlobalScope.launch {
+//            YandexUser.updateUserTracks()
+//        }
 //        Log.d("ahoha", "token: ${YandexUser.token}")
     }
 

@@ -3,7 +3,7 @@ package kg.delletenebre.yamus.api.response
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AccountStatus(
+data class User(
         val account: Account = Account(),
         val permissions: Permissions = Permissions(),
         val premiumRegion: Int = 0,

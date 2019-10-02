@@ -20,10 +20,6 @@ object YandexApi {
     const val API_URL_OAUTH = "https://oauth.yandex.ru"
     const val API_URL_LOGIN = "https://login.yandex.ru"
 
-    const val PREFERENCE_KEY_USER_UID = "user_uid"
-    const val PREFERENCE_KEY_USER_TOKEN = "user_token"
-    const val PREFERENCE_KEY_USER_ACCOUNT = "user_account"
-
     lateinit var prefs: SharedPreferences
     lateinit var database: YandexDatabase
 
@@ -40,7 +36,7 @@ object YandexApi {
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
-        database = YandexDatabase(context)
+        database = YandexDatabase.invoke()
     }
 
     fun getImage(url: String, size: Int): String {
@@ -48,27 +44,29 @@ object YandexApi {
     }
 
     fun getRequest(url: String, formBody: FormBody? = null): Request {
-        val request = Request.Builder()
+        val requestBuilder = Request.Builder()
                 .url("$API_URL_MUSIC$url")
-                .addHeader("Authorization", "OAuth ${YandexUser.token}")
-                .addHeader("X-Yandex-Music-Client", "WindowsPhone/3.20")
-                .addHeader("User-Agent", "Windows 10")
         if (formBody != null) {
-            request.post(formBody)
+            requestBuilder.post(formBody)
         }
 
-
-        return request.build()
+        return getRequest(requestBuilder)
     }
 
     fun getRequest(url: String, jsonData: JSONObject): Request {
         val formBody = jsonData.toString().toRequestBody(jsonContentType)
-        val request = Request.Builder()
-                .url("$API_URL_MUSIC$url")
-                .post(formBody)
-                .addHeader("Authorization", "OAuth ${YandexUser.token}")
+        return getRequest(
+                Request.Builder()
+                        .url("$API_URL_MUSIC$url")
+                        .post(formBody)
+        )
+    }
+
+    private fun getRequest(requestBuilder: Request.Builder): Request {
+        return requestBuilder
+                .addHeader("Authorization", "OAuth ${UserModel.getToken()}")
                 .addHeader("X-Yandex-Music-Client", "WindowsPhone/3.20")
                 .addHeader("User-Agent", "Windows 10")
-        return request.build()
+                .build()
     }
 }

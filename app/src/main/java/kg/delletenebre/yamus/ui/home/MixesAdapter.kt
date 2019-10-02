@@ -8,7 +8,7 @@ import kg.delletenebre.yamus.databinding.ListItemMixBinding
 
 
 class MixesAdapter(
-        var items: MutableList<Mix>,
+        var items: List<Mix>,
         val itemListener: ItemListener?
     ): RecyclerView.Adapter<MixesAdapter.ViewHolder>() {
 

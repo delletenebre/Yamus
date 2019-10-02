@@ -39,4 +39,8 @@
     <string name="custom_action_favorite_add">Add to favorites</string>
     <string name="custom_action_favorite_remove">Remove from favorites</string>
 
+    <!-- HTTP MESSAGES -->
+    <string name="unknown_response_format">Unknown response format</string>
+    <string name="user_not_found">User not found</string>
+
 </resources>

@@ -26,7 +26,6 @@ class SearchFragment : Fragment() {
     }
 
     private fun setupToolbar(toolbar: Toolbar) {
-        toolbar.inflateMenu(R.menu.menu_main)
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_profile -> {

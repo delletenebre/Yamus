@@ -1,22 +1,20 @@
 package kg.delletenebre.yamus
 
-import android.app.Activity
 import android.content.Intent
 import android.media.AudioManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kg.delletenebre.yamus.api.YandexUser
+import kg.delletenebre.yamus.api.UserModel
 import kg.delletenebre.yamus.ui.login.LoginActivity
 import kg.delletenebre.yamus.utils.InjectorUtils
 import kg.delletenebre.yamus.viewmodels.MainActivityViewModel
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
@@ -42,6 +40,15 @@ class MainActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this, InjectorUtils.provideMainActivityViewModel(this))
                 .get(MainActivityViewModel::class.java)
+
+        UserModel.token.observe(this, Observer {
+            if (it.isEmpty()) {
+                startActivity(Intent(this, LoginActivity::class.java))
+                finish()
+            }
+        })
+
+
 //
 //        viewModel.navigateToFragment.observe(this, Observer {
 //            it?.getContentIfNotHandled()?.let { fragmentRequest ->
@@ -70,28 +77,28 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        if (!YandexUser.isAuth()) {
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivityForResult(intent, 1)
+        if (!UserModel.isAuth()) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == 1) {
-            if (resultCode != Activity.RESULT_OK) {
-                val intent = Intent(this, LoginActivity::class.java)
-                startActivityForResult(intent, 1)
-            } else {
-                GlobalScope.launch {
-                    YandexUser.updateUserTracks()
-                }
-                navigationController.navigate(R.id.fragmentProfile)
-                navigationController.popBackStack()
-            }
-        }
-    }
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//
+//        if (requestCode == 1) {
+//            if (resultCode != Activity.RESULT_OK) {
+//                val intent = Intent(this, LoginActivity::class.java)
+//                startActivityForResult(intent, 1)
+//            } else {
+//                GlobalScope.launch {
+//                    YandexUser.updateUserTracks()
+//                }
+//                navigationController.navigate(R.id.fragmentProfile)
+//                navigationController.popBackStack()
+//            }
+//        }
+//    }
 
 //    private fun navigateToMediaItem(mediaId: String) {
 //        var fragment: MediaItemFragment? = getBrowseFragment(mediaId)

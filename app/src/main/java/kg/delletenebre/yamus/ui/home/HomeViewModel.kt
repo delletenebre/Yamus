@@ -18,5 +18,4 @@ class HomeViewModel : ViewModel() {
             mixes.postValue(YandexMusic.getMixes())
         }
     }
-
 }

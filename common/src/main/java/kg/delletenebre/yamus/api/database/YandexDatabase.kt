@@ -1,9 +1,9 @@
 package kg.delletenebre.yamus.api.database
 
-import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.database.dao.TrackDao
 import kg.delletenebre.yamus.api.database.dao.UserTracksIdsDao
 import kg.delletenebre.yamus.api.database.table.TrackEntity
@@ -21,13 +21,13 @@ abstract class YandexDatabase : RoomDatabase(){
         @Volatile private var instance: YandexDatabase? = null
         private val LOCK = Any()
 
-        operator fun invoke(context: Context)= instance ?: synchronized(LOCK) {
-            instance ?: buildDatabase(context).also { instance = it}
+        operator fun invoke()= instance ?: synchronized(LOCK) {
+            instance ?: buildDatabase().also { instance = it}
         }
 
-        private fun buildDatabase(context: Context) =
+        private fun buildDatabase() =
                 Room.databaseBuilder(
-                    context,
+                    App.instance.applicationContext,
                     YandexDatabase::class.java,
                     "yamus-yandex-music.db"
                 )

@@ -16,6 +16,7 @@
 
         <activity
             android:name=".ui.login.LoginActivity"
+            android:launchMode="singleTop"
             android:label="@string/title_activity_login" />
         <activity
             android:name=".MainActivity"

@@ -6,23 +6,27 @@
         <item quantity="other">%d tracks</item>
     </plurals>
 
+    <plurals name="liked_tracks_card_subtitle">
+        <item quantity="one">%d track</item>
+        <item quantity="other">%d tracks</item>
+    </plurals>
     <string name="app_name">Yamus</string>
     <string name="skip_back_10s">Skip back 10s</string>
     <string name="skip_forward_10s">Skip forward 10s</string>
-    <string name="play">Play</string>
 
+    <string name="play">Play</string>
     <string name="pause">Pause</string>
     <string name="menu_music_queue">Queue</string>
     <string name="album_art_alt">Album art</string>
-    <string name="duration_unknown">--:--</string>
 
     <!-- Main Activity -->
     <!-- bottom menu -->
+    <string name="duration_unknown">--:--</string>
     <string name="duration_format">%d:%02d</string>
     <string name="title_home">Home</string>
-    <string name="title_my_music">My Music</string>
 
     <!-- Login Activity -->
+    <string name="title_my_music">My Music</string>
     <string name="title_player">Player</string>
     <string name="login_activity_header">Yandex</string>
     <string name="login_activity_subheader">Войдите, чтобы продолжить</string>
@@ -33,17 +37,17 @@
     <string name="action_sign_in_short">Sign in</string>
     <string name="welcome">"Welcome !"</string>
     <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
 
     <!-- Home Fragment -->
+    <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
-    <string name="personal_playlist_subtitle">Updated %1$s</string>
     <!-- Playlists Fragment -->
-    <string name="mixes">Mixes</string>
+    <string name="personal_playlist_subtitle">Updated %1$s</string>
 
 
     <!-- Stations -->
-    <string name="card_title_favorite_tracks">My favorites</string>
+    <string name="mixes">Mixes</string>
+    <string name="card_title_liked_tracks">My favorites</string>
     <string name="title_stations">Stations</string>
     <string name="stations_tab_recommended">Recommended</string>
     <string name="stations_tab_activity">Activity</string>
@@ -68,17 +72,16 @@
     <string name="title_playlists">Playlists</string>
 
 
-
-
-
-
     <!-- Playlist Fragment -->
     <string name="stations_catalog">Station catalog</string>
     <string name="title_playlist">Playlist</string>
     <string name="content_description_explicit">Explicit Content</string>
 
     <!-- Menu -->
-        <!-- Menu Main -->
-        <string name="menu_main_profile">Profile</string>
+    <!-- Menu Main -->
+    <string name="menu_main_profile">Profile</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

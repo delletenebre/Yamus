@@ -6,8 +6,8 @@ import android.support.v4.media.session.PlaybackStateCompat
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import kg.delletenebre.yamus.api.UserModel
 import kg.delletenebre.yamus.api.YandexMusic
-import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.media.R
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +19,7 @@ class FavoriteActionProvider(val context: Context): MediaSessionConnector.Custom
     override fun getCustomAction(player: Player?): PlaybackStateCompat.CustomAction? {
         if (player != null && CurrentPlaylist.tracks.isNotEmpty()) {
             val track = CurrentPlaylist.tracks[player.currentWindowIndex]
-            return if (YandexUser.likedTracksIds.contains(track.getTrackId())) {
+            return if (UserModel.getLikedIds().contains(track.getTrackId())) {
                 PlaybackStateCompat.CustomAction
                         .Builder(
                                 ACTION_FAVORITE_REMOVE,

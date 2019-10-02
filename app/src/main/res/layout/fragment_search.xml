@@ -9,6 +9,7 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         app:title="@string/title_search"
+        app:menu="@menu/menu_main"
         style="@style/AppToolbar" />
 
 </LinearLayout>

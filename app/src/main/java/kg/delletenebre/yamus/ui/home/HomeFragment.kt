@@ -27,6 +27,7 @@ import java.util.*
 class HomeFragment : Fragment() {
 
     private lateinit var viewModel: HomeViewModel
+    private lateinit var personalPlaylistsContainer: LinearLayout
     private lateinit var mixesContainer: RecyclerView
     private lateinit var mixesAdapter: MixesAdapter
 
@@ -35,41 +36,48 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        viewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_home, container, false)
-        val personalPlaylistsContainer = root.findViewById<LinearLayout>(R.id.personalPlaylistsContainer)
 
         setupToolbar(root.findViewById(R.id.toolbar))
 
-        viewModel.personalPlaylists.observe(this, Observer {personalPlaylists ->
+        personalPlaylistsContainer = root.findViewById(R.id.personalPlaylistsContainer)
+        mixesContainer = root.findViewById(R.id.mixesContainer)
+
+        return root
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        val context = activity ?: return
+        viewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
+        viewModel.personalPlaylists.observe(viewLifecycleOwner, Observer {
             val now = System.currentTimeMillis()
             val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.getDefault())
-            personalPlaylists.forEach { playlist ->
-                val updatedAt = DateUtils.getRelativeTimeSpanString(
-                        format.parse(playlist.data.data.modified).time, now,
-                        DateUtils.DAY_IN_MILLIS).toString().toLowerCase(Locale.getDefault())
+            it.forEach { playlist ->
+                if (playlist.data.data.available) {
+                    val updatedAt = DateUtils.getRelativeTimeSpanString(
+                            format.parse(playlist.data.data.modified)!!.time, now,
+                            DateUtils.DAY_IN_MILLIS).toString().toLowerCase(Locale.getDefault())
 
-                val personalPlaylistView = PersonalPlaylistView(root.context)
-                personalPlaylistView.setTitle(playlist.data.data.title)
-                personalPlaylistView.setSubtitle(resources.getString(R.string.personal_playlist_subtitle, updatedAt))
-                personalPlaylistView.setImage(YandexApi.getImage(playlist.data.data.ogImage, 400))
-                personalPlaylistView.setOnClickListener {
-                    val bundle = bundleOf(
-                            "title" to playlist.data.data.title,
-                            //"type" to playlist.data.data.generatedPlaylistType,
-                            "type" to PlaylistFragment.PLAYLIST_TYPE_GENERAL,
-                            "uid" to playlist.data.data.uid,
-                            "kind" to playlist.data.data.kind
-                    )
-                    findNavController().navigate(R.id.fragmentPlaylist, bundle)
+                    val personalPlaylistView = PersonalPlaylistView(context)
+                    with(personalPlaylistView) {
+                        setTitle(playlist.data.data.title)
+                        setSubtitle(resources.getString(R.string.personal_playlist_subtitle, updatedAt))
+                        setImage(YandexApi.getImage(playlist.data.data.ogImage, 400))
+                        setOnClickListener {
+                            val bundle = bundleOf(
+                                    "title" to playlist.data.data.title,
+                                    "type" to PlaylistFragment.PLAYLIST_TYPE_GENERAL,
+                                    "uid" to playlist.data.data.uid,
+                                    "kind" to playlist.data.data.kind
+                            )
+                            findNavController().navigate(R.id.fragmentPlaylist, bundle)
+                        }
+                    }
+                    personalPlaylistsContainer.addView(personalPlaylistView)
                 }
-                personalPlaylistsContainer.addView(personalPlaylistView)
-
-//                Log.d("ahoha", it.data.type)
             }
         })
-
-        mixesContainer = root.findViewById(R.id.mixesContainer)
         val spacing = Converter.dp2px(16, activity!!)
         val spanCount = (mixesContainer.layoutManager as GridLayoutManager).spanCount
         mixesContainer.addItemDecoration(GridSpacingItemDecoration(spanCount, spacing, true))
@@ -87,17 +95,13 @@ class HomeFragment : Fragment() {
             }
         })
         mixesContainer.adapter = mixesAdapter
-        viewModel.mixes.observe(this, Observer { mixes ->
-            mixesAdapter.items.clear()
-            mixesAdapter.items.addAll(mixes)
+        viewModel.mixes.observe(viewLifecycleOwner, Observer { mixes ->
+            mixesAdapter.items = mixes
             mixesAdapter.notifyDataSetChanged()
         })
-
-        return root
     }
 
     private fun setupToolbar(toolbar: Toolbar) {
-        toolbar.inflateMenu(R.menu.menu_main)
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_profile -> {
