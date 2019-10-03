@@ -53,6 +53,11 @@ object AndroidAutoBrowser {
                     (URI_ROOT_DRAWABLE + context.resources.getResourceEntryName(R.drawable.ic_favorite)).toUri()
             ),
             createBrowsableMediaItem(
+                    MEDIA_LIBRARY_PATH_PLAYLISTS,
+                    context.getString(R.string.browse_title_playlists),
+                    (URI_ROOT_DRAWABLE + context.resources.getResourceEntryName(R.drawable.ic_playlist)).toUri()
+            ),
+            createBrowsableMediaItem(
                     MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT,
                     context.getString(R.string.browse_title_recommended),
                     (URI_ROOT_DRAWABLE + context.resources.getResourceEntryName(R.drawable.ic_recommended)).toUri()
@@ -115,11 +120,31 @@ object AndroidAutoBrowser {
                         createPlayableMediaItem(it.description)
                     }
                 }
+                path == MEDIA_LIBRARY_PATH_PLAYLISTS -> {
+                    val result = mutableListOf<MediaItem>()
+                    result.addAll(YandexMusic.getUserPlaylists().filter { it.available }.map {
+                            createBrowsableMediaItem(
+                                    "/playlist/${it.uid}/${it.kind}",
+                                    it.title,
+                                    App.instance.resources.getQuantityString(R.plurals.tracks_count, it.trackCount, it.trackCount),
+                                    loadAlbumArt(it.ogImage)
+                            )
+                        })
+                    result.addAll(YandexMusic.getLikedPlaylists().filter { it.available }.map {
+                            createBrowsableMediaItem(
+                                    "/playlist/${it.uid}/${it.kind}",
+                                    it.title,
+                                    App.instance.resources.getQuantityString(R.plurals.tracks_count, it.trackCount, it.trackCount),
+                                    loadAlbumArt(it.ogImage)
+                            )
+                        })
+                    result
+                }
                 path == MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT -> {
                     val result = mutableListOf<MediaItem>()
                     result.addAll(YandexMusic.getPersonalPlaylists().map {
                         createBrowsableMediaItem(
-                                "$MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT/playlist/${it.data.data.uid}/${it.data.data.kind}",
+                                "/playlist/${it.data.data.uid}/${it.data.data.kind}",
                                 it.data.data.title,
                                 loadAlbumArt(it.data.data.cover.uri)
                         )
@@ -133,7 +158,7 @@ object AndroidAutoBrowser {
                     })
                     result
                 }
-                path.startsWith("$MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT/playlist/") -> {
+                path.startsWith("/playlist/") -> {
                     val pathSegments = path.split("/")
                     val tracks = YandexMusic.getPlaylist(pathSegments[2], pathSegments[3])
                     CurrentPlaylist.updatePlaylist(path, tracks)
@@ -297,6 +322,7 @@ object AndroidAutoBrowser {
     const val MEDIA_LIBRARY_PATH_EMPTY = "@empty@"
     const val MEDIA_LIBRARY_PATH_FAVORITE_TRACKS = "/favoriteTracks"
     const val MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT = "__RECOMMENDED__"
+    const val MEDIA_LIBRARY_PATH_PLAYLISTS = "/playlists"
     const val MEDIA_LIBRARY_PATH_STATIONS = "__STATIONS__"
     const val MEDIA_LIBRARY_PATH_STATIONS_CATEGORY = "/stations/category"
     const val MEDIA_LIBRARY_PATH_ALBUMS_ROOT = "__ALBUMS__"

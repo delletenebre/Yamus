@@ -34,4 +34,8 @@
 
     <!-- Form elements -->
     <color name="buttonPrimary">#E64A19</color>
+
+
+    <color name="textPrimary">#222222</color>
+    <color name="textSecondary">#8f222222</color>
 </resources>

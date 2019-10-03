@@ -29,6 +29,10 @@ object YandexMusic {
         return getTracks(UserModel.getLikedIds())
     }
 
+    suspend fun getDislikedTracks(): List<Track> {
+        return getTracks(UserModel.getDislikedIds())
+    }
+
     suspend fun getUserTracksIds(type: String): List<String> {
         var result = listOf<String>()
         var currentRevision = 0
@@ -604,6 +608,60 @@ object YandexMusic {
                             val artistsJson = JSONObject(responseBody).getJSONArray("result")
                             result = Json.nonstrict.parse(ArrayListSerializer(Artist.serializer()),
                                     artistsJson.toString())
+                        } catch (t: Throwable) {
+                            t.printStackTrace()
+                        }
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
+    suspend fun getLikedPlaylists(): List<Playlist> {
+        val result = mutableListOf<Playlist>()
+        val url = "/users/${UserModel.getUid()}/likes/playlists"
+
+        withContext(Dispatchers.IO) {
+            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
+                if (response.isSuccessful) {
+                    if (response.body != null) {
+                        val responseBody = response.body!!.string()
+                        try {
+                            val playlistsJson = JSONObject(responseBody).getJSONArray("result")
+                            result.clear()
+                            if (playlistsJson.length() > 0) {
+                                for (i in 0 until playlistsJson.length()) {
+                                    val playlist = playlistsJson.getJSONObject(i).getJSONObject("playlist")
+                                    result.add(Json.nonstrict.parse(Playlist.serializer(), playlist.toString()))
+                                }
+                            }
+                        } catch (t: Throwable) {
+                            t.printStackTrace()
+                        }
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
+    suspend fun getUserPlaylists(): List<Playlist> {
+        var result = listOf<Playlist>()
+
+        val url = "/users/${UserModel.getUid()}/playlists/list"
+
+        withContext(Dispatchers.IO) {
+            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
+                if (response.isSuccessful) {
+                    if (response.body != null) {
+                        val responseBody = response.body!!.string()
+                        try {
+                            val playlistsJson = JSONObject(responseBody).getJSONArray("result")
+                            result = Json.nonstrict.parse(ArrayListSerializer(Playlist.serializer()),
+                                    playlistsJson.toString())
                         } catch (t: Throwable) {
                             t.printStackTrace()
                         }

@@ -20,6 +20,9 @@ class PlaylistViewModel(type: String, uid: Int, kind: Int) : ViewModel() {
                     PlaylistFragment.PLAYLIST_TYPE_GENERAL -> {
                         YandexMusic.getPlaylist(uid.toString(), kind.toString())
                     }
+                    PlaylistFragment.PLAYLIST_TYPE_DISLIKES -> {
+                        YandexMusic.getDislikedTracks()
+                    }
                     else -> {
                         listOf()
                     }

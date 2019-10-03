@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <plurals name="tracks_count">
+        <item quantity="zero">%d tracks</item>
+        <item quantity="one">%d track</item>
+        <item quantity="other">%d tracks</item>
+    </plurals>
+
     <!-- Notificaiton -->
         <!-- Notificaiton Channel -->
         <string name="notification_channel">Now Playing</string>
@@ -25,6 +31,7 @@
 
     <!-- Browse Tree -->
     <string name="browse_title_favorite_tracks">My favorites</string>
+    <string name="browse_title_playlists">Playlists</string>
     <string name="browse_title_recommended">Recommended</string>
     <string name="browse_title_stations">Stations</string>
 

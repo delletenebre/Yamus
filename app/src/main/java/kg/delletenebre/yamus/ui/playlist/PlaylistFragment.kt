@@ -90,5 +90,6 @@ class PlaylistFragment : Fragment() {
         const val PLAYLIST_TYPE_PLAYLIST_OF_THE_DAY = "playlistOfTheDay"
         const val PLAYLIST_TYPE_NEVER_HEARD = "neverHeard"
         const val PLAYLIST_TYPE_RECENT_TRACKS = "recentTracks"
+        const val PLAYLIST_TYPE_DISLIKES = "dislikes"
     }
 }

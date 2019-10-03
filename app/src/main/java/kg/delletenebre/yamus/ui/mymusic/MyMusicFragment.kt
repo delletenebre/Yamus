@@ -75,6 +75,13 @@ class MyMusicFragment : Fragment() {
                     }
                 }
             }
+            "dislikes" -> {
+                val bundle = bundleOf(
+                        "title" to resources.getString(R.string.my_music_list_dislikes),
+                        "type" to PlaylistFragment.PLAYLIST_TYPE_DISLIKES
+                )
+                findNavController().navigate(R.id.fragmentPlaylist, bundle)
+            }
         }
     }
 }

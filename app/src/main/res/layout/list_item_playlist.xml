@@ -64,7 +64,8 @@
                 android:layout_width="48dp"
                 android:layout_height="match_parent"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_more_vert" />
+                android:src="@drawable/ic_more_vert"
+                android:onClick="@{() -> viewHolder.onClickMenu(item)}"/>
 
     </LinearLayout>
 

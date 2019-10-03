@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         if (android.os.Build.VERSION.SDK_INT >= 28){
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }

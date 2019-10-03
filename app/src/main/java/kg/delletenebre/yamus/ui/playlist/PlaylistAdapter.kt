@@ -2,9 +2,17 @@ package kg.delletenebre.yamus.ui.playlist
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.view.menu.MenuPopupHelper
+import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
+import kg.delletenebre.yamus.R
+import kg.delletenebre.yamus.api.UserModel
+import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.databinding.ListItemPlaylistBinding
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 class PlaylistAdapter(
@@ -40,6 +48,38 @@ class PlaylistAdapter(
 
         fun onClick(item: Track) {
             playlistTrackListener?.onClick(item, adapterPosition)
+        }
+
+        fun onClickMenu(item: Track) {
+            val trackId = item.getTrackId()
+            val context = binding.root.context
+            val popup = PopupMenu(context, binding.settings)
+            popup.inflate(R.menu.menu_playlist_item)
+            popup.setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.dislike -> {
+                        GlobalScope.launch {
+                            if (UserModel.getDislikedIds().contains(trackId)) {
+                                YandexMusic.removeDislike(trackId)
+                            } else {
+                                YandexMusic.addDislike(trackId)
+                            }
+                        }
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+            if (UserModel.getDislikedIds().contains(trackId)) {
+                popup.menu.findItem(R.id.dislike).icon.setTint(context.getColor(R.color.colorAccent))
+            } else {
+                popup.menu.findItem(R.id.dislike).icon.setTint(context.getColor(R.color.textSecondary))
+            }
+
+            val menuHelper = MenuPopupHelper(context, popup.menu as MenuBuilder, binding.settings)
+            menuHelper.setForceShowIcon(true)
+            menuHelper.show()
         }
     }
 
