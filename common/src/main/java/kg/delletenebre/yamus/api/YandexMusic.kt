@@ -1,7 +1,6 @@
 package kg.delletenebre.yamus.api
 
 import android.util.Log
-import kg.delletenebre.yamus.api.database.table.TrackEntity
 import kg.delletenebre.yamus.api.database.table.UserTracksIdsEntity
 import kg.delletenebre.yamus.api.response.*
 import kg.delletenebre.yamus.media.extensions.md5
@@ -44,74 +43,42 @@ object YandexMusic {
 
         val url = "/users/${UserModel.getUid()}/${type}s/tracks?if-modified-since-revision=$currentRevision"
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            val responseJson = JSONObject(responseBody)
-                            Log.d("ahoha", "responseJson: $responseJson")
-                            when (val resultJson = responseJson.get("result")) {
-                                is String -> {
-                                    val tracksIds = cachedTracksIds!!.tracksIds.split(",")
-                                    result = tracksIds
-                                }
-                                is JSONObject -> {
-                                    val library = Json.parse(
-                                            Library.serializer(),
-                                            resultJson.getJSONObject("library").toString()
-                                    )
-                                    result = library.tracks.map {
-                                        var trackId = it.id
-                                        if (it.albumId.isNotEmpty()) {
-                                            trackId = "$trackId:${it.albumId}"
-                                        }
-                                        trackId
-                                    }
-
-                                    YandexApi.database.userTracksIds()
-                                            .insert(
-                                                    UserTracksIdsEntity(
-                                                            type,
-                                                            library.revision,
-                                                            result.joinToString(","),
-                                                            library.tracks.size
-                                                    )
-                                            )
-                                }
+        val httpResult = YandexApi.networkCall(url)
+        if (httpResult.isSuccess) {
+            try {
+                val responseJson = JSONObject(httpResult.message)
+                Log.d("ahoha", "responseJson: $responseJson")
+                when (val resultJson = responseJson.get("result")) {
+                    is String -> {
+                        val tracksIds = cachedTracksIds!!.tracksIds.split(",")
+                        result = tracksIds
+                    }
+                    is JSONObject -> {
+                        val library = Json.parse(
+                                Library.serializer(),
+                                resultJson.getJSONObject("library").toString()
+                        )
+                        result = library.tracks.map {
+                            var trackId = it.id
+                            if (it.albumId.isNotEmpty()) {
+                                trackId = "$trackId:${it.albumId}"
                             }
-                        } catch (t: Throwable) {
-                            t.printStackTrace()
-                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
+                            trackId
                         }
+
+                        YandexApi.database.userTracksIds()
+                                .insert(
+                                        UserTracksIdsEntity(
+                                                type,
+                                                library.revision,
+                                                result.joinToString(","),
+                                                library.tracks.size
+                                        )
+                                )
                     }
                 }
-            }
-        }
-
-        return result
-    }
-
-    suspend fun getFeed(): Feed {
-        var result = Feed()
-
-        val url = "/feed"
-
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            result = Json.nonstrict.parse(Feed.serializer(), responseBody)
-//                            Log.d("ahoha", "Response: $responseBody")
-                        } catch (exception: Exception) {
-                            exception.printStackTrace()
-                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
-                        }
-                    }
-                }
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
 
@@ -123,28 +90,19 @@ object YandexMusic {
 
         val url = "/rotor/stations/dashboard"
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            val stations = JSONObject(responseBody)
-                                    .getJSONObject("result")
-                                    .getJSONArray("stations")
+        val httpResult = YandexApi.networkCall(url)
+        if (httpResult.isSuccess) {
+            try {
+                val stations = JSONObject(httpResult.message)
+                        .getJSONObject("result")
+                        .getJSONArray("stations")
 
-                            result = Json.nonstrict.parse(
-                                    ArrayListSerializer(Station.serializer()),
-                                    stations.toString()
-                            )
-
-//                            Log.d("ahoha", "Response: $responseBody")
-                        } catch (exception: Exception) {
-                            exception.printStackTrace()
-                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
-                        }
-                    }
-                }
+                result = Json.nonstrict.parse(
+                        ArrayListSerializer(Station.serializer()),
+                        stations.toString()
+                )
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
 
@@ -156,27 +114,18 @@ object YandexMusic {
 
         val url = "/rotor/stations/list?language=$language"
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            val stations = JSONObject(responseBody)
-                                    .getJSONArray("result")
+        val httpResult = YandexApi.networkCall(url)
+        if (httpResult.isSuccess) {
+            try {
+                val stations = JSONObject(httpResult.message)
+                        .getJSONArray("result")
 
-                            result = Json.nonstrict.parse(
-                                    ArrayListSerializer(Station.serializer()),
-                                    stations.toString()
-                            )
-
-//                            Log.d("ahoha", "Response: $responseBody")
-                        } catch (exception: Exception) {
-                            exception.printStackTrace()
-                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
-                        }
-                    }
-                }
+                result = Json.nonstrict.parse(
+                        ArrayListSerializer(Station.serializer()),
+                        stations.toString()
+                )
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
 
@@ -191,27 +140,18 @@ object YandexMusic {
             url = "$url&queue=$queue"
         }
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            val stations = JSONObject(responseBody)
-                                    .getJSONObject("result")
+        val httpResult = YandexApi.networkCall(url)
+        if (httpResult.isSuccess) {
+            try {
+                val stations = JSONObject(httpResult.message)
+                        .getJSONObject("result")
 
-                            result = Json.nonstrict.parse(
-                                    StationTracks.serializer(),
-                                    stations.toString()
-                            )
-
-//                            Log.d("ahoha", "Response: $responseBody")
-                        } catch (exception: Exception) {
-                            exception.printStackTrace()
-                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
-                        }
-                    }
-                }
+                result = Json.nonstrict.parse(
+                        StationTracks.serializer(),
+                        stations.toString()
+                )
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
 
@@ -256,26 +196,18 @@ object YandexMusic {
 
         val url = "/landing3?blocks=personalplaylists"
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            val entities = JSONObject(responseBody)
-                                    .getJSONObject("result")
-                                    .getJSONArray("blocks")
-                                    .getJSONObject(0)
-                                    .getJSONArray("entities")
+        val httpResult = YandexApi.networkCall(url)
+        if (httpResult.isSuccess) {
+            try {
+                val entities = JSONObject(httpResult.message)
+                        .getJSONObject("result")
+                        .getJSONArray("blocks")
+                        .getJSONObject(0)
+                        .getJSONArray("entities")
 
-                            result = Json.nonstrict.parse(ArrayListSerializer(PersonalPlaylists.serializer()), entities.toString())
-//                            Log.d("ahoha", "Response: $responseBody")
-                        } catch (exception: Exception) {
-                            exception.printStackTrace()
-                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
-                        }
-                    }
-                }
+                result = Json.nonstrict.parse(ArrayListSerializer(PersonalPlaylists.serializer()), entities.toString())
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
 
@@ -287,29 +219,21 @@ object YandexMusic {
 
         val url = "/landing3?blocks=mixes"
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            val entities = JSONObject(responseBody)
-                                    .getJSONObject("result")
-                                    .getJSONArray("blocks")
-                                    .getJSONObject(0)
-                                    .getJSONArray("entities")
+        val httpResult = YandexApi.networkCall(url)
+        if (httpResult.isSuccess) {
+            try {
+                val entities = JSONObject(httpResult.message)
+                        .getJSONObject("result")
+                        .getJSONArray("blocks")
+                        .getJSONObject(0)
+                        .getJSONArray("entities")
 
-                            result = Json.nonstrict.parse(
-                                    ArrayListSerializer(Mix.serializer()),
-                                    entities.toString()
-                            )
-//                            Log.d("ahoha", "Response: $responseBody")
-                        } catch (exception: Exception) {
-                            exception.printStackTrace()
-                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
-                        }
-                    }
-                }
+                result = Json.nonstrict.parse(
+                        ArrayListSerializer(Mix.serializer()),
+                        entities.toString()
+                )
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
 
@@ -324,33 +248,22 @@ object YandexMusic {
                 .add("kinds", kind)
                 .build()
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url, formBody)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            val tracks = JSONObject(responseBody)
-                                    .getJSONArray("result")
-                                    .getJSONObject(0)
-                                    .getJSONArray("tracks")
+        val httpResult = YandexApi.networkCall(url, formBody)
+        if (httpResult.isSuccess) {
+            try {
+                val tracks = JSONObject(httpResult.message)
+                        .getJSONArray("result")
+                        .getJSONObject(0)
+                        .getJSONArray("tracks")
 
-                            result = getTracks(
-                                    Json.nonstrict.parse(
-                                        ArrayListSerializer(PlaylistTracksIds.serializer()),
-                                            tracks.toString()
-                                    ).map {
-                                        it.id.toString()
-                                    }.toList()
-                            )
-
-//                            Log.d("ahoha", "Response: $responseBody")
-                        } catch (exception: Exception) {
-                            exception.printStackTrace()
-                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
-                        }
-                    }
-                }
+                result = getTracks(
+                        Json.nonstrict.parse(
+                                ArrayListSerializer(PlaylistTracksIds.serializer()),
+                                tracks.toString()
+                        ).map { it.id.toString() }.toList()
+                )
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
 
@@ -360,30 +273,22 @@ object YandexMusic {
     suspend fun getPlaylistIdsByTag(tag: String): List<String> {
         var result = listOf<String>()
         val url = "/tags/$tag/playlist-ids"
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            val ids = JSONObject(responseBody)
-                                    .getJSONObject("result")
-                                    .getJSONArray("ids")
 
-                            result = Json.nonstrict.parse(
-                                    ArrayListSerializer(PlaylistIds.serializer()),
-                                    ids.toString()
-                            ).map {
-                                "${it.uid}:${it.kind}"
-                            }
+        val httpResult = YandexApi.networkCall(url)
+        if (httpResult.isSuccess) {
+            try {
+                val ids = JSONObject(httpResult.message)
+                        .getJSONObject("result")
+                        .getJSONArray("ids")
 
-//                            Log.d("ahoha", "Response: $responseBody")
-                        } catch (exception: Exception) {
-                            exception.printStackTrace()
-                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
-                        }
-                    }
+                result = Json.nonstrict.parse(
+                        ArrayListSerializer(PlaylistIds.serializer()),
+                        ids.toString()
+                ).map {
+                    "${it.uid}:${it.kind}"
                 }
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
 
@@ -398,28 +303,18 @@ object YandexMusic {
                 .add("playlistIds", ids.joinToString(","))
                 .build()
 
+        val httpResult = YandexApi.networkCall(url, formBody)
+        if (httpResult.isSuccess) {
+            try {
+                val playlists = JSONObject(httpResult.message)
+                        .getJSONArray("result")
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url, formBody)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            val playlists = JSONObject(responseBody)
-                                    .getJSONArray("result")
-
-                            result = Json.nonstrict.parse(
-                                    ArrayListSerializer(Playlist.serializer()),
-                                    playlists.toString()
-                            )
-
-//                            Log.d("ahoha", "Response: $responseBody")
-                        } catch (exception: Exception) {
-                            exception.printStackTrace()
-                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
-                        }
-                    }
-                }
+                result = Json.nonstrict.parse(
+                        ArrayListSerializer(Playlist.serializer()),
+                        playlists.toString()
+                )
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
 
@@ -433,12 +328,9 @@ object YandexMusic {
                 .add("track-ids", trackId)
                 .build()
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url, formBody)).execute().use { response ->
-                if (!response.isSuccessful) {
-                    Log.e("ahoha", "Could not get feedback response: ${response.message}")
-                }
-            }
+        val httpResult = YandexApi.networkCall(url, formBody)
+        if (httpResult.isSuccess) {
+            Log.e("ahoha", "Could not get feedback response: ${httpResult.message}")
         }
 
         UserModel.updateUserTracks(type)
@@ -486,109 +378,94 @@ object YandexMusic {
                 .add("track-ids", tracksIds.joinToString(","))
                 .build()
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url, formBody)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            //val responseJson = JSONObject(responseBody)
-                            val json = Json.nonstrict.parse(Tracks.serializer(), responseBody)
-                            result = json.result
-//                            Log.d("ahoha", "Response: $responseJson")
-                        } catch (exception: Exception) {
-                            exception.printStackTrace()
-                            Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
-                        }
-                    }
-                }
+        val httpResult = YandexApi.networkCall(url, formBody)
+        if (httpResult.isSuccess) {
+            try {
+                //val responseJson = JSONObject(responseBody)
+                val json = Json.nonstrict.parse(Tracks.serializer(), httpResult.message)
+                result = json.result
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
+
+        return result
+    }
+//
+//    suspend fun getTrack(trackId: String): Track {
+//        var result: Track = Track("0")
+//
+//        val id = if (trackId.contains(':')) {
+//            trackId.split(":")[0]
+//        } else {
+//            trackId
 //        }
-
-        return result
-    }
-
-    suspend fun getTrack(trackId: String): Track {
-        var result: Track = Track("0")
-
-        val id = if (trackId.contains(':')) {
-            trackId.split(":")[0]
-        } else {
-            trackId
-        }
-
-        val cachedTrack = YandexApi.database.trackDao().findById(id)
-        if (cachedTrack != null) {
-            result = Json.nonstrict.parse(Track.serializer(), cachedTrack.data)
-        } else {
-            val formBody = FormBody.Builder()
-                    .add("track-ids", trackId)
-            val request = Request.Builder()
-                    .url("${YandexApi.API_URL_MUSIC}/tracks")
-                    .addHeader("Authorization", "OAuth ${UserModel.getToken()}")
-                    .post(formBody.build())
-                    .build()
-
-            withContext(Dispatchers.IO) {
-                YandexApi.httpClient.newCall(request).execute().use { response ->
-                    if (response.isSuccessful) {
-                        if (response.body != null) {
-                            val responseBody = response.body!!.string()
-                            try {
-                                val responseJson = JSONObject(responseBody)
-                                val json = Json.nonstrict.parse(Tracks.serializer(), responseBody)
-                                if (json.result.isNotEmpty()) {
-                                    result = json.result[0]
-                                    YandexApi.database.trackDao()
-                                            .insert(
-                                                TrackEntity(
-                                                    result.id,
-                                                    Json.nonstrict.stringify(
-                                                            Track.serializer(),
-                                                            result
-                                                    ),
-                                                    System.currentTimeMillis()
-                                                )
-                                            )
-                                }
-//                                Log.d("ahoha", "Response: $responseJson")
-                            } catch (exception: Exception) {
-                                exception.printStackTrace()
-                                Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return result
-    }
+//
+//        val cachedTrack = YandexApi.database.trackDao().findById(id)
+//        if (cachedTrack != null) {
+//            result = Json.nonstrict.parse(Track.serializer(), cachedTrack.data)
+//        } else {
+//            val formBody = FormBody.Builder()
+//                    .add("track-ids", trackId)
+//            val request = Request.Builder()
+//                    .url("${YandexApi.API_URL_MUSIC}/tracks")
+//                    .addHeader("Authorization", "OAuth ${UserModel.getToken()}")
+//                    .post(formBody.build())
+//                    .build()
+//
+//            withContext(Dispatchers.IO) {
+//                YandexApi.httpClient.newCall(request).execute().use { response ->
+//                    if (response.isSuccessful) {
+//                        if (response.body != null) {
+//                            val responseBody = response.body!!.string()
+//                            try {
+//                                val responseJson = JSONObject(responseBody)
+//                                val json = Json.nonstrict.parse(Tracks.serializer(), responseBody)
+//                                if (json.result.isNotEmpty()) {
+//                                    result = json.result[0]
+//                                    YandexApi.database.trackDao()
+//                                            .insert(
+//                                                TrackEntity(
+//                                                    result.id,
+//                                                    Json.nonstrict.stringify(
+//                                                            Track.serializer(),
+//                                                            result
+//                                                    ),
+//                                                    System.currentTimeMillis()
+//                                                )
+//                                            )
+//                                }
+////                                Log.d("ahoha", "Response: $responseJson")
+//                            } catch (exception: Exception) {
+//                                exception.printStackTrace()
+//                                Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        return result
+//    }
 
     suspend fun getLikedAlbums(): List<Album> {
         val result = mutableListOf<Album>()
         val url = "/users/${UserModel.getUid()}/likes/albums?rich=true"
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            val albumsJson = JSONObject(responseBody).getJSONArray("result")
-                            result.clear()
-                            if (albumsJson.length() > 0) {
-                                for (i in 0 until albumsJson.length()) {
-                                    val album = albumsJson.getJSONObject(i).getJSONObject("album")
-                                    result.add(Json.nonstrict.parse(Album.serializer(), album.toString()))
-                                }
-                            }
-                        } catch (t: Throwable) {
-                            t.printStackTrace()
-                        }
+        val httpResult = YandexApi.networkCall(url)
+        if (httpResult.isSuccess) {
+            try {
+                val albumsJson = JSONObject(httpResult.message).getJSONArray("result")
+                result.clear()
+                if (albumsJson.length() > 0) {
+                    for (i in 0 until albumsJson.length()) {
+                        val album = albumsJson.getJSONObject(i).getJSONObject("album")
+                        result.add(Json.nonstrict.parse(Album.serializer(), album.toString()))
                     }
                 }
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
 
@@ -599,20 +476,14 @@ object YandexMusic {
         var result = listOf<Artist>()
         val url = "/users/${UserModel.getUid()}/likes/artists?with-timestamps=false"
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            val artistsJson = JSONObject(responseBody).getJSONArray("result")
-                            result = Json.nonstrict.parse(ArrayListSerializer(Artist.serializer()),
-                                    artistsJson.toString())
-                        } catch (t: Throwable) {
-                            t.printStackTrace()
-                        }
-                    }
-                }
+        val httpResult = YandexApi.networkCall(url)
+        if (httpResult.isSuccess) {
+            try {
+                val artistsJson = JSONObject(httpResult.message).getJSONArray("result")
+                result = Json.nonstrict.parse(ArrayListSerializer(Artist.serializer()),
+                        artistsJson.toString())
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
 
@@ -623,25 +494,19 @@ object YandexMusic {
         val result = mutableListOf<Playlist>()
         val url = "/users/${UserModel.getUid()}/likes/playlists"
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            val playlistsJson = JSONObject(responseBody).getJSONArray("result")
-                            result.clear()
-                            if (playlistsJson.length() > 0) {
-                                for (i in 0 until playlistsJson.length()) {
-                                    val playlist = playlistsJson.getJSONObject(i).getJSONObject("playlist")
-                                    result.add(Json.nonstrict.parse(Playlist.serializer(), playlist.toString()))
-                                }
-                            }
-                        } catch (t: Throwable) {
-                            t.printStackTrace()
-                        }
+        val httpResult = YandexApi.networkCall(url)
+        if (httpResult.isSuccess) {
+            try {
+                val playlistsJson = JSONObject(httpResult.message).getJSONArray("result")
+                result.clear()
+                if (playlistsJson.length() > 0) {
+                    for (i in 0 until playlistsJson.length()) {
+                        val playlist = playlistsJson.getJSONObject(i).getJSONObject("playlist")
+                        result.add(Json.nonstrict.parse(Playlist.serializer(), playlist.toString()))
                     }
                 }
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
 
@@ -653,20 +518,14 @@ object YandexMusic {
 
         val url = "/users/${UserModel.getUid()}/playlists/list"
 
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
-                if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
-                        try {
-                            val playlistsJson = JSONObject(responseBody).getJSONArray("result")
-                            result = Json.nonstrict.parse(ArrayListSerializer(Playlist.serializer()),
-                                    playlistsJson.toString())
-                        } catch (t: Throwable) {
-                            t.printStackTrace()
-                        }
-                    }
-                }
+        val httpResult = YandexApi.networkCall(url)
+        if (httpResult.isSuccess) {
+            try {
+                val playlistsJson = JSONObject(httpResult.message).getJSONArray("result")
+                result = Json.nonstrict.parse(ArrayListSerializer(Playlist.serializer()),
+                        playlistsJson.toString())
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
 

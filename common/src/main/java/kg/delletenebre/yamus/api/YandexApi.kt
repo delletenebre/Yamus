@@ -1,6 +1,9 @@
 package kg.delletenebre.yamus.api
 
+import kg.delletenebre.yamus.HttpResult
 import kg.delletenebre.yamus.api.database.YandexDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.FormBody
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -42,6 +45,29 @@ object YandexApi {
                         .post(formBody)
         )
     }
+
+    suspend fun networkCall(url: String, formBody: FormBody? = null): HttpResult {
+        val requestBuilder = Request.Builder().url("$API_URL_MUSIC$url")
+        if (formBody != null) {
+            requestBuilder.post(formBody)
+        }
+
+        return networkCall(getRequest(requestBuilder))
+    }
+
+    suspend fun networkCall(request: Request): HttpResult {
+        return withContext(Dispatchers.IO) {
+            try {
+                httpClient.newCall(request).execute().use { response ->
+                    HttpResult(response.isSuccessful, response.code, response.body?.string() ?: "")
+                }
+            } catch (t: Throwable) {
+                HttpResult(false, 0, "")
+            }
+        }
+    }
+
+
 
     private fun getRequest(requestBuilder: Request.Builder): Request {
         return requestBuilder

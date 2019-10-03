@@ -22,7 +22,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
-import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -99,12 +98,6 @@ object AndroidAutoBrowser {
                         Uri.EMPTY
                 )
         )
-//        CategoryTab(context.getString(R.string.stations_tab_recommended), "recommended"),
-//        , "activity"),
-//        CategoryTab(context.getString(R.string.stations_tab_mood), "mood"),
-//        CategoryTab(context.getString(R.string.stations_tab_genre), "genre"),
-//        CategoryTab(context.getString(R.string.stations_tab_era), "epoch"),
-//        CategoryTab(context.getString(R.string.stations_tab_other), listOf("local", "author"))
     }
 
     suspend fun getItems(path: String): MutableList<MediaItem> {
@@ -142,7 +135,7 @@ object AndroidAutoBrowser {
                 }
                 path == MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT -> {
                     val result = mutableListOf<MediaItem>()
-                    result.addAll(YandexMusic.getPersonalPlaylists().map {
+                    result.addAll(YandexMusic.getPersonalPlaylists().filter { it.data.data.available }.map {
                         createBrowsableMediaItem(
                                 "/playlist/${it.data.data.uid}/${it.data.data.kind}",
                                 it.data.data.title,
@@ -219,39 +212,6 @@ object AndroidAutoBrowser {
                     .get()
         }
     }
-
-    /**
-     * Provide access to the list of children with the `get` operator.
-     * i.e.: `browseTree\[MEDIA_LIBRARY_PATH_ROOT\]`
-     */
-//    operator fun get(mediaId: String) = mediaIdToChildren[mediaId]
-
-    /**
-     * Builds a node, under the root, that represents an album, given
-     * a [MediaMetadataCompat] object that's one of the songs on that album,
-     * marking the item as [MediaItem.FLAG_BROWSABLE], since it will have child
-     * node(s) AKA at least 1 song.
-     */
-//    private fun buildAlbumRoot(mediaItem: MediaMetadataCompat) : MutableList<MediaMetadataCompat> {
-//        val albumMetadata = MediaMetadataCompat.Builder().apply {
-//            id = mediaItem.album.urlEncoded
-//            title = mediaItem.album
-//            artist = mediaItem.artist
-//            albumArt = mediaItem.albumArt
-//            albumArtUri = mediaItem.albumArtUri.toString()
-//            flag = MediaItem.FLAG_BROWSABLE
-//        }.build()
-//
-//        // Adds this album to the 'Albums' category.
-//        val rootList = mediaIdToChildren[MEDIA_LIBRARY_PATH_ALBUMS_ROOT] ?: mutableListOf()
-//        rootList += albumMetadata
-//        mediaIdToChildren[MEDIA_LIBRARY_PATH_ALBUMS_ROOT] = rootList
-//
-//        // Insert the album's root with an empty list for its children, and return the list.
-//        return mutableListOf<MediaMetadataCompat>().also {
-//            mediaIdToChildren[albumMetadata.id] = it
-//        }
-//    }
 
     fun createBrowsableMediaItem(
             mediaDescription: MediaDescriptionCompat
