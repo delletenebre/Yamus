@@ -2,9 +2,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".MainActivity">
+
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/menu_main_settings"
+        app:showAsAction="ifRoom" />
+
     <item
         android:id="@+id/action_profile"
         android:icon="@drawable/ic_person"
         android:title="@string/menu_main_profile"
         app:showAsAction="ifRoom" />
+
 </menu>

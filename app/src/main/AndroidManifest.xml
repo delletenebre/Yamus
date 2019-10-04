@@ -4,6 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="kg.delletenebre.yamus">
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -13,11 +17,19 @@
         android:supportsRtl="true"
         android:targetSandboxVersion="2"
         android:theme="@style/AppTheme">
-
+        <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:launchMode="singleTop"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="kg.delletenebre.yamus.MainActivity" />
+        </activity>
         <activity
             android:name=".ui.login.LoginActivity"
-            android:launchMode="singleTop"
-            android:label="@string/title_activity_login" />
+            android:label="@string/title_activity_login"
+            android:launchMode="singleTop" />
         <activity
             android:name=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -53,7 +65,6 @@
                     android:scheme="https" />
             </intent-filter>
         </activity> <!-- Declare that UAMP supports Android Auto. -->
-
         <meta-data
             android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc" />

@@ -1,10 +1,16 @@
 package kg.delletenebre.yamus
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Bundle
+import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -13,6 +19,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kg.delletenebre.yamus.api.UserModel
 import kg.delletenebre.yamus.ui.login.LoginActivity
+import kg.delletenebre.yamus.ui.settings.SettingsActivity
 import kg.delletenebre.yamus.utils.InjectorUtils
 import kg.delletenebre.yamus.viewmodels.MainActivityViewModel
 
@@ -48,30 +55,11 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        Log.d("ahoha", "path: ${getExternalFilesDir("tracks")}")
 
-//
-//        viewModel.navigateToFragment.observe(this, Observer {
-//            it?.getContentIfNotHandled()?.let { fragmentRequest ->
-//                val transaction = supportFragmentManager.beginTransaction()
-//                transaction.replace(
-//                        R.id.fragmentContainer, fragmentRequest.fragment, fragmentRequest.tag)
-//                if (fragmentRequest.backStack) transaction.addToBackStack(null)
-//                transaction.commit()
-//            }
-//        })
-//
-//        viewModel.rootMediaId.observe(this,
-//                Observer<String> { rootMediaId ->
-//                    if (rootMediaId != null) {
-//                        navigateToMediaItem(rootMediaId)
-//                    }
-//                })
-//
-//        viewModel.navigateToMediaItem.observe(this, Observer {
-//            it?.getContentIfNotHandled()?.let { mediaId ->
-//                navigateToMediaItem(mediaId)
-//            }
-//        })
+//        if (!checkStoragePermission()) {
+//            requestStoragePermission()
+//        }
     }
 
     override fun onResume() {
@@ -83,36 +71,64 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//
-//        if (requestCode == 1) {
-//            if (resultCode != Activity.RESULT_OK) {
-//                val intent = Intent(this, LoginActivity::class.java)
-//                startActivityForResult(intent, 1)
-//            } else {
-//                GlobalScope.launch {
-//                    YandexUser.updateUserTracks()
-//                }
-//                navigationController.navigate(R.id.fragmentProfile)
-//                navigationController.popBackStack()
-//            }
-//        }
-//    }
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        when (requestCode) {
+            PERMISSION_WRITE_EXTERNAL_STORAGE_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.e("value", "Permission Granted, Now you can use local drive .")
+                } else {
+                    Log.e("value", "Permission Denied, You cannot use local drive .")
+                }
+            }
+        }
+    }
 
-//    private fun navigateToMediaItem(mediaId: String) {
-//        var fragment: MediaItemFragment? = getBrowseFragment(mediaId)
-//        if (fragment == null) {
-//            fragment = MediaItemFragment.newInstance(mediaId)
-//            // If this is not the top level media (root), we add it to the fragment
-//            // back stack, so that actionbar toggle and Back will work appropriately:
-//            viewModel.showFragment(fragment, !isRootId(mediaId), mediaId)
-//        }
-//    }
-//
-//    private fun isRootId(mediaId: String) = mediaId == viewModel.rootMediaId.value
-//
-//    private fun getBrowseFragment(mediaId: String): MediaItemFragment? {
-//        return supportFragmentManager.findFragmentByTag(mediaId) as MediaItemFragment?
-//    }
+    private fun checkStoragePermission(): Boolean {
+        val result = ContextCompat.checkSelfPermission(this@MainActivity,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        return result == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestStoragePermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this@MainActivity,
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            with(AlertDialog.Builder(this)) {
+                setCancelable(true)
+                setTitle(this.context.getString(R.string.permission_write_external_storage_title))
+                setMessage(this.context.getString(R.string.permission_write_external_storage_description))
+                setPositiveButton(android.R.string.yes) { dialog, which ->
+                    ActivityCompat.requestPermissions(this@MainActivity,
+                            arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                            PERMISSION_WRITE_EXTERNAL_STORAGE_REQUEST_CODE)
+                }
+                create().show()
+            }
+        } else {
+            ActivityCompat.requestPermissions(
+                    this@MainActivity,
+                    arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    PERMISSION_WRITE_EXTERNAL_STORAGE_REQUEST_CODE
+            )
+        }
+    }
+
+    fun setupMainToolbar(toolbar: Toolbar) {
+        toolbar.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.action_settings -> {
+                    val intent = Intent(toolbar.context, SettingsActivity::class.java)
+                    startActivity(intent)
+                }
+                R.id.action_profile -> {
+                    navigationController.navigate(R.id.fragmentProfile)
+                }
+            }
+            super.onOptionsItemSelected(it)
+        }
+    }
+
+    companion object {
+        const val PERMISSION_WRITE_EXTERNAL_STORAGE_REQUEST_CODE = 1
+    }
+
 }

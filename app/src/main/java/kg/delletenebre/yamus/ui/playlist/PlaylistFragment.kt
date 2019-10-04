@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -12,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import kg.delletenebre.yamus.R
+import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.utils.InjectorUtils
 import kg.delletenebre.yamus.viewmodels.MainActivityViewModel
@@ -68,18 +70,25 @@ class PlaylistFragment : Fragment() {
         toolbar.setNavigationOnClickListener {
             findNavController().popBackStack()
         }
-//        toolbar.inflateMenu(R.menu.menu_main)
-//        toolbar.setOnMenuItemClickListener {
-//            when (it.itemId) {
-//                R.id.action_profile -> {
-//                    findNavController().navigate(R.id.fragmentProfile)
-//                }
-//            }
-//            super.onOptionsItemSelected(it)
-//        }
+        if (toolbar.menu is MenuBuilder) {
+            val menuBuilder = toolbar.menu as MenuBuilder
+            menuBuilder.setOptionalIconsVisible(true)
+        }
+        toolbar.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.action_download -> {
+                    YandexApi.downloadCurrentPlaylist()
+                }
+            }
+            super.onOptionsItemSelected(it)
+        }
     }
 
-    protected inline fun <VM : ViewModel> viewModelFactory(crossinline f: () -> VM) =
+    private fun downloadTracks() {
+
+    }
+
+    private inline fun <VM : ViewModel> viewModelFactory(crossinline f: () -> VM) =
             object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(aClass: Class<T>):T = f() as T
             }

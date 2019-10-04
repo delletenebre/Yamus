@@ -18,11 +18,11 @@ package kg.delletenebre.yamus.media.library
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
-import android.util.Log
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
@@ -101,7 +101,6 @@ object AndroidAutoBrowser {
     }
 
     suspend fun getItems(path: String): MutableList<MediaItem> {
-        Log.d("ahoha", "path: $path")
         return if (library.containsKey(path)) {
             library[path]!!
         } else {
@@ -139,6 +138,7 @@ object AndroidAutoBrowser {
                         createBrowsableMediaItem(
                                 "/playlist/${it.data.data.uid}/${it.data.data.kind}",
                                 it.data.data.title,
+                                App.instance.resources.getQuantityString(R.plurals.tracks_count, it.data.data.trackCount, it.data.data.trackCount),
                                 loadAlbumArt(it.data.data.cover.uri)
                         )
                     })
@@ -204,12 +204,17 @@ object AndroidAutoBrowser {
 
     private suspend fun loadAlbumArt(url: String): Bitmap {
         return withContext(Dispatchers.IO) {
-            Glide.with(App.instance.applicationContext)
-                    .applyDefaultRequestOptions(glideOptions)
-                    .asBitmap()
-                    .load(YandexApi.getImage(url, NOTIFICATION_LARGE_ICON_SIZE))
-                    .submit(NOTIFICATION_LARGE_ICON_SIZE, NOTIFICATION_LARGE_ICON_SIZE)
-                    .get()
+            try {
+                Glide.with(App.instance.applicationContext)
+                        .applyDefaultRequestOptions(glideOptions)
+                        .asBitmap()
+                        .load(YandexApi.getImage(url, NOTIFICATION_LARGE_ICON_SIZE))
+                        .diskCacheStrategy(DiskCacheStrategy.DATA)
+                        .submit(NOTIFICATION_LARGE_ICON_SIZE, NOTIFICATION_LARGE_ICON_SIZE)
+                        .get()
+            } catch (t: Throwable) {
+                (App.instance.applicationContext.getDrawable(R.drawable.default_album_art) as BitmapDrawable).bitmap
+            }
         }
     }
 

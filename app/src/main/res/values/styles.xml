@@ -27,7 +27,7 @@
     </style>
 
     <style name="AppActionButtonOverflow" parent="Widget.AppCompat.ActionButton.Overflow">
-        <item name="android:tint">#ff00ff</item>
+
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

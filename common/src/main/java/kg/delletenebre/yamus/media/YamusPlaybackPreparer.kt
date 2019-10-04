@@ -25,6 +25,7 @@ import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.media.library.AbstractMusicSource
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
@@ -70,6 +71,7 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
 
                 withContext(Dispatchers.Main) {
                     exoPlayer.shuffleModeEnabled = false
+                    exoPlayer.repeatMode = Player.REPEAT_MODE_OFF
                     exoPlayer.prepare(CurrentPlaylist.mediaSource)
                     exoPlayer.playWhenReady = true
                 }
@@ -79,6 +81,12 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
                 it.id == mediaId
             }
             exoPlayer.prepare(CurrentPlaylist.mediaSource, false, true)
+            exoPlayer.shuffleModeEnabled = App.instance.getBooleanPreference("shuffle_mode")
+            exoPlayer.repeatMode = if (App.instance.getBooleanPreference("repeat_mode")) {
+                Player.REPEAT_MODE_ALL
+            } else {
+                Player.REPEAT_MODE_OFF
+            }
             exoPlayer.seekTo(position, 0)
             exoPlayer.playWhenReady = true
         }
@@ -116,5 +124,3 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
         cb: ResultReceiver?
     ) = false
 }
-
-private const val TAG = "MediaSessionHelper"

@@ -1,5 +1,10 @@
 package kg.delletenebre.yamus.api
 
+import android.util.Log
+import com.tonyodev.fetch2.NetworkType
+import com.tonyodev.fetch2.Priority
+import com.tonyodev.fetch2core.Func
+import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.HttpResult
 import kg.delletenebre.yamus.api.database.YandexDatabase
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +51,25 @@ object YandexApi {
         )
     }
 
+    fun downloadCurrentPlaylist() {
+        val url = "http://www.example.com/test.txt"
+        val file = "${App.instance.getMusicDir()}/test.txt"
+        val request = com.tonyodev.fetch2.Request(url, file)
+        request.priority = Priority.HIGH
+        request.networkType = NetworkType.ALL
+
+        App.instance.fetch.enqueue(request,
+                // success
+                Func {
+                    Log.d("ahoha", "success: ${it.file}")
+                },
+                // failure
+                Func {
+                    Log.d("ahoha", "faulure")
+                }
+        )
+    }
+
     suspend fun networkCall(url: String, formBody: FormBody? = null): HttpResult {
         val requestBuilder = Request.Builder().url("$API_URL_MUSIC$url")
         if (formBody != null) {
@@ -55,19 +79,19 @@ object YandexApi {
         return networkCall(getRequest(requestBuilder))
     }
 
-    suspend fun networkCall(request: Request): HttpResult {
+    private suspend fun networkCall(request: Request): HttpResult {
         return withContext(Dispatchers.IO) {
             try {
                 httpClient.newCall(request).execute().use { response ->
+                    Log.d("ahoha", "response code: ${response.code}")
                     HttpResult(response.isSuccessful, response.code, response.body?.string() ?: "")
                 }
             } catch (t: Throwable) {
+                t.printStackTrace()
                 HttpResult(false, 0, "")
             }
         }
     }
-
-
 
     private fun getRequest(requestBuilder: Request.Builder): Request {
         return requestBuilder

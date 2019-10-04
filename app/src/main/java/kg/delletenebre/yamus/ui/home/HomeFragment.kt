@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import androidx.appcompat.widget.Toolbar
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -14,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kg.delletenebre.yamus.MainActivity
 import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.api.response.Mix
@@ -37,18 +37,21 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val root = inflater.inflate(R.layout.fragment_home, container, false)
-
-        setupToolbar(root.findViewById(R.id.toolbar))
-
         personalPlaylistsContainer = root.findViewById(R.id.personalPlaylistsContainer)
         mixesContainer = root.findViewById(R.id.mixesContainer)
 
         return root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        (activity as MainActivity).setupMainToolbar(view.findViewById(R.id.toolbar))
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         val context = activity ?: return
+
         viewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
         viewModel.personalPlaylists.observe(viewLifecycleOwner, Observer {
             val now = System.currentTimeMillis()
@@ -99,16 +102,5 @@ class HomeFragment : Fragment() {
             mixesAdapter.items = mixes
             mixesAdapter.notifyDataSetChanged()
         })
-    }
-
-    private fun setupToolbar(toolbar: Toolbar) {
-        toolbar.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.action_profile -> {
-                    findNavController().navigate(R.id.fragmentProfile)
-                }
-            }
-            super.onOptionsItemSelected(it)
-        }
     }
 }

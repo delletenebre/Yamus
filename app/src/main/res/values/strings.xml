@@ -69,6 +69,7 @@
 
 
     <!-- Playlist Fragment -->
+    <string name="download_tracks">Download tracks</string>
     <string name="stations_catalog">Station catalog</string>
     <string name="title_playlist">Playlist</string>
     <string name="content_description_explicit">Explicit Content</string>
@@ -76,5 +77,37 @@
     <!-- Menu -->
     <!-- Menu Main -->
     <string name="menu_main_profile">Profile</string>
+
+    <!-- PERMISSIONS -->
+    <string name="permission_write_external_storage_title">Write External Storage permission necessary</string>
+    <string name="permission_write_external_storage_description">Write External Storage permission allows Yamus to save tracks on the device for offline listening</string>
+
+    <!-- SETTINGS -->
+    <string name="title_activity_settings">Settings</string>
+    <string name="menu_main_settings">Settings</string>
+
+    <!-- Preference Playback -->
+    <string name="pref_header_playback">Playback</string>
+    <string name="pref_title_shuffle_mode">Shuffle mode by default</string>
+    <string name="pref_summary_on_shuffle_mode">Play tracks in random order</string>
+    <string name="pref_summary_off_shuffle_mode">Play tracks sequentially</string>
+    <string name="pref_title_repeat_mode">Repeat mode by default</string>
+    <string name="pref_summary_on_repeat_mode">Loop all tracks</string>
+    <string name="pref_summary_off_repeat_mode">Stop playback at the end of the playlist</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
 </resources>

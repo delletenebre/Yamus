@@ -5,27 +5,42 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.Toolbar
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import kg.delletenebre.yamus.MainActivity
 import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.api.UserModel
 import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.databinding.FragmentMyMusicBinding
 import kg.delletenebre.yamus.ui.playlist.PlaylistFragment
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
-class MyMusicFragment : Fragment() {
+class MyMusicFragment : Fragment(), CoroutineScope {
+    private val job = SupervisorJob()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
+
     private lateinit var binding: FragmentMyMusicBinding
+
+    override fun onDestroy() {
+        super.onDestroy()
+        coroutineContext.cancelChildren()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        launch {
+            withContext(Dispatchers.IO) {
+                UserModel.updateUserTracks()
+            }
+        }
+
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_my_music,
                 container,false)
         binding.fragment = this
@@ -43,18 +58,7 @@ class MyMusicFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupToolbar(view.findViewById(R.id.toolbar))
-    }
-
-    private fun setupToolbar(toolbar: Toolbar) {
-        toolbar.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.action_profile -> {
-                    findNavController().navigate(R.id.fragmentProfile)
-                }
-            }
-            super.onOptionsItemSelected(it)
-        }
+        (activity as MainActivity).setupMainToolbar(view.findViewById(R.id.toolbar))
     }
 
     fun onClickListItem(type: String) {
