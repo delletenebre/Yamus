@@ -32,6 +32,17 @@ class PlaylistAdapter(
         holder.bind(items[position])
     }
 
+    fun addDownloadStatus(file: String, status: String) {
+        val trackId = file.split("/").last().split(".")[0]
+        val item = items.find {
+            it.id == trackId
+        }
+        if (item != null) {
+            item.downloadStatus = status
+            notifyItemChanged(items.indexOf(item))
+        }
+    }
+
     interface PlaylistTrackListener {
         fun onClick(track: Track, position: Int)
     }
@@ -82,6 +93,7 @@ class PlaylistAdapter(
             menuHelper.show()
         }
     }
+
 
 
 }

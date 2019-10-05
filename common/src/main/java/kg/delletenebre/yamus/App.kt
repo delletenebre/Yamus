@@ -7,27 +7,15 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import androidx.preference.PreferenceManager
-import com.tonyodev.fetch2.Fetch
-import com.tonyodev.fetch2.FetchConfiguration
-import com.tonyodev.fetch2okhttp.OkHttpDownloader
 import kg.delletenebre.yamus.api.UserModel
 import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
 import kg.delletenebre.yamus.utils.Utils
-import okhttp3.OkHttpClient
 import java.io.File
 
 
 internal class App : Application() {
     private lateinit var prefs: SharedPreferences
-    val fetch by lazy {
-        val okHttpClient = OkHttpClient.Builder().build()
-        val fetchConfiguration = FetchConfiguration.Builder(this)
-                .setDownloadConcurrentLimit(10)
-                .setHttpDownloader(OkHttpDownloader(okHttpClient))
-                .build()
 
-        Fetch.getInstance(fetchConfiguration)
-    }
     val httpCacheDir by lazy {
         File(cacheDir, "httpCache")
     }
@@ -37,7 +25,7 @@ internal class App : Application() {
         instance = this
         UserModel.init(instance.applicationContext)
         AndroidAutoBrowser.init(instance.applicationContext)
-
+        Downloader.init(instance.applicationContext)
         prefs = PreferenceManager.getDefaultSharedPreferences(instance.applicationContext)
     }
 

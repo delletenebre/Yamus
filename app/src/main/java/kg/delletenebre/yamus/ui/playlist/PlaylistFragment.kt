@@ -12,18 +12,35 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import com.tonyodev.fetch2.Download
+import com.tonyodev.fetch2.Error
+import com.tonyodev.fetch2.FetchListener
+import com.tonyodev.fetch2core.DownloadBlock
+import kg.delletenebre.yamus.Downloader
 import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.utils.InjectorUtils
 import kg.delletenebre.yamus.viewmodels.MainActivityViewModel
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 
-class PlaylistFragment : Fragment() {
+class PlaylistFragment : Fragment(), CoroutineScope {
+    private val job = SupervisorJob()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
+
     private lateinit var viewModel: PlaylistViewModel
     private lateinit var mainViewModel: MainActivityViewModel
     private lateinit var recyclerView: RecyclerView
     private lateinit var playlistAdapter: PlaylistAdapter
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Downloader.client.removeListener(fetchListener)
+        coroutineContext.cancelChildren()
+    }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -77,15 +94,69 @@ class PlaylistFragment : Fragment() {
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_download -> {
-                    YandexApi.downloadCurrentPlaylist()
+                    launch {
+                        YandexApi.saveTracksToDatabase(playlistAdapter.items)
+                        YandexApi.downloadTracks(playlistAdapter.items)
+                        Downloader.client.addListener(fetchListener)
+                    }
                 }
             }
             super.onOptionsItemSelected(it)
         }
     }
 
-    private fun downloadTracks() {
+    private val fetchListener = object : FetchListener {
+        override fun onAdded(download: Download) {
+            playlistAdapter.addDownloadStatus(download.file, Track.STATUS_DOWNLOADING)
+        }
 
+        override fun onCancelled(download: Download) {
+
+        }
+
+        override fun onCompleted(download: Download) {
+            playlistAdapter.addDownloadStatus(download.file, Track.STATUS_DOWNLOADED)
+        }
+
+        override fun onDeleted(download: Download) {
+
+        }
+
+        override fun onDownloadBlockUpdated(download: Download, downloadBlock: DownloadBlock, totalBlocks: Int) {
+
+        }
+
+        override fun onError(download: Download, error: Error, throwable: Throwable?) {
+
+        }
+
+        override fun onPaused(download: Download) {
+
+        }
+
+        override fun onProgress(download: Download, etaInMilliSeconds: Long, downloadedBytesPerSecond: Long) {
+
+        }
+
+        override fun onQueued(download: Download, waitingOnNetwork: Boolean) {
+
+        }
+
+        override fun onRemoved(download: Download) {
+
+        }
+
+        override fun onResumed(download: Download) {
+
+        }
+
+        override fun onStarted(download: Download, downloadBlocks: List<DownloadBlock>, totalBlocks: Int) {
+
+        }
+
+        override fun onWaitingNetwork(download: Download) {
+
+        }
     }
 
     private inline fun <VM : ViewModel> viewModelFactory(crossinline f: () -> VM) =

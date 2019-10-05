@@ -3,6 +3,7 @@ package kg.delletenebre.yamus.ui.playlist
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.api.response.Track
 import kotlinx.coroutines.launch
@@ -26,6 +27,11 @@ class PlaylistViewModel(type: String, uid: Int, kind: Int) : ViewModel() {
                     else -> {
                         listOf()
                     }
+                }.map {
+                    if (YandexApi.checkTrackDownloaded(it.realId)) {
+                        it.downloadStatus = Track.STATUS_DOWNLOADED
+                    }
+                    it
                 }
             )
         }

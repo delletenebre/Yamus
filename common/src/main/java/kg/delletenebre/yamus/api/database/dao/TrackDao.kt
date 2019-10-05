@@ -23,5 +23,12 @@ interface TrackDao {
     @Update
     fun update(vararg track: TrackEntity)
 
+    @Transaction
+    fun insert(tracks: List<TrackEntity>) {
+        tracks.forEach {
+            insert(it)
+        }
+    }
+
 
 }

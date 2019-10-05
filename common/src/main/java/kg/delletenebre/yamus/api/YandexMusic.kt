@@ -1,11 +1,9 @@
 package kg.delletenebre.yamus.api
 
 import android.util.Log
-import kg.delletenebre.yamus.api.database.table.HttpCacheEntity
 import kg.delletenebre.yamus.api.database.table.UserTracksIdsEntity
 import kg.delletenebre.yamus.api.response.*
 import kg.delletenebre.yamus.media.extensions.md5
-import kg.delletenebre.yamus.utils.HashUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.internal.ArrayListSerializer
@@ -94,7 +92,7 @@ object YandexMusic {
 
         val url = "/rotor/stations/dashboard"
 
-        val httpResult = YandexApi.networkCall(url)
+        val httpResult = YandexApi.networkCall(url, useCache = false)
         if (httpResult.isSuccess) {
             try {
                 val stations = JSONObject(httpResult.message)
@@ -118,7 +116,7 @@ object YandexMusic {
 
         val url = "/rotor/stations/list?language=$language"
 
-        val httpResult = YandexApi.networkCall(url)
+        val httpResult = YandexApi.networkCall(url, useCache = false)
         if (httpResult.isSuccess) {
             try {
                 val stations = JSONObject(httpResult.message)
@@ -142,7 +140,7 @@ object YandexMusic {
             url = "$url&queue=$queue"
         }
 
-        val httpResult = YandexApi.networkCall(url)
+        val httpResult = YandexApi.networkCall(url, useCache = false)
         if (httpResult.isSuccess) {
             try {
                 val stations = JSONObject(httpResult.message)
@@ -195,136 +193,106 @@ object YandexMusic {
 
     suspend fun getPersonalPlaylists(): List<PersonalPlaylists> {
         var result = listOf<PersonalPlaylists>()
-        var response: String
-
         val url = "/landing3?blocks=personalplaylists"
-
         val httpResult = YandexApi.networkCall(url)
-        try {
-            response = JSONObject(httpResult.message)
-                    .getJSONObject("result")
-                    .getJSONArray("blocks")
-                    .getJSONObject(0)
-                    .getJSONArray("entities")
-                    .toString()
-            saveResponseToCache(url, response)
-        } catch (t: Throwable) {
-            response = getCachedResponse(url)
-        }
+        if (httpResult.isSuccess) {
+            try {
+                val response = JSONObject(httpResult.message)
+                        .getJSONObject("result")
+                        .getJSONArray("blocks")
+                        .getJSONObject(0)
+                        .getJSONArray("entities")
+                        .toString()
+                result = Json.nonstrict.parse(ArrayListSerializer(PersonalPlaylists.serializer()), response)
+            } catch (t: Throwable) {
 
-        if (response.isNotEmpty()) {
-            result = Json.nonstrict.parse(ArrayListSerializer(PersonalPlaylists.serializer()), response)
+            }
         }
-
         return result
     }
 
     suspend fun getMixes(): List<Mix> {
         var result = listOf<Mix>()
-        var response: String
-
         val url = "/landing3?blocks=mixes"
-
         val httpResult = YandexApi.networkCall(url)
-        try {
-            response = JSONObject(httpResult.message)
-                    .getJSONObject("result")
-                    .getJSONArray("blocks")
-                    .getJSONObject(0)
-                    .getJSONArray("entities")
-                    .toString()
-            saveResponseToCache(url, response)
-        } catch (t: Throwable) {
-            response = getCachedResponse(url)
-        }
+        if (httpResult.isSuccess) {
+            try {
+                val response = JSONObject(httpResult.message)
+                        .getJSONObject("result")
+                        .getJSONArray("blocks")
+                        .getJSONObject(0)
+                        .getJSONArray("entities")
+                        .toString()
+                result = Json.nonstrict.parse(ArrayListSerializer(Mix.serializer()), response)
+            } catch (t: Throwable) {
 
-        if (response.isNotEmpty()) {
-            result = Json.nonstrict.parse(ArrayListSerializer(Mix.serializer()), response)
+            }
         }
-
         return result
     }
 
     suspend fun getPlaylist(uid: String, kind: String): List<Track> {
         var result = listOf<Track>()
-        var response: String
         val url = "/users/$uid/playlists"
         val formBody = FormBody.Builder()
                 .add("kinds", kind)
                 .build()
-        val cacheId = "$url+${HashUtils.sha256(formBody.strigify())}"
-
         val httpResult = YandexApi.networkCall(url, formBody)
-        try {
-            response = JSONObject(httpResult.message)
-                    .getJSONArray("result")
-                    .getJSONObject(0)
-                    .getJSONArray("tracks")
-                    .toString()
-            saveResponseToCache(cacheId, response)
-        } catch (t: Throwable) {
-            response = getCachedResponse(cacheId)
-        }
+        if (httpResult.isSuccess) {
+            try {
+                val response = JSONObject(httpResult.message)
+                        .getJSONArray("result")
+                        .getJSONObject(0)
+                        .getJSONArray("tracks")
+                        .toString()
+                result = getTracks(
+                        Json.nonstrict.parse(
+                                ArrayListSerializer(PlaylistTracksIds.serializer()),
+                                response
+                        ).map { it.id.toString() }.toList()
+                )
+            } catch (t: Throwable) {
 
-        if (response.isNotEmpty()) {
-            result = getTracks(
-                    Json.nonstrict.parse(
-                            ArrayListSerializer(PlaylistTracksIds.serializer()),
-                            response
-                    ).map { it.id.toString() }.toList()
-            )
+            }
         }
-
         return result
     }
 
     suspend fun getPlaylistIdsByTag(tag: String): List<String> {
         var result = listOf<String>()
-        var response: String
-
         val url = "/tags/$tag/playlist-ids"
-
         val httpResult = YandexApi.networkCall(url)
-        try {
-            response = JSONObject(httpResult.message)
-                    .getJSONObject("result")
-                    .getJSONArray("ids")
-                    .toString()
-            saveResponseToCache(url, response)
-        } catch (t: Throwable) {
-            response = getCachedResponse(url)
-        }
+        if (httpResult.isSuccess) {
+            try {
+                val response = JSONObject(httpResult.message)
+                        .getJSONObject("result")
+                        .getJSONArray("ids")
+                        .toString()
+                result = Json.nonstrict.parse(ArrayListSerializer(PlaylistIds.serializer()), response).map {
+                    "${it.uid}:${it.kind}"
+                }
+            } catch (t: Throwable) {
 
-        if (response.isNotEmpty()) {
-            result = Json.nonstrict.parse(ArrayListSerializer(PlaylistIds.serializer()), response).map {
-                "${it.uid}:${it.kind}"
             }
         }
-
         return result
     }
 
     suspend fun getPlaylists(ids: List<String>): List<Playlist> {
         var result = listOf<Playlist>()
-        var response: String
         val url = "/playlists/list"
         val formBody = FormBody.Builder()
                 .add("playlistIds", ids.joinToString(","))
                 .build()
-        val cacheId = "$url+${HashUtils.sha256(formBody.strigify())}"
-
         val httpResult = YandexApi.networkCall(url, formBody)
-        try {
-            response = JSONObject(httpResult.message).getJSONArray("result").toString()
-            saveResponseToCache(cacheId, response)
-        } catch (t: Throwable) {
-            response = getCachedResponse(cacheId)
-        }
+        if (httpResult.isSuccess) {
+            try {
+                val response = JSONObject(httpResult.message).getJSONArray("result").toString()
+                result = Json.nonstrict.parse(ArrayListSerializer(Playlist.serializer()), response)
+            } catch (t: Throwable) {
 
-        if (response.isNotEmpty()) {
-            result = Json.nonstrict.parse(ArrayListSerializer(Playlist.serializer()), response)
+            }
         }
-
         return result
     }
 
@@ -373,24 +341,20 @@ object YandexMusic {
 
     private suspend fun getTracks(tracksIds: List<String>): List<Track> {
         var result = listOf<Track>()
-
         val url = "/tracks"
         val formBody = FormBody.Builder()
                 .add("with-positions", "True")
                 .add("track-ids", tracksIds.joinToString(","))
                 .build()
-
         val httpResult = YandexApi.networkCall(url, formBody)
         if (httpResult.isSuccess) {
             try {
-                //val responseJson = JSONObject(responseBody)
                 val json = Json.nonstrict.parse(Tracks.serializer(), httpResult.message)
                 result = json.result
             } catch (t: Throwable) {
                 t.printStackTrace()
             }
         }
-
         return result
     }
 //
@@ -453,99 +417,78 @@ object YandexMusic {
 
     suspend fun getLikedAlbums(): List<Album> {
         val result = mutableListOf<Album>()
-        var response: String
         val url = "/users/${UserModel.getUid()}/likes/albums?rich=true"
-
         val httpResult = YandexApi.networkCall(url)
-        try {
-            response = JSONObject(httpResult.message).getJSONArray("result").toString()
-            saveResponseToCache(url, response)
-        } catch (t: Throwable) {
-            response = getCachedResponse(url)
-        }
-
-        if (response.isNotEmpty()) {
-            val albumsJson = JSONArray(response)
-            if (albumsJson.length() > 0) {
-                for (i in 0 until albumsJson.length()) {
-                    val album = albumsJson.getJSONObject(i).getJSONObject("album")
-                    result.add(Json.nonstrict.parse(Album.serializer(), album.toString()))
+        if (httpResult.isSuccess) {
+            try {
+                val response = JSONObject(httpResult.message).getJSONArray("result").toString()
+                val albumsJson = JSONArray(response)
+                if (albumsJson.length() > 0) {
+                    for (i in 0 until albumsJson.length()) {
+                        val album = albumsJson.getJSONObject(i).getJSONObject("album")
+                        result.add(Json.nonstrict.parse(Album.serializer(), album.toString()))
+                    }
                 }
+            } catch (t: Throwable) {
+
             }
         }
-
         return result
     }
 
     suspend fun getLikedArtists(): List<Artist> {
         var result = listOf<Artist>()
-        var response: String
         val url = "/users/${UserModel.getUid()}/likes/artists?with-timestamps=false"
-
         val httpResult = YandexApi.networkCall(url)
-        try {
-            response = JSONObject(httpResult.message).getJSONArray("result").toString()
-            saveResponseToCache(url, response)
-        } catch (t: Throwable) {
-            response = getCachedResponse(url)
-        }
+        if (httpResult.isSuccess) {
+            try {
+                val response = JSONObject(httpResult.message).getJSONArray("result").toString()
+                result = Json.nonstrict.parse(ArrayListSerializer(Artist.serializer()), response)
+            } catch (t: Throwable) {
 
-        if (response.isNotEmpty()) {
-            result = Json.nonstrict.parse(ArrayListSerializer(Artist.serializer()), response)
+            }
         }
-
         return result
     }
 
     suspend fun getLikedPlaylists(): List<Playlist> {
         val result = mutableListOf<Playlist>()
-        var response: String
         val url = "/users/${UserModel.getUid()}/likes/playlists"
-
         val httpResult = YandexApi.networkCall(url)
-        try {
-            response = JSONObject(httpResult.message).getJSONArray("result").toString()
-            saveResponseToCache(url, response)
-        } catch (t: Throwable) {
-            response = getCachedResponse(url)
-        }
-
-        if (response.isNotEmpty()) {
-            val playlistsJson = JSONArray(response)
-            if (playlistsJson.length() > 0) {
-                for (i in 0 until playlistsJson.length()) {
-                    val playlist = playlistsJson.getJSONObject(i).getJSONObject("playlist")
-                    result.add(Json.nonstrict.parse(Playlist.serializer(), playlist.toString()))
+        if (httpResult.isSuccess) {
+            try {
+                val response = JSONObject(httpResult.message).getJSONArray("result").toString()
+                val playlistsJson = JSONArray(response)
+                if (playlistsJson.length() > 0) {
+                    for (i in 0 until playlistsJson.length()) {
+                        val playlist = playlistsJson.getJSONObject(i).getJSONObject("playlist")
+                        result.add(Json.nonstrict.parse(Playlist.serializer(), playlist.toString()))
+                    }
                 }
+            } catch (t: Throwable) {
+
             }
         }
-
         return result
     }
 
     suspend fun getUserPlaylists(): List<Playlist> {
         var result = listOf<Playlist>()
-        var response: String
         val url = "/users/${UserModel.getUid()}/playlists/list"
-
         val httpResult = YandexApi.networkCall(url)
-        try {
-            response = JSONObject(httpResult.message).getJSONArray("result").toString()
-            saveResponseToCache(url, response)
-        } catch (t: Throwable) {
-            response = getCachedResponse(url)
-        }
+        if (httpResult.isSuccess) {
+            try {
+                val response = JSONObject(httpResult.message).getJSONArray("result").toString()
+                result = Json.nonstrict.parse(ArrayListSerializer(Playlist.serializer()), response)
+            } catch (t: Throwable) {
 
-        if (response.isNotEmpty()) {
-            result = Json.nonstrict.parse(ArrayListSerializer(Playlist.serializer()), response)
+            }
         }
-
         return result
     }
 
     fun getDirectUrl(trackId: String): String {
         val downloadVariants = getDownloadVariants(trackId)
-
         if (downloadVariants.isNotEmpty()) {
             var downloadVariant = downloadVariants[0]
             for (i in downloadVariants.indices) {
@@ -610,26 +553,4 @@ object YandexMusic {
         val sign = ("XGRlBW9FXlekgbPrRHuSiA${downloadInfo.path.substring(1)}${downloadInfo.s}").md5()
         return "https://$host/get-mp3/$sign/${downloadInfo.ts}${downloadInfo.path}"
     }
-
-    private suspend fun saveResponseToCache(url: String, response: String) {
-        withContext(Dispatchers.IO) {
-            YandexApi.database.httpCache().insert(HttpCacheEntity(url, response))
-        }
-    }
-
-    private suspend fun getCachedResponse(url: String): String {
-        return withContext(Dispatchers.IO) {
-            val httpCache = YandexApi.database.httpCache().get(url)
-            httpCache?.response ?: ""
-        }
-    }
 }
-
-fun FormBody.strigify(): String {
-    val result = mutableListOf<String>()
-    for (i in 0 until this.size) {
-        result.add("${this.name(i)}:${this.value(i)}")
-    }
-    return result.joinToString("|")
-}
-

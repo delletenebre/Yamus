@@ -13,7 +13,7 @@ import kg.delletenebre.yamus.api.database.table.UserTracksIdsEntity
 
 @Database(
     entities = [TrackEntity::class, UserTracksIdsEntity::class, HttpCacheEntity::class],
-    version = 5
+    version = 6
 )
 abstract class YandexDatabase : RoomDatabase(){
     abstract fun trackDao(): TrackDao

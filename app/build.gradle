@@ -6,8 +6,9 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion rootProject.compileSdkVersion
     defaultConfig {
+        multiDexEnabled true
         applicationId "kg.delletenebre.yamus"
-        versionCode 9
+        versionCode 10
         versionName "19.10.03"
 
         minSdkVersion rootProject.minSdkVersion

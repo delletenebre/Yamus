@@ -34,8 +34,8 @@ dependencies {
     api "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines"
     api "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.13.0"
     api "androidx.media:media:1.1.0"
-    api "androidx.security:security-crypto:1.0.0-alpha02"
-    implementation "androidx.preference:preference-ktx:1.1.0"
+    //api "androidx.security:security-crypto:1.0.0-alpha02"
+    api "androidx.preference:preference-ktx:1.1.0"
 
     // Room
     def room_version = '2.2.0-rc01'
@@ -59,6 +59,9 @@ dependencies {
     kapt "com.github.bumptech.glide:compiler:$glide_version"
 
     // Fetch
-    implementation "androidx.tonyodev.fetch2:xfetch2:3.1.4"
-    implementation "androidx.tonyodev.fetch2okhttp:xfetch2okhttp:3.1.4"
+    api "androidx.tonyodev.fetch2:xfetch2:3.1.4"
+    api "androidx.tonyodev.fetch2okhttp:xfetch2okhttp:3.1.4"
+
+    // CryptoPrefs
+    api 'com.github.AndreaCioccarelli:CryptoPrefs:1.3.2.5'
 }

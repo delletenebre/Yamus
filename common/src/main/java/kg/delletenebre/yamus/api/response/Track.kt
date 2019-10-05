@@ -26,6 +26,12 @@ data class Track(
         val type: String = "",
         val version: String = ""
 ) {
+    companion object {
+        const val STATUS_DOWNLOADING = "downloading"
+        const val STATUS_DOWNLOADED = "downloaded"
+    }
+    var downloadStatus = ""
+
     @Serializable
     data class Major(
             val id: Int = 0,

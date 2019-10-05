@@ -10,5 +10,12 @@ data class HttpCacheEntity (
         var url: String = "",
 
         @ColumnInfo(name = "response")
-        var response: String = ""
-)
+        var response: String = "",
+
+        @ColumnInfo(name = "updated_at")
+        var updatedAt: Long = 0
+) {
+        fun isFresh(): Boolean {
+            return System.currentTimeMillis() - updatedAt > 1000 * 60 // 1 min
+        }
+}

@@ -1,15 +1,16 @@
 package kg.delletenebre.yamus.api
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.content.SharedPreferences
+import android.provider.Settings
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
+import com.andreacioccarelli.cryptoprefs.CryptoPrefs
 import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.response.User
 import kg.delletenebre.yamus.media.R
+import kg.delletenebre.yamus.utils.HashUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -32,17 +33,20 @@ object UserModel {
     val likedTracksIds = MutableLiveData<List<String>>()
     val dislikedTracksIds = MutableLiveData<List<String>>()
 
-    private lateinit var prefs: SharedPreferences
+    private lateinit var prefs: CryptoPrefs
 
+    @SuppressLint("HardwareIds")
     fun init(context: Context) {
-        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
-        prefs = EncryptedSharedPreferences.create(
-                "user",
-                masterKeyAlias,
-                context,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
+        val masterKeyAlias = HashUtils.sha512(Settings.Secure.getString(context.contentResolver,
+                Settings.Secure.ANDROID_ID)) // MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+//        prefs = EncryptedSharedPreferences.create(
+//                "user",
+//                masterKeyAlias,
+//                context,
+//                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+//                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+//        )
+        prefs = CryptoPrefs(context, "user", masterKeyAlias)
         loadUser()
         GlobalScope.launch {
             updateUserTracks()
@@ -54,18 +58,22 @@ object UserModel {
     }
 
     fun loadUser() {
-        token_.value = prefs.getString(PREFERENCE_KEY_TOKEN, "")
-        val savedUser = prefs.getString(PREFERENCE_KEY_USER, null)
-        if (savedUser != null) {
+        token_.value = prefs.get(PREFERENCE_KEY_TOKEN, "")
+        val savedUser = prefs.get(PREFERENCE_KEY_USER, "")
+        if (savedUser.isNotEmpty()) {
             user_.value = Json.nonstrict.parse(User.serializer(), savedUser)
         }
     }
 
     fun logout() {
-        token_.value = ""
-        user_.value = User()
-        YandexApi.database.clearAllTables()
-        saveUser()
+        GlobalScope.launch {
+            token_.postValue("")
+            user_.postValue(User())
+            withContext(Dispatchers.IO) {
+                YandexApi.database.clearAllTables()
+                prefs.erase()
+            }
+        }
     }
 
 
@@ -141,10 +149,8 @@ object UserModel {
     }
 
     private fun saveUser() {
-        prefs.edit()
-                .putString(PREFERENCE_KEY_TOKEN, token.value)
-                .putString(PREFERENCE_KEY_USER, Json.stringify(User.serializer(), user.value!!))
-                .apply()
+        prefs.put(PREFERENCE_KEY_TOKEN, token.value ?: "")
+        prefs.put(PREFERENCE_KEY_USER, Json.stringify(User.serializer(), user.value!!))
     }
 
     suspend fun updateUserTracks(type: String = "") {
