@@ -55,6 +55,7 @@
     <string name="my_music_list_albums">Альбомы</string>
     <string name="my_music_list_artists">Исполнители</string>
     <string name="my_music_list_dislikes">Непонравившиеся треки</string>
+    <string name="my_music_playlists_title">Мои плейлисты</string>
 
 
     <!-- Search Fragment -->

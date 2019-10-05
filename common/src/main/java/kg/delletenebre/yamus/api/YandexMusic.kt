@@ -185,7 +185,7 @@ object YandexMusic {
         withContext(Dispatchers.IO) {
             YandexApi.httpClient.newCall(YandexApi.getRequest(url, jsonData)).execute().use { response ->
                 if (!response.isSuccessful) {
-                    Log.e("ahoha", "Could not get feedback response: ${response.message}")
+                    Log.e("ahoha", "Could not get feedback response: ${response.message()}")
                 }
             }
         }
@@ -238,6 +238,7 @@ object YandexMusic {
                 .add("kinds", kind)
                 .build()
         val httpResult = YandexApi.networkCall(url, formBody)
+        Log.d("ahoha", "for: $url = ${httpResult.isSuccess}, ${httpResult.code}, ${httpResult.message}")
         if (httpResult.isSuccess) {
             try {
                 val response = JSONObject(httpResult.message)
@@ -346,13 +347,22 @@ object YandexMusic {
                 .add("with-positions", "True")
                 .add("track-ids", tracksIds.joinToString(","))
                 .build()
-        val httpResult = YandexApi.networkCall(url, formBody)
+        val httpResult = YandexApi.networkCall(url, formBody, useCache = false)
         if (httpResult.isSuccess) {
             try {
                 val json = Json.nonstrict.parse(Tracks.serializer(), httpResult.message)
                 result = json.result
             } catch (t: Throwable) {
                 t.printStackTrace()
+            }
+        } else {
+            withContext(Dispatchers.IO) {
+                val ids = tracksIds.map {
+                    it.split(":")[0]
+                }
+                result = YandexApi.database.trackDao().findByIds(ids).map {
+                    Json.nonstrict.parse(Track.serializer(), it.data)
+                }
             }
         }
         return result
@@ -490,15 +500,13 @@ object YandexMusic {
     fun getDirectUrl(trackId: String): String {
         val downloadVariants = getDownloadVariants(trackId)
         if (downloadVariants.isNotEmpty()) {
-            var downloadVariant = downloadVariants[0]
-            for (i in downloadVariants.indices) {
-                val it = downloadVariants[i]
-                if (it.codec == "aac") {
-                    downloadVariant = it
-                    break
-                }
-            }
+            val best = downloadVariants.find { it.bitrateInKbps == 320 }
+            val better = downloadVariants.find { it.bitrateInKbps == 192 && it.codec == "aac" }
+            val good = downloadVariants.find { it.bitrateInKbps == 128 && it.codec == "aac" }
 
+            // 320 mp3, 192 aac, 192 mp3, 128 aac, 64 aac
+
+            val downloadVariant = best ?: better ?: good ?: downloadVariants[0]
             val request = Request.Builder()
                     .url("${downloadVariant.downloadInfoUrl}&format=json")
                     .addHeader("Authorization", "OAuth ${UserModel.getToken()}")
@@ -506,8 +514,8 @@ object YandexMusic {
 
             YandexApi.httpClient.newCall(request).execute().use { response ->
                 if (response.isSuccessful) {
-                    if (response.body != null) {
-                        val responseBody = response.body!!.string()
+                    if (response.body() != null) {
+                        val responseBody = response.body()!!.string()
                         try {
                             val downloadInfo = Json.parse(DownloadInfo.serializer(), responseBody)
                             return buildDirectUrl(downloadInfo)
@@ -526,14 +534,13 @@ object YandexMusic {
         val url = "/tracks/$trackId/download-info"
         YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
             if (response.isSuccessful) {
-                if (response.body != null) {
-                    val responseBody = response.body!!.string()
+                if (response.body() != null) {
+                    val responseBody = response.body()!!.string()
                     try {
                         val json = Json.parse(DownloadVariants.serializer(), responseBody)
                         //val result = json.result.sortedWith(Comparator { b, a -> compareValuesBy(a, b, { it.codec }, { it.bitrateInKbps }) })
-                        val result = json.result.sortedByDescending { it.bitrateInKbps }.sortedBy { it.codec }
-//                        Log.d("ahoha", result.toString())
-                        return result
+                        //                        Log.d("ahoha", result.toString())
+                        return json.result.sortedByDescending { it.bitrateInKbps }
                     } catch (t: Throwable) {
                         Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
                     }

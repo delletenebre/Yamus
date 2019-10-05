@@ -1,10 +1,11 @@
 package kg.delletenebre.yamus.api
 
+import android.util.Log
 import com.tonyodev.fetch2.NetworkType
 import com.tonyodev.fetch2.Priority
 import kg.delletenebre.yamus.App
-import kg.delletenebre.yamus.Downloader
 import kg.delletenebre.yamus.HttpResult
+import kg.delletenebre.yamus.YamusDownloader
 import kg.delletenebre.yamus.api.database.YandexDatabase
 import kg.delletenebre.yamus.api.database.table.HttpCacheEntity
 import kg.delletenebre.yamus.api.database.table.TrackEntity
@@ -16,11 +17,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import okhttp3.FormBody
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.*
 import org.json.JSONObject
 import java.io.File
 
@@ -31,6 +28,7 @@ object YandexApi {
     const val API_URL_MUSIC = "https://api.music.yandex.net"
     const val API_URL_OAUTH = "https://oauth.yandex.ru"
     const val API_URL_LOGIN = "https://login.yandex.ru"
+    const val MUSIC_FILE_CONTAINER = ".m4a"
 
     val database: YandexDatabase = YandexDatabase.invoke()
     val httpClient = OkHttpClient()
@@ -50,8 +48,10 @@ object YandexApi {
     }
 
     fun getRequest(url: String, jsonData: JSONObject): Request {
-        val formBody = jsonData.toString()
-                .toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+        val formBody = RequestBody.create(
+                MediaType.parse("application/json; charset=utf-8"),
+                jsonData.toString()
+        )
         return getRequest(
                 Request.Builder()
                         .url("$API_URL_MUSIC$url")
@@ -62,25 +62,44 @@ object YandexApi {
     fun downloadTracks(tracks: List<Track>) {
         GlobalScope.launch {
             withContext(Dispatchers.IO) {
-                val groupId = System.currentTimeMillis().hashCode()
-                val requestList: List<com.tonyodev.fetch2.Request> = tracks.map { track ->
-                        val url = YandexMusic.getDirectUrl(track.getTrackId())
-                        val file = "${App.instance.getMusicDir()}/${track.realId}.mp3"
-                        val request = com.tonyodev.fetch2.Request(url, file)
-                        request.priority = Priority.NORMAL
-                        request.networkType = NetworkType.ALL
-                        request.groupId = groupId
-                        request
+//                val groupId = tracks.hashCode()
+//                val requestList: List<com.tonyodev.fetch2.Request> = tracks.map { track ->
+//                        val url = YandexMusic.getDirectUrl(track.getTrackId())
+//                        Log.d("ahoha", "track: ${track.artists[0].name} - ${track.title} (${track.id}) = $url ")
+//                        val file = "${App.instance.getMusicDir()}/${track.realId}.mp3"
+//                        val request = com.tonyodev.fetch2.Request(url, file)
+//                        request.priority = Priority.NORMAL
+//                        request.networkType = NetworkType.ALL
+//                        request.groupId = groupId
+//                        request
+//                }
+//                YamusDownloader.client.enqueue(requestList)
+                tracks.forEach { track ->
+                    val url = YandexMusic.getDirectUrl(track.getTrackId())
+                    Log.d("ahoha", "track: ${track.artists[0].name} - ${track.title} (${track.id}) = $url ")
+                    val file = "${App.instance.getMusicDir()}/${track.realId}$MUSIC_FILE_CONTAINER"
+                    val request = com.tonyodev.fetch2.Request(url, file)
+                    request.priority = Priority.NORMAL
+                    request.networkType = NetworkType.ALL
+                    YamusDownloader.client.enqueue(request)
                 }
 
-                Downloader.client.enqueue(requestList)
             }
         }
     }
 
     fun checkTrackDownloaded(trackRealId: String): Boolean {
-        val file = File("${App.instance.getMusicDir()}/$trackRealId.mp3")
+        val file = File("${App.instance.getMusicDir()}/$trackRealId$MUSIC_FILE_CONTAINER")
         return file.exists()
+    }
+
+    fun getDownloadedUri(trackRealId: String): String? {
+        val file = File("${App.instance.getMusicDir()}/$trackRealId$MUSIC_FILE_CONTAINER")
+        return if (file.exists()) {
+            file.absolutePath
+        } else {
+            null
+        }
     }
 
     suspend fun saveTracksToDatabase(tracks: List<Track>) {
@@ -98,24 +117,24 @@ object YandexApi {
         var cacheId = url
         if (formBody != null) {
             requestBuilder.post(formBody)
-            cacheId = "$cacheId+${HashUtils.sha256(formBody.stringify())}"
+            cacheId = "$cacheId/${HashUtils.sha256(formBody.stringify())}"
         }
 
         return withContext(Dispatchers.IO) {
             try {
                 httpClient.newCall(getRequest(requestBuilder)).execute().use { response ->
                     if (response.isSuccessful) {
-                        val message = response.body?.string() ?: ""
+                        val message = response.body()?.string() ?: ""
                         if (message.isNotEmpty()) {
                             if (useCache) {
-                                saveResponseToCache(url, message)
+                                saveResponseToCache(cacheId, message)
                             }
-                            HttpResult(true, response.code, message)
+                            HttpResult(true, response.code(), message)
                         } else {
                             HttpResult(false, 0, "Empty body")
                         }
                     } else {
-                        HttpResult(false, response.code, response.body?.string() ?: "")
+                        HttpResult(false, response.code(), response.body()?.string() ?: "")
                     }
                 }
             } catch (t: Throwable) {
@@ -128,7 +147,7 @@ object YandexApi {
                         HttpResult(false, 504, "No cache")
                     }
                 } else {
-                    HttpResult(false, -2, "exeption: ${t.localizedMessage}")
+                    HttpResult(false, -2, "exception: ${t.localizedMessage}")
                 }
             }
         }

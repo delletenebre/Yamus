@@ -1,7 +1,7 @@
 package kg.delletenebre.yamus.media.library
 
 import android.graphics.Bitmap
-import android.support.v4.media.MediaBrowserCompat.MediaItem
+import android.graphics.drawable.BitmapDrawable
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import com.bumptech.glide.Glide
@@ -9,6 +9,10 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.upstream.DataSpec
+import com.google.android.exoplayer2.upstream.FileDataSource
+import com.google.android.exoplayer2.upstream.FileDataSource.FileDataSourceException
 import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.api.response.Track
@@ -33,10 +37,10 @@ object CurrentPlaylist {
     var mediaSource = ConcatenatingMediaSource()
     var tracksMetadata: MutableList<MediaMetadataCompat> = mutableListOf()
 
-    private val dataSourceFactory = YandexDataSourceFactory(YAMUS_USER_AGENT)
+    private val httpDataSourceFactory = YandexDataSourceFactory(YAMUS_USER_AGENT)
 
     init {
-        dataSourceFactory.defaultRequestProperties
+        httpDataSourceFactory.defaultRequestProperties
                 .set("X-Yandex-Music-Client", YAMUS_HEADER_X_YANDEX_MUSIC_CLIENT)
     }
 
@@ -81,14 +85,19 @@ object CurrentPlaylist {
 
     private suspend fun loadAlbumArt(url: String): Bitmap {
         return withContext(Dispatchers.IO) {
-            Glide.with(App.instance.applicationContext)
-                    .applyDefaultRequestOptions(RequestOptions()
-                            .fallback(R.drawable.default_album_art)
-                            .diskCacheStrategy(DiskCacheStrategy.RESOURCE))
-                    .asBitmap()
-                    .load(YandexApi.getImage(url, AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE))
-                    .submit(AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE, AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE)
-                    .get()
+            try {
+                Glide.with(App.instance.applicationContext)
+                        .applyDefaultRequestOptions(RequestOptions()
+                                .fallback(R.drawable.default_album_art)
+                                .diskCacheStrategy(DiskCacheStrategy.RESOURCE))
+                        .asBitmap()
+                        .diskCacheStrategy(DiskCacheStrategy.DATA)
+                        .load(YandexApi.getImage(url, AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE))
+                        .submit(AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE, AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE)
+                        .get()
+            } catch (t: Throwable) {
+                (App.instance.applicationContext.getDrawable(R.drawable.default_album_art) as BitmapDrawable).bitmap
+            }
         }
     }
 
@@ -113,9 +122,11 @@ object CurrentPlaylist {
         album = albumTitle
         duration = track.durationMs
         genre = albumGenre
-        mediaUri = track.id
+
+        val trackMediaUri = YandexApi.getDownloadedUri(track.id) ?: track.id
+        mediaUri = trackMediaUri
         albumArtUri = YandexApi.getImage(track.coverUri, 400)
-        flag = MediaItem.FLAG_PLAYABLE
+//        flag = MediaItem.FLAG_PLAYABLE
         explicit = if (track.contentWarning == "explicit") {
             1
         } else {
@@ -130,16 +141,33 @@ object CurrentPlaylist {
         // Add downloadStatus to force the creation of an "extras" bundle in the resulting
         // MediaMetadataCompat object. This is needed to send accurate metadata to the
         // media session during updates.
-        downloadStatus = MediaDescriptionCompat.STATUS_NOT_DOWNLOADED
+        downloadStatus = if (trackMediaUri != track.id) {
+            MediaDescriptionCompat.STATUS_DOWNLOADED
+        } else {
+            MediaDescriptionCompat.STATUS_NOT_DOWNLOADED
+        }
 
         // Allow it to be used in the typical builder style.
         return this
     }
 
-    private fun MediaMetadataCompat.toMediaSource() =
-            ProgressiveMediaSource.Factory(dataSourceFactory)
-                    .setTag(description)
-                    .createMediaSource(mediaUri)
+    private fun MediaMetadataCompat.toMediaSource(): ProgressiveMediaSource {
+        val dataSourceFactory = if (mediaUri.toString().endsWith(YandexApi.MUSIC_FILE_CONTAINER)) {
+            val dataSpec = DataSpec(mediaUri)
+            val fileDataSource = FileDataSource()
+            try {
+                fileDataSource.open(dataSpec)
+            } catch (e: FileDataSourceException) {
+                e.printStackTrace()
+            }
+            DataSource.Factory { fileDataSource }
+        } else {
+            httpDataSourceFactory
+        }
+        return ProgressiveMediaSource.Factory(dataSourceFactory)
+                .setTag(description)
+                .createMediaSource(mediaUri)
+    }
 
     private fun List<MediaMetadataCompat>.toMediaSource(): List<ProgressiveMediaSource> {
         return map {

@@ -7,7 +7,7 @@ import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.api.response.Playlist
 import kotlinx.coroutines.launch
 
-class PlaylistsViewModel(type: String, id: String) : ViewModel() {
+class PlaylistsViewModel(type: String, id: String = "") : ViewModel() {
     val playlists: MutableLiveData<List<Playlist>> = MutableLiveData()
 
     init {
@@ -15,7 +15,13 @@ class PlaylistsViewModel(type: String, id: String) : ViewModel() {
             when (type) {
                 "tag" -> {
                     val playlistIds = YandexMusic.getPlaylistIdsByTag(id)
-                    playlists.postValue(YandexMusic.getPlaylists(playlistIds))
+                    playlists.postValue(YandexMusic.getPlaylists(playlistIds).filter { it.available })
+                }
+                "user" -> {
+                    val result = mutableListOf<Playlist>()
+                    result.addAll(YandexMusic.getUserPlaylists().filter { it.available })
+                    result.addAll(YandexMusic.getLikedPlaylists().filter { it.available })
+                    playlists.postValue(result)
                 }
             }
         }

@@ -8,8 +8,8 @@ android {
     defaultConfig {
         multiDexEnabled true
         applicationId "kg.delletenebre.yamus"
-        versionCode 10
-        versionName "19.10.03"
+        versionCode 12
+        versionName "19.10.06"
 
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
@@ -38,6 +38,7 @@ android {
 }
 
 dependencies {
+    implementation files('libs/jaudiotagger-android.jar')
     implementation project(':common')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"

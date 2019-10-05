@@ -5,6 +5,8 @@ import android.view.ViewGroup
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.RecyclerView
 import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.api.UserModel
@@ -82,10 +84,11 @@ class PlaylistAdapter(
                 }
             }
 
+            val icon = DrawableCompat.wrap(popup.menu.findItem(R.id.dislike).icon)
             if (UserModel.getDislikedIds().contains(trackId)) {
-                popup.menu.findItem(R.id.dislike).icon.setTint(context.getColor(R.color.colorAccent))
+                DrawableCompat.setTint(icon.mutate(), ContextCompat.getColor(context, R.color.colorAccent))
             } else {
-                popup.menu.findItem(R.id.dislike).icon.setTint(context.getColor(R.color.textSecondary))
+                DrawableCompat.setTint(icon.mutate(), ContextCompat.getColor(context, R.color.textSecondary))
             }
 
             val menuHelper = MenuPopupHelper(context, popup.menu as MenuBuilder, binding.settings)
@@ -93,7 +96,5 @@ class PlaylistAdapter(
             menuHelper.show()
         }
     }
-
-
 
 }

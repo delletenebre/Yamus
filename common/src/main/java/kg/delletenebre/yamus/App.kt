@@ -1,19 +1,19 @@
 package kg.delletenebre.yamus
 
-import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.multidex.MultiDexApplication
 import androidx.preference.PreferenceManager
 import kg.delletenebre.yamus.api.UserModel
 import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
 import kg.delletenebre.yamus.utils.Utils
 import java.io.File
 
-
-internal class App : Application() {
+internal class App : MultiDexApplication() {
     private lateinit var prefs: SharedPreferences
 
     val httpCacheDir by lazy {
@@ -22,10 +22,11 @@ internal class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         instance = this
         UserModel.init(instance.applicationContext)
         AndroidAutoBrowser.init(instance.applicationContext)
-        Downloader.init(instance.applicationContext)
+        YamusDownloader.init(instance.applicationContext)
         prefs = PreferenceManager.getDefaultSharedPreferences(instance.applicationContext)
     }
 

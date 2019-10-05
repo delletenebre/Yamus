@@ -109,7 +109,7 @@ object UserModel {
         return withContext(Dispatchers.IO) {
             YandexApi.httpClient.newCall(request).execute().use { response ->
                 if (response.isSuccessful) {
-                    val responseBody = response.body!!.string()
+                    val responseBody = response.body()!!.string()
                     Log.d("ahoha", "response: $responseBody")
                     try {
                         val responseJson = JSONObject(responseBody)
@@ -117,10 +117,10 @@ object UserModel {
                         updateUserInfo()
                     } catch (t: Throwable) {
                         t.printStackTrace()
-                        HttpResult(false, response.code, App.instance.getString(R.string.unknown_response_format))
+                        HttpResult(false, response.code(), App.instance.getString(R.string.unknown_response_format))
                     }
                 } else {
-                    HttpResult(false, response.code, App.instance.getString(R.string.user_not_found))
+                    HttpResult(false, response.code(), App.instance.getString(R.string.user_not_found))
                 }
             }
         }
@@ -132,17 +132,17 @@ object UserModel {
             YandexApi.httpClient.newCall(YandexApi.getRequest(url)).execute().use { response ->
                 if (response.isSuccessful) {
                     try {
-                        val json = JSONObject(response.body!!.string())
+                        val json = JSONObject(response.body()!!.string())
                                 .getJSONObject("result")
                         user_.postValue(Json.nonstrict.parse(User.serializer(), json.toString()))
                         saveUser()
-                        HttpResult(true, response.code, "")
+                        HttpResult(true, response.code(), "")
                     } catch (t: Throwable) {
                         t.printStackTrace()
-                        HttpResult(false, response.code, App.instance.getString(R.string.unknown_response_format))
+                        HttpResult(false, response.code(), App.instance.getString(R.string.unknown_response_format))
                     }
                 } else {
-                    HttpResult(false, response.code, response.message)
+                    HttpResult(false, response.code(), response.message())
                 }
             }
         }

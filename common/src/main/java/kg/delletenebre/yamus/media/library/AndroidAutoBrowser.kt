@@ -164,7 +164,7 @@ object AndroidAutoBrowser {
                     val playlistIds = YandexMusic.getPlaylistIdsByTag(pathSegments[2])
                     YandexMusic.getPlaylists(playlistIds).map {
                         createBrowsableMediaItem(
-                                "$MEDIA_LIBRARY_PATH_RECOMMENDED_ROOT/playlist/${it.uid}/${it.kind}",
+                                "/playlist/${it.uid}/${it.kind}",
                                 it.title,
                                 loadAlbumArt(it.ogImage)
                         )

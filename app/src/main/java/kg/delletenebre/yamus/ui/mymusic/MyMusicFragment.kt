@@ -63,6 +63,14 @@ class MyMusicFragment : Fragment(), CoroutineScope {
 
     fun onClickListItem(type: String) {
         when(type) {
+            "playlists" -> {
+                val bundle = bundleOf(
+                        "title" to getString(R.string.my_music_playlists_title),
+                        "type" to "user",
+                        "id" to ""
+                )
+                findNavController().navigate(R.id.fragmentMixPlaylists, bundle)
+            }
             "albums" -> {
                 GlobalScope.launch {
                     val albums = YandexMusic.getLikedAlbums()

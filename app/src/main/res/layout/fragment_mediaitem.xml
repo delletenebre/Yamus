@@ -48,7 +48,7 @@
     <ImageView
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:src="@drawable/media_item_mask"
+        app:srcCompat="@drawable/media_item_mask"
         app:layout_constraintBottom_toBottomOf="@+id/albumArt"
         app:layout_constraintLeft_toLeftOf="@+id/albumArt"
         app:layout_constraintRight_toRightOf="@+id/albumArt"
@@ -73,6 +73,7 @@
         android:id="@+id/subtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginRight="@dimen/text_margin"
         android:layout_marginEnd="@dimen/text_margin"
         android:ellipsize="end"
         android:maxLines="1"

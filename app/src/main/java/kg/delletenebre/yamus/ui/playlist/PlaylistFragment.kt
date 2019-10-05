@@ -16,8 +16,8 @@ import com.tonyodev.fetch2.Download
 import com.tonyodev.fetch2.Error
 import com.tonyodev.fetch2.FetchListener
 import com.tonyodev.fetch2core.DownloadBlock
-import kg.delletenebre.yamus.Downloader
 import kg.delletenebre.yamus.R
+import kg.delletenebre.yamus.YamusDownloader
 import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.utils.InjectorUtils
@@ -38,7 +38,7 @@ class PlaylistFragment : Fragment(), CoroutineScope {
 
     override fun onDestroy() {
         super.onDestroy()
-        Downloader.client.removeListener(fetchListener)
+        YamusDownloader.client.removeListener(fetchListener)
         coroutineContext.cancelChildren()
     }
 
@@ -77,7 +77,7 @@ class PlaylistFragment : Fragment(), CoroutineScope {
             }
         })
         recyclerView.adapter = playlistAdapter
-
+        YamusDownloader.client.addListener(fetchListener)
         return root
     }
 
@@ -97,7 +97,6 @@ class PlaylistFragment : Fragment(), CoroutineScope {
                     launch {
                         YandexApi.saveTracksToDatabase(playlistAdapter.items)
                         YandexApi.downloadTracks(playlistAdapter.items)
-                        Downloader.client.addListener(fetchListener)
                     }
                 }
             }
@@ -115,6 +114,12 @@ class PlaylistFragment : Fragment(), CoroutineScope {
         }
 
         override fun onCompleted(download: Download) {
+//            val file = File(download.file)
+//            val f = AudioFileIO.read(file)
+//            val tag = f.tag
+//            tag.setField(FieldKey.ARTIST, "Kings of Leon")
+//            tag.setField(FieldKey.TITLE, "Kings of Leon")
+//            f.commit()
             playlistAdapter.addDownloadStatus(download.file, Track.STATUS_DOWNLOADED)
         }
 

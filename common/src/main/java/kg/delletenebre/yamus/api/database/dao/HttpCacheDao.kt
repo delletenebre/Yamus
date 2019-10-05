@@ -11,6 +11,9 @@ interface HttpCacheDao {
     @Query("SELECT * FROM http_cache WHERE url=:url")
     fun get(url: String): HttpCacheEntity?
 
+    @Query("SELECT * FROM http_cache")
+    fun getAll(): List<HttpCacheEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg httpCache: HttpCacheEntity)
 }

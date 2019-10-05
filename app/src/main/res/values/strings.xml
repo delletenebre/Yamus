@@ -55,6 +55,7 @@
     <string name="my_music_list_albums">Albums</string>
     <string name="my_music_list_artists">Artists</string>
     <string name="my_music_list_dislikes">Disliked tracks</string>
+    <string name="my_music_playlists_title">My playlists</string>
 
 
     <!-- Search Fragment -->

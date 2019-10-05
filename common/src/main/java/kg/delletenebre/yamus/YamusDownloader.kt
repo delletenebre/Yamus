@@ -6,11 +6,11 @@ import com.tonyodev.fetch2.FetchConfiguration
 import com.tonyodev.fetch2okhttp.OkHttpDownloader
 import okhttp3.OkHttpClient
 
-object Downloader {
+object YamusDownloader {
     lateinit var client: Fetch
 
     fun init(context: Context) {
-        val okHttpClient = OkHttpClient.Builder().build()
+        val okHttpClient = OkHttpClient()
         val fetchConfiguration = FetchConfiguration.Builder(context)
                 .setDownloadConcurrentLimit(4)
                 .setHttpDownloader(OkHttpDownloader(okHttpClient))
