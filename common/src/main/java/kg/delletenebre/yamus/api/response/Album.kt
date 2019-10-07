@@ -17,13 +17,13 @@ data class Album(
         val id: Int = 0,
         val labels: List<Label> = listOf(),
         val ogImage: String = "",
-        val recent: Boolean,
+        val recent: Boolean = false,
         val releaseDate: String = "",
         val title: String = "",
         val trackCount: Int = 0,
         val trackPosition: TrackPosition = TrackPosition(),
         val type: String = "",
-        val veryImportant: Boolean,
+        val veryImportant: Boolean = false,
         val year: Int = 0,
         val version: String = ""
 ) {

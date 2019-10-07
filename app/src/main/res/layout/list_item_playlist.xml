@@ -72,24 +72,40 @@
                     app:srcCompat="@drawable/ic_more_vert"
                     android:onClick="@{() -> viewHolder.onClickMenu(item)}" />
 
-            <ProgressBar
+<!--            <ProgressBar-->
+<!--                android:layout_width="12dp"-->
+<!--                android:layout_height="12dp"-->
+<!--                android:layout_marginTop="4dp"-->
+<!--                android:layout_marginRight="4dp"-->
+<!--                android:layout_marginEnd="4dp"-->
+<!--                android:layout_gravity="top|end"-->
+<!--                android:visibility="@{item.downloadStatus == Track.DOWNLOAD_STATUS_PROGRESS &amp;&amp; item.downloadProgress == 0 ? View.VISIBLE : View.GONE}" />-->
+
+            <com.mikhaellopez.circularprogressbar.CircularProgressBar
                 android:layout_width="12dp"
                 android:layout_height="12dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginRight="4dp"
-                android:layout_marginEnd="4dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:layout_gravity="top|end"
-                android:visibility='@{item.downloadStatus == Track.STATUS_DOWNLOADING ? View.VISIBLE : View.GONE}' />
+                android:visibility="@{item.downloadStatus == Track.DOWNLOAD_STATUS_PROGRESS ? View.VISIBLE : View.GONE}"
+                app:cpb_progress="@{item.downloadProgress}"
+                app:cpb_indeterminate_mode='@{item.downloadProgress == 0}'
+                app:cpb_background_progressbar_color="#22888888"
+                app:cpb_background_progressbar_width="2dp"
+                app:cpb_progressbar_color="@color/colorPrimary"
+                app:cpb_progressbar_width="2dp"
+                app:cpb_round_border="true" />
 
             <ImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_marginTop="4dp"
                 android:layout_marginRight="4dp"
                 android:layout_marginEnd="4dp"
                 android:layout_gravity="top|end"
-                android:visibility='@{item.downloadStatus == Track.STATUS_DOWNLOADED ? View.VISIBLE : View.GONE}'
-                app:srcCompat="@drawable/ic_check_circle_green" />
+                android:visibility="@{item.downloadStatus == Track.DOWNLOAD_STATUS_DOWNLOADED || item.downloadStatus == Track.DOWNLOAD_STATUS_ERROR ? View.VISIBLE : View.GONE}"
+                android:src="@{item.downloadStatus == Track.DOWNLOAD_STATUS_ERROR ? @drawable/ic_error_red : @drawable/ic_check_circle_green}" />
 
         </FrameLayout>
     </LinearLayout>

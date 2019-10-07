@@ -15,6 +15,7 @@ import com.google.android.exoplayer2.upstream.FileDataSource
 import com.google.android.exoplayer2.upstream.FileDataSource.FileDataSourceException
 import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.YandexApi
+import kg.delletenebre.yamus.api.YandexCache
 import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.media.R
 import kg.delletenebre.yamus.media.datasource.YandexDataSourceFactory
@@ -92,7 +93,7 @@ object CurrentPlaylist {
                                 .diskCacheStrategy(DiskCacheStrategy.RESOURCE))
                         .asBitmap()
                         .diskCacheStrategy(DiskCacheStrategy.DATA)
-                        .load(YandexApi.getImage(url, AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE))
+                        .load(YandexApi.getImageUrl(url, AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE))
                         .submit(AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE, AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE)
                         .get()
             } catch (t: Throwable) {
@@ -123,9 +124,9 @@ object CurrentPlaylist {
         duration = track.durationMs
         genre = albumGenre
 
-        val trackMediaUri = YandexApi.getDownloadedUri(track.id) ?: track.id
+        val trackMediaUri = YandexCache.getTrackPathOrNull(track) ?: track.id
         mediaUri = trackMediaUri
-        albumArtUri = YandexApi.getImage(track.coverUri, 400)
+        albumArtUri = YandexApi.getImageUrl(track.coverUri, 400)
 //        flag = MediaItem.FLAG_PLAYABLE
         explicit = if (track.contentWarning == "explicit") {
             1
@@ -136,7 +137,7 @@ object CurrentPlaylist {
         displayTitle = track.title
         displaySubtitle = artistName
         displayDescription = albumTitle
-        displayIconUri = YandexApi.getImage(track.coverUri, 400)
+        displayIconUri = YandexApi.getImageUrl(track.coverUri, 400)
 
         // Add downloadStatus to force the creation of an "extras" bundle in the resulting
         // MediaMetadataCompat object. This is needed to send accurate metadata to the
@@ -152,7 +153,7 @@ object CurrentPlaylist {
     }
 
     private fun MediaMetadataCompat.toMediaSource(): ProgressiveMediaSource {
-        val dataSourceFactory = if (mediaUri.toString().endsWith(YandexApi.MUSIC_FILE_CONTAINER)) {
+        val dataSourceFactory = if (mediaUri.toString().endsWith(YandexCache.MUSIC_FILE_CONTAINER)) {
             val dataSpec = DataSpec(mediaUri)
             val fileDataSource = FileDataSource()
             try {

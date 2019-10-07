@@ -12,13 +12,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import com.tonyodev.fetch2.AbstractFetchListener
 import com.tonyodev.fetch2.Download
-import com.tonyodev.fetch2.Error
-import com.tonyodev.fetch2.FetchListener
-import com.tonyodev.fetch2core.DownloadBlock
 import kg.delletenebre.yamus.R
-import kg.delletenebre.yamus.YamusDownloader
-import kg.delletenebre.yamus.api.YandexApi
+import kg.delletenebre.yamus.api.YandexCache
 import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.utils.InjectorUtils
 import kg.delletenebre.yamus.viewmodels.MainActivityViewModel
@@ -36,9 +33,27 @@ class PlaylistFragment : Fragment(), CoroutineScope {
     private lateinit var recyclerView: RecyclerView
     private lateinit var playlistAdapter: PlaylistAdapter
 
+    private val fetchListener = object : AbstractFetchListener() {
+        override fun onAdded(download: Download) {
+            playlistAdapter.setDownloadStatus(download.identifier.toString(), Track.DOWNLOAD_STATUS_PROGRESS)
+        }
+
+        override fun onCompleted(download: Download) {
+            playlistAdapter.setDownloadStatus(download.identifier.toString(), Track.DOWNLOAD_STATUS_DOWNLOADED)
+        }
+
+        override fun onError(download: Download, error: com.tonyodev.fetch2.Error, throwable: Throwable?) {
+            playlistAdapter.setDownloadStatus(download.identifier.toString(), Track.DOWNLOAD_STATUS_ERROR)
+        }
+
+        override fun onProgress(download: Download, etaInMilliSeconds: Long, downloadedBytesPerSecond: Long) {
+            playlistAdapter.setDownloadProgress(download.identifier.toString(), download.progress)
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        YamusDownloader.client.removeListener(fetchListener)
+        YandexCache.fetch.removeListener(fetchListener)
         coroutineContext.cancelChildren()
     }
 
@@ -77,7 +92,7 @@ class PlaylistFragment : Fragment(), CoroutineScope {
             }
         })
         recyclerView.adapter = playlistAdapter
-        YamusDownloader.client.addListener(fetchListener)
+        YandexCache.fetch.addListener(fetchListener)
         return root
     }
 
@@ -95,72 +110,13 @@ class PlaylistFragment : Fragment(), CoroutineScope {
             when (it.itemId) {
                 R.id.action_download -> {
                     launch {
-                        YandexApi.saveTracksToDatabase(playlistAdapter.items)
-                        YandexApi.downloadTracks(playlistAdapter.items)
+                        GlobalScope.launch {
+                            YandexCache.downloadTracks(playlistAdapter.items)
+                        }
                     }
                 }
             }
             super.onOptionsItemSelected(it)
-        }
-    }
-
-    private val fetchListener = object : FetchListener {
-        override fun onAdded(download: Download) {
-            playlistAdapter.addDownloadStatus(download.file, Track.STATUS_DOWNLOADING)
-        }
-
-        override fun onCancelled(download: Download) {
-
-        }
-
-        override fun onCompleted(download: Download) {
-//            val file = File(download.file)
-//            val f = AudioFileIO.read(file)
-//            val tag = f.tag
-//            tag.setField(FieldKey.ARTIST, "Kings of Leon")
-//            tag.setField(FieldKey.TITLE, "Kings of Leon")
-//            f.commit()
-            playlistAdapter.addDownloadStatus(download.file, Track.STATUS_DOWNLOADED)
-        }
-
-        override fun onDeleted(download: Download) {
-
-        }
-
-        override fun onDownloadBlockUpdated(download: Download, downloadBlock: DownloadBlock, totalBlocks: Int) {
-
-        }
-
-        override fun onError(download: Download, error: Error, throwable: Throwable?) {
-
-        }
-
-        override fun onPaused(download: Download) {
-
-        }
-
-        override fun onProgress(download: Download, etaInMilliSeconds: Long, downloadedBytesPerSecond: Long) {
-
-        }
-
-        override fun onQueued(download: Download, waitingOnNetwork: Boolean) {
-
-        }
-
-        override fun onRemoved(download: Download) {
-
-        }
-
-        override fun onResumed(download: Download) {
-
-        }
-
-        override fun onStarted(download: Download, downloadBlocks: List<DownloadBlock>, totalBlocks: Int) {
-
-        }
-
-        override fun onWaitingNetwork(download: Download) {
-
         }
     }
 

@@ -9,25 +9,22 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.multidex.MultiDexApplication
 import androidx.preference.PreferenceManager
 import kg.delletenebre.yamus.api.UserModel
+import kg.delletenebre.yamus.api.YandexCache
 import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
 import kg.delletenebre.yamus.utils.Utils
-import java.io.File
 
-internal class App : MultiDexApplication() {
+
+class App : MultiDexApplication() {
     private lateinit var prefs: SharedPreferences
-
-    val httpCacheDir by lazy {
-        File(cacheDir, "httpCache")
-    }
 
     override fun onCreate() {
         super.onCreate()
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         instance = this
-        UserModel.init(instance.applicationContext)
-        AndroidAutoBrowser.init(instance.applicationContext)
-        YamusDownloader.init(instance.applicationContext)
-        prefs = PreferenceManager.getDefaultSharedPreferences(instance.applicationContext)
+        UserModel.init(applicationContext)
+        AndroidAutoBrowser.init(applicationContext)
+        YandexCache.init(applicationContext)
+        prefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
     }
 
     fun getIntPreference(key: String, defaultValue: String? = null): Int {
@@ -50,6 +47,10 @@ internal class App : MultiDexApplication() {
         return getExternalFilesDir("tracks").toString()
     }
 
+    fun getArtDir(): String {
+        return getExternalFilesDir("arts").toString()
+    }
+
     fun isNetworkAvailable(): Boolean {
         val cm = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
@@ -70,6 +71,8 @@ internal class App : MultiDexApplication() {
 
         return false
     }
+
+
 
     companion object {
         lateinit var instance: App

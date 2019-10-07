@@ -10,6 +10,7 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.RecyclerView
 import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.api.UserModel
+import kg.delletenebre.yamus.api.YandexCache
 import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.databinding.ListItemPlaylistBinding
@@ -34,13 +35,28 @@ class PlaylistAdapter(
         holder.bind(items[position])
     }
 
-    fun addDownloadStatus(file: String, status: String) {
-        val trackId = file.split("/").last().split(".")[0]
+    fun setDownloadStatus(identifier: String, status: String) {
         val item = items.find {
-            it.id == trackId
+            it.realId == identifier
         }
         if (item != null) {
-            item.downloadStatus = status
+            if (item.downloadStatus != status) {
+                item.downloadStatus = status
+                notifyItemChanged(items.indexOf(item))
+
+                if (status == Track.DOWNLOAD_STATUS_DOWNLOADED) {
+                    YandexCache.addID3Tags(item)
+                }
+            }
+        }
+    }
+
+    fun setDownloadProgress(identifier: String, progress: Int) {
+        val item = items.find {
+            it.realId == identifier
+        }
+        if (item != null) {
+            item.downloadProgress = progress
             notifyItemChanged(items.indexOf(item))
         }
     }
@@ -53,10 +69,35 @@ class PlaylistAdapter(
             private val binding: ListItemPlaylistBinding
         ): RecyclerView.ViewHolder(binding.root) {
 
+        var downloadProgress: Int = 0
+
+//        private val downloadObserver: DownloadListener = object : DownloadListener() {
+//            override fun onProgress(progress: Int) {
+//                downloadProgress = progress
+//                notifyItemChanged(items.indexOf(binding.item!!))
+//                setDownloadStatus(Track.DOWNLOAD_STATUS_PROGRESS)
+//            }
+//
+//            override fun filter(downloadInfo: DownloadInfo): Boolean {
+//                return downloadInfo.tag == binding.item?.realId
+//            }
+//
+//            override fun onSuccess() {
+//                setDownloadStatus(Track.DOWNLOAD_STATUS_DOWNLOADED)
+//                YandexCache.addID3Tags(binding.item!!)
+//            }
+//
+//            override fun onFailed() {
+//                setDownloadStatus(Track.DOWNLOAD_STATUS_ERROR)
+//            }
+//        }
+
         fun bind(item: Track) {
             binding.viewHolder = this
             binding.item = item
             binding.executePendingBindings()
+//            downloadObserver.enable()
+
         }
 
         fun onClick(item: Track) {
@@ -77,6 +118,12 @@ class PlaylistAdapter(
                             } else {
                                 YandexMusic.addDislike(trackId)
                             }
+                        }
+                        true
+                    }
+                    R.id.download -> {
+                        GlobalScope.launch {
+                            YandexCache.downloadTrack(item)
                         }
                         true
                     }

@@ -22,7 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kg.delletenebre.yamus.MediaItemAdapter
@@ -70,12 +70,10 @@ class MediaItemFragment : Fragment() {
         val context = activity ?: return
         mediaId = arguments?.getString(MEDIA_ID_ARG) ?: return
 
-        mainActivityViewModel = ViewModelProviders
-            .of(context, InjectorUtils.provideMainActivityViewModel(context))
+        mainActivityViewModel = ViewModelProvider(context, InjectorUtils.provideMainActivityViewModel(context))
             .get(MainActivityViewModel::class.java)
 
-        mediaItemFragmentViewModel = ViewModelProviders
-            .of(this, InjectorUtils.provideMediaItemFragmentViewModel(context, mediaId))
+        mediaItemFragmentViewModel = ViewModelProvider(this, InjectorUtils.provideMediaItemFragmentViewModel(context, mediaId))
             .get(MediaItemFragmentViewModel::class.java)
         mediaItemFragmentViewModel.mediaItems.observe(this,
             Observer<List<MediaItemData>> { list ->

@@ -1,8 +1,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
+
     <item
         android:id="@+id/dislike"
         android:icon="@drawable/ic_do_not_disturb"
-        android:title="Dislike" />
+        android:title="@string/track_menu_action_dislike" />
+
+    <item
+        android:id="@+id/download"
+        android:icon="@drawable/ic_file_download"
+        android:title="@string/track_menu_action_download" />
 </menu>

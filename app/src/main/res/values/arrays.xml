@@ -1,12 +1,18 @@
 <resources>
-    <!-- Reply Preference -->
-    <string-array name="reply_entries">
-        <item>Reply</item>
-        <item>Reply to all</item>
+    <!-- Cache Quality Preference -->
+    <string-array name="quality_entries">
+        <item>MP3 (320 kbps)</item>
+        <item>MP3 (192 kbps)</item>
+        <item>AAC (192 kbps)</item>
+        <item>AAC (128 kbps)</item>
+        <item>AAC (64 kbps)</item>
     </string-array>
 
-    <string-array name="reply_values">
-        <item>reply</item>
-        <item>reply_all</item>
+    <string-array name="quality_values">
+        <item>320|mp3</item>
+        <item>192|mp3</item>
+        <item>192|aac</item>
+        <item>128|aac</item>
+        <item>64|aac</item>
     </string-array>
 </resources>

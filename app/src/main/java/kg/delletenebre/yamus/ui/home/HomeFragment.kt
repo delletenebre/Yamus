@@ -66,7 +66,7 @@ class HomeFragment : Fragment() {
                     with(personalPlaylistView) {
                         setTitle(playlist.data.data.title)
                         setSubtitle(resources.getString(R.string.personal_playlist_subtitle, updatedAt))
-                        setImage(YandexApi.getImage(playlist.data.data.ogImage, 400))
+                        setImage(YandexApi.getImageUrl(playlist.data.data.ogImage, 400))
                         setOnClickListener {
                             val bundle = bundleOf(
                                     "title" to playlist.data.data.title,

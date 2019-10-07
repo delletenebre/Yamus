@@ -208,7 +208,7 @@ object AndroidAutoBrowser {
                 Glide.with(App.instance.applicationContext)
                         .applyDefaultRequestOptions(glideOptions)
                         .asBitmap()
-                        .load(YandexApi.getImage(url, NOTIFICATION_LARGE_ICON_SIZE))
+                        .load(YandexApi.getImageUrl(url, NOTIFICATION_LARGE_ICON_SIZE))
                         .diskCacheStrategy(DiskCacheStrategy.DATA)
                         .submit(NOTIFICATION_LARGE_ICON_SIZE, NOTIFICATION_LARGE_ICON_SIZE)
                         .get()

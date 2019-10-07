@@ -26,7 +26,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.utils.InjectorUtils
@@ -58,11 +58,9 @@ class NowPlayingFragment : Fragment() {
         val context = activity ?: return
 
         // Inject our activity and view models into this fragment
-        mainActivityViewModel = ViewModelProviders
-                .of(context, InjectorUtils.provideMainActivityViewModel(context))
+        mainActivityViewModel = ViewModelProvider(context, InjectorUtils.provideMainActivityViewModel(context))
                 .get(MainActivityViewModel::class.java)
-        nowPlayingViewModel = ViewModelProviders
-                .of(context, InjectorUtils.provideNowPlayingFragmentViewModel(context))
+        nowPlayingViewModel = ViewModelProvider(context, InjectorUtils.provideNowPlayingFragmentViewModel(context))
                 .get(NowPlayingFragmentViewModel::class.java)
 
         // Attach observers to the LiveData coming from this ViewModel

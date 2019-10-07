@@ -74,6 +74,8 @@
     <string name="stations_catalog">Каталог станций</string>
     <string name="title_playlist">Плейлист</string>
     <string name="content_description_explicit">Ненормативная лексика</string>
+    <string name="track_menu_action_dislike">Дизлайк</string>
+    <string name="track_menu_action_download">Скачать</string>
 
     <!-- Menu -->
     <!-- Menu Main -->
@@ -86,6 +88,7 @@
     <!-- SETTINGS -->
     <string name="title_activity_settings">Настройки</string>
     <string name="menu_main_settings">Настройки</string>
+    <string name="please_wait">Пожалуйста, подождите…</string>
 
     <!-- Preference Playback -->
     <string name="pref_header_playback">Воспроизведение</string>
@@ -95,6 +98,16 @@
     <string name="pref_title_repeat_mode">Режим повтора</string>
     <string name="pref_summary_on_repeat_mode">Воспроизводить плейлист по окончанию</string>
     <string name="pref_summary_off_repeat_mode">Останавливать воспроизведение по окончанию плейлиста</string>
+    <string name="pref_title_online_quality">Качество треков онлайн</string>
+
+    <!-- Preference Cache -->
+    <string name="pref_header_cache">Оффлайн режим</string>
+    <string name="pref_title_clear_cache">Удалить скаченные треки</string>
+    <string name="pref_summary_clear_cache">Скачанных треков: %1$d\nЗанято: %2$s</string>
+    <string name="pref_summary_cache_cleared">Файлы успешно удалены</string>
+    <string name="pref_title_dialog_clear_cache">Удалить все сохранённые треки?</string>
+    <string name="pref_summary_dialog_clear_cache">Вы уверены, что хотите удалить все сохранённые треки?</string>
+    <string name="pref_title_cache_quality">Качество загружаемых треков</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>

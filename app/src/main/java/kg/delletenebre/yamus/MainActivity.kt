@@ -55,8 +55,6 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        Log.d("ahoha", "path: ${getExternalFilesDir("tracks")}")
-
 //        if (!checkStoragePermission()) {
 //            requestStoragePermission()
 //        }

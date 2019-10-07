@@ -1,25 +1,14 @@
 package kg.delletenebre.yamus.api
 
-import android.util.Log
-import com.tonyodev.fetch2.NetworkType
-import com.tonyodev.fetch2.Priority
-import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.HttpResult
-import kg.delletenebre.yamus.YamusDownloader
 import kg.delletenebre.yamus.api.database.YandexDatabase
 import kg.delletenebre.yamus.api.database.table.HttpCacheEntity
-import kg.delletenebre.yamus.api.database.table.TrackEntity
-import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.stringify
 import kg.delletenebre.yamus.utils.HashUtils
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import okhttp3.*
 import org.json.JSONObject
-import java.io.File
 
 object YandexApi {
     const val CLIENT_ID = "23cabbbdc6cd418abb4b39c32c41195d"
@@ -28,12 +17,11 @@ object YandexApi {
     const val API_URL_MUSIC = "https://api.music.yandex.net"
     const val API_URL_OAUTH = "https://oauth.yandex.ru"
     const val API_URL_LOGIN = "https://login.yandex.ru"
-    const val MUSIC_FILE_CONTAINER = ".m4a"
 
     val database: YandexDatabase = YandexDatabase.invoke()
     val httpClient = OkHttpClient()
 
-    fun getImage(url: String, size: Int): String {
+    fun getImageUrl(url: String, size: Int): String {
         return "https://${url.replace("/%%", "/${size}x$size")}"
     }
 
@@ -57,59 +45,6 @@ object YandexApi {
                         .url("$API_URL_MUSIC$url")
                         .post(formBody)
         )
-    }
-
-    fun downloadTracks(tracks: List<Track>) {
-        GlobalScope.launch {
-            withContext(Dispatchers.IO) {
-//                val groupId = tracks.hashCode()
-//                val requestList: List<com.tonyodev.fetch2.Request> = tracks.map { track ->
-//                        val url = YandexMusic.getDirectUrl(track.getTrackId())
-//                        Log.d("ahoha", "track: ${track.artists[0].name} - ${track.title} (${track.id}) = $url ")
-//                        val file = "${App.instance.getMusicDir()}/${track.realId}.mp3"
-//                        val request = com.tonyodev.fetch2.Request(url, file)
-//                        request.priority = Priority.NORMAL
-//                        request.networkType = NetworkType.ALL
-//                        request.groupId = groupId
-//                        request
-//                }
-//                YamusDownloader.client.enqueue(requestList)
-                tracks.forEach { track ->
-                    val url = YandexMusic.getDirectUrl(track.getTrackId())
-                    Log.d("ahoha", "track: ${track.artists[0].name} - ${track.title} (${track.id}) = $url ")
-                    val file = "${App.instance.getMusicDir()}/${track.realId}$MUSIC_FILE_CONTAINER"
-                    val request = com.tonyodev.fetch2.Request(url, file)
-                    request.priority = Priority.NORMAL
-                    request.networkType = NetworkType.ALL
-                    YamusDownloader.client.enqueue(request)
-                }
-
-            }
-        }
-    }
-
-    fun checkTrackDownloaded(trackRealId: String): Boolean {
-        val file = File("${App.instance.getMusicDir()}/$trackRealId$MUSIC_FILE_CONTAINER")
-        return file.exists()
-    }
-
-    fun getDownloadedUri(trackRealId: String): String? {
-        val file = File("${App.instance.getMusicDir()}/$trackRealId$MUSIC_FILE_CONTAINER")
-        return if (file.exists()) {
-            file.absolutePath
-        } else {
-            null
-        }
-    }
-
-    suspend fun saveTracksToDatabase(tracks: List<Track>) {
-        withContext(Dispatchers.IO) {
-            val entities = tracks.map {
-                val data = Json.stringify(Track.serializer(), it)
-                TrackEntity(it.id, data, System.currentTimeMillis())
-            }
-            database.trackDao().insert(entities)
-        }
     }
 
     suspend fun networkCall(url: String, formBody: FormBody? = null, useCache: Boolean = true): HttpResult {

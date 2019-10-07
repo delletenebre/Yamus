@@ -1,6 +1,7 @@
 package kg.delletenebre.yamus.api
 
 import android.util.Log
+import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.database.table.UserTracksIdsEntity
 import kg.delletenebre.yamus.api.response.*
 import kg.delletenebre.yamus.media.extensions.md5
@@ -497,16 +498,26 @@ object YandexMusic {
         return result
     }
 
-    fun getDirectUrl(trackId: String): String {
+    fun getDirectUrl(trackId: String, isOnline: Boolean = true): String {
         val downloadVariants = getDownloadVariants(trackId)
         if (downloadVariants.isNotEmpty()) {
             val best = downloadVariants.find { it.bitrateInKbps == 320 }
             val better = downloadVariants.find { it.bitrateInKbps == 192 && it.codec == "aac" }
             val good = downloadVariants.find { it.bitrateInKbps == 128 && it.codec == "aac" }
-
             // 320 mp3, 192 aac, 192 mp3, 128 aac, 64 aac
+            val preferred = if (isOnline) {
+                val preferredQuality = App.instance.getStringPreference("online_quality").split("|")
+                val preferredBitrate = preferredQuality[0].toInt()
+                val preferredCodec = preferredQuality[1]
+                downloadVariants.find { it.bitrateInKbps == preferredBitrate && it.codec == preferredCodec }
+            } else {
+                val preferredQuality = App.instance.getStringPreference("cache_quality").split("|")
+                val preferredBitrate = preferredQuality[0].toInt()
+                val preferredCodec = preferredQuality[1]
+                downloadVariants.find { it.bitrateInKbps == preferredBitrate && it.codec == preferredCodec }
+            }
 
-            val downloadVariant = best ?: better ?: good ?: downloadVariants[0]
+            val downloadVariant = preferred ?: best ?: better ?: good ?: downloadVariants[0]
             val request = Request.Builder()
                     .url("${downloadVariant.downloadInfoUrl}&format=json")
                     .addHeader("Authorization", "OAuth ${UserModel.getToken()}")
