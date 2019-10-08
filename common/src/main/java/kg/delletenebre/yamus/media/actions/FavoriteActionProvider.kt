@@ -16,9 +16,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class FavoriteActionProvider(val context: Context): MediaSessionConnector.CustomActionProvider {
-    override fun getCustomAction(player: Player?): PlaybackStateCompat.CustomAction? {
-        if (player != null && CurrentPlaylist.tracks.isNotEmpty()) {
-            val track = CurrentPlaylist.tracks[player.currentWindowIndex]
+    override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? {
+        val track = CurrentPlaylist.tracks.getOrNull(player.currentWindowIndex)
+        if (track != null) {
             return if (UserModel.getLikedIds().contains(track.getTrackId())) {
                 PlaybackStateCompat.CustomAction
                         .Builder(
@@ -37,6 +37,7 @@ class FavoriteActionProvider(val context: Context): MediaSessionConnector.Custom
                         .build()
             }
         }
+
         return null
     }
 

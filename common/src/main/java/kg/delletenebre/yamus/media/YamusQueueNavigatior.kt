@@ -3,7 +3,6 @@ package kg.delletenebre.yamus.media
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
@@ -21,18 +20,21 @@ class YamusQueueNavigator(mediaSession: MediaSessionCompat
             player.currentTimeline
                     .getWindow(windowIndex, window, true).tag as MediaDescriptionCompat
 
-    override fun onSkipToNext(player: Player?, controlDispatcher: ControlDispatcher?) {
-//        Log.d("ahoha", "onSkipToNext")
-        super.onSkipToNext(player, controlDispatcher)
-    }
-
     override fun getSupportedQueueNavigatorActions(player: Player?): Long {
-        val skipToPrevious = if (CurrentPlaylist.type != CurrentPlaylist.TYPE_STATION) {
-            PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-        } else {
-            0
-        }
+        val enableSkipTo = false
+        val enablePrevious = CurrentPlaylist.type != CurrentPlaylist.TYPE_STATION
+        val enableNext = true
 
-        return PlaybackStateCompat.ACTION_SKIP_TO_NEXT or skipToPrevious
+        var actions: Long = 0
+        if (enableSkipTo) {
+            actions = actions or PlaybackStateCompat.ACTION_SKIP_TO_QUEUE_ITEM
+        }
+        if (enablePrevious) {
+            actions = actions or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+        }
+        if (enableNext) {
+            actions = actions or PlaybackStateCompat.ACTION_SKIP_TO_NEXT
+        }
+        return actions
     }
 }

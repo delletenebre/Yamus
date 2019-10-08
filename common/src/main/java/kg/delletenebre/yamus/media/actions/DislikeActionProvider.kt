@@ -31,7 +31,7 @@ class DislikeActionProvider(val context: Context): MediaSessionConnector.CustomA
             YandexMusic.addDislike(trackId)
             withContext(Dispatchers.Main) {
                 if (player.hasNext()) {
-                    controlDispatcher.dispatchSeekTo(player, player.currentWindowIndex + 1, 0)
+                    player.next()
                 } else {
                     player.stop()
                 }

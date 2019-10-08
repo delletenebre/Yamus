@@ -40,10 +40,6 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import kg.delletenebre.yamus.api.YandexMusic
-import kg.delletenebre.yamus.media.actions.DislikeActionProvider
-import kg.delletenebre.yamus.media.actions.FavoriteActionProvider
-import kg.delletenebre.yamus.media.actions.RepeatModeActionProvider
-import kg.delletenebre.yamus.media.actions.ShuffleModeActionProvider
 import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kotlinx.coroutines.*
@@ -167,14 +163,9 @@ open class MusicService : MediaBrowserServiceCompat() {
         mediaSessionConnector = MediaSessionConnector(mediaSession).also { connector ->
             connector.setPlayer(exoPlayer)
             connector.setPlaybackPreparer(YamusPlaybackPreparer(exoPlayer))
-            connector.setQueueNavigator(YamusQueueNavigator(mediaSession))
-            connector.setCustomActionProviders(
-                    RepeatModeActionProvider(this),
-                    ShuffleModeActionProvider(this),
-                    FavoriteActionProvider(this),
-                    DislikeActionProvider(this)
-            )
+//            connector.setQueueNavigator(YamusQueueNavigator(mediaSession)) // Показывает кнопки предыдущий/следующий/плейлист. Но кнопку плейлист никак не скрыть (баг)
         }
+        mediaSessionConnector.setMediaMetadataProvider(YamusMediaMetadataProvider(applicationContext, mediaSessionConnector)) // Получаем- и отображаем сведения о текущем треке
 
         packageValidator = PackageValidator(this, R.xml.allowed_media_browser_callers)
     }
@@ -295,7 +286,6 @@ open class MusicService : MediaBrowserServiceCompat() {
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             mediaController.playbackState?.let { updateNotification(it) }
-
         }
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {

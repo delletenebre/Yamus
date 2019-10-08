@@ -6,12 +6,14 @@ import android.support.v4.media.session.PlaybackStateCompat
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.media.R
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 
 class ShuffleModeActionProvider(val context: Context): MediaSessionConnector.CustomActionProvider {
     override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? {
-        if (CurrentPlaylist.type == CurrentPlaylist.TYPE_STATION) {
+        val actionEnabled = App.instance.getBooleanPreference("show_shuffle")
+        if (CurrentPlaylist.type == CurrentPlaylist.TYPE_STATION || !actionEnabled) {
             return null
         }
 

@@ -42,4 +42,24 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="Интерфейс Android Auto">
+
+        <SwitchPreferenceCompat
+            app:key="show_shuffle"
+            app:defaultValue="@bool/pref_default_show_shuffle"
+            app:summaryOff="Кнопка управления режимом случайного воспроизведения скрыта"
+            app:summaryOn="Кнопка управления режимом случайного воспроизведения будет отображаться"
+            app:title="Отображать &quot;Случайный порядок&quot;" />
+
+        <SwitchPreferenceCompat
+            app:key="show_repeat"
+            app:defaultValue="@bool/pref_default_show_repeat"
+            app:summaryOff="Кнопка управления режимом повторного воспроизведения скрыта"
+            app:summaryOn="Кнопка управления режимом повторного воспроизведения будет отображаться"
+            app:title="Отображать &quot;Повторное воспроизведение&quot;" />
+
+    </PreferenceCategory>
+
+
+
 </PreferenceScreen>

@@ -8,6 +8,7 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.mediasession.R
 import com.google.android.exoplayer2.util.RepeatModeUtil
+import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 
 class RepeatModeActionProvider(
@@ -39,7 +40,8 @@ class RepeatModeActionProvider(
     }
 
     override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? {
-        if (CurrentPlaylist.type == CurrentPlaylist.TYPE_STATION) {
+        val actionEnabled = App.instance.getBooleanPreference("show_repeat")
+        if (CurrentPlaylist.type == CurrentPlaylist.TYPE_STATION || !actionEnabled) {
             return null
         }
 

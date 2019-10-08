@@ -2,4 +2,6 @@
 <resources>
     <bool name="pref_default_shuffle_mode">true</bool>
     <bool name="pref_default_repeat_mode">true</bool>
+    <bool name="pref_default_show_shuffle">true</bool>
+    <bool name="pref_default_show_repeat">true</bool>
 </resources>
