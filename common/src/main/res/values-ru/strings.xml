@@ -47,6 +47,8 @@
     <string name="custom_action_favorite_remove">Удалить из избранного</string>
     <string name="custom_action_shuffle_mode_enabled">Случайный поряд включен</string>
     <string name="custom_action_shuffle_mode_disabled">Случайный поряд выключен</string>
+    <string name="custom_action_skip_to_next">Следующий трек</string>
+    <string name="custom_action_skip_to_prev">Предыдущий трек</string>
 
     <!-- HTTP MESSAGES -->
     <string name="unknown_response_format">Неизвестный формат ответа</string>

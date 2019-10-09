@@ -9,11 +9,24 @@ android {
 
     defaultConfig {
         multiDexEnabled true
-        versionCode 2
+        versionCode 3
         versionName "1.0"
 
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
+
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+
+        kotlinOptions {
+            jvmTarget = JavaVersion.VERSION_1_8
+        }
+
+        vectorDrawables {
+            useSupportLibrary true
+        }
     }
 
     buildTypes {

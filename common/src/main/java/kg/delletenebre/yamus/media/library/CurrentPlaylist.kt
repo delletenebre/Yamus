@@ -20,11 +20,15 @@ import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.media.R
 import kg.delletenebre.yamus.media.datasource.YandexDataSourceFactory
 import kg.delletenebre.yamus.media.extensions.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 
-object CurrentPlaylist {
+object CurrentPlaylist: CoroutineScope {
+    private val job = SupervisorJob()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
+
     const val TYPE_NONE = "none"
     const val TYPE_TRACKS = "tracks"
     const val TYPE_STATION = "station"
@@ -34,9 +38,15 @@ object CurrentPlaylist {
     var id: String = ""
     var batchId: String = ""
     var type: String = TYPE_NONE
+
+//    private val tracks_ = MutableLiveData<MutableList<Track>>().apply {
+//        value = mutableListOf()
+//    }
+//    val tracks: LiveData<MutableList<Track>> = tracks_
     var tracks: MutableList<Track> = mutableListOf()
     var mediaSource = ConcatenatingMediaSource()
     var tracksMetadata: MutableList<MediaMetadataCompat> = mutableListOf()
+    private var currentJob: Job? = null
 
     private val httpDataSourceFactory = YandexDataSourceFactory(YAMUS_USER_AGENT)
 
@@ -46,21 +56,24 @@ object CurrentPlaylist {
     }
 
     suspend fun updatePlaylist(id: String, tracks: List<Track>, type: String = TYPE_NONE) {
-        this.id = id
-        this.type = type
-        this.tracks.clear()
-        this.tracks.addAll(tracks)
-        tracksMetadata.clear()
-        tracksMetadata.addAll(this.tracks.map {
-            MediaMetadataCompat.Builder()
+        withContext(Dispatchers.Default) {
+            this@CurrentPlaylist.id = id
+            this@CurrentPlaylist.type = type
+            this@CurrentPlaylist.tracks = tracks.toMutableList()
+            this@CurrentPlaylist.tracksMetadata = tracks.map {
+                MediaMetadataCompat.Builder()
                     .from(it)
                     .apply {
-                        albumArt = loadAlbumArt(it.coverUri)
+                        withContext(Dispatchers.IO) {
+                            albumArt = loadAlbumArt(it.coverUri)
+                        }
                     }
                     .build()
-        })
-        mediaSource.clear()
-        mediaSource.addMediaSources(tracksMetadata.toMediaSource())
+            }.toMutableList()
+            mediaSource.clear()
+            mediaSource.addMediaSources(tracksMetadata.toMediaSource())
+            currentJob = null
+        }
     }
 
     suspend fun addTracksToPlaylist(tracks: List<Track>) {

@@ -31,8 +31,7 @@
             android:label="@string/title_activity_login"
             android:launchMode="singleTop" />
         <activity
-            android:name=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

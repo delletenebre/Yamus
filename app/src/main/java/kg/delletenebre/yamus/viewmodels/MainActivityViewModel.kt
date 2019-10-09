@@ -30,6 +30,7 @@ import kg.delletenebre.yamus.media.extensions.isPlaying
 import kg.delletenebre.yamus.media.extensions.isPrepared
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kg.delletenebre.yamus.utils.Event
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
@@ -56,11 +57,14 @@ class MainActivityViewModel(
 //    val navigateToFragment: LiveData<Event<FragmentNavigationRequest>> get() = _navigateToFragment
 //    private val _navigateToFragment = MutableLiveData<Event<FragmentNavigationRequest>>()
 
+    private var currentJob: Job? = null
     fun trackClicked(clickedTrack: Track, tracks: List<Track>) {
-        viewModelScope.launch {
+        currentJob?.cancel()
+        currentJob = viewModelScope.launch {
             CurrentPlaylist.batchId = ""
             CurrentPlaylist.updatePlaylist("playlist", tracks, CurrentPlaylist.TYPE_TRACKS)
             playTracks(clickedTrack, pauseAllowed = true)
+            currentJob = null
         }
     }
 

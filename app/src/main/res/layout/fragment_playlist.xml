@@ -11,20 +11,18 @@
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="180dp"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:background="@color/toolbarBackground">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/toolbar_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:contentScrim="?attr/colorPrimary"
+            app:contentScrim="@color/toolbarBackground"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:minHeight="?attr/actionBarSize"
+                style="@style/AppToolbar"
                 app:menu="@menu/menu_playlist"
                 app:layout_collapseMode="pin" />
 

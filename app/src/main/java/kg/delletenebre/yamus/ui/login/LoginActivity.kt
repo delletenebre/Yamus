@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -22,6 +23,7 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_login)
+        setupToolbar(findViewById(R.id.toolbar))
 
         viewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
 
@@ -57,6 +59,9 @@ class LoginActivity : AppCompatActivity() {
 //        loginButton.setOnClickListener {
 //            viewModel.login(username.text.toString(), password.text.toString())
 //        }
+    }
+
+    private fun setupToolbar(toolbar: Toolbar) {
     }
 
     fun Snackbar.withColor(@ColorInt colorInt: Int): Snackbar{

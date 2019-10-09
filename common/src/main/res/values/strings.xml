@@ -48,6 +48,8 @@
     <string name="custom_action_favorite_remove">Remove from favorites</string>
     <string name="custom_action_shuffle_mode_enabled">Shuffle mode enabled</string>
     <string name="custom_action_shuffle_mode_disabled">Shuffle mode disabled</string>
+    <string name="custom_action_skip_to_next">Skip to next</string>
+    <string name="custom_action_skip_to_prev">Skip to previous</string>
 
     <!-- HTTP MESSAGES -->
     <string name="unknown_response_format">Unknown response format</string>

@@ -3,6 +3,7 @@ package kg.delletenebre.yamus.ui.settings
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import kg.delletenebre.yamus.R
@@ -16,12 +17,19 @@ import kotlinx.coroutines.withContext
 class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.settings_activity)
+        setContentView(R.layout.activity_settings)
+        setupToolbar(findViewById(R.id.toolbar))
         supportFragmentManager
                 .beginTransaction()
                 .replace(R.id.settings, SettingsFragment())
                 .commit()
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    }
+
+    private fun setupToolbar(toolbar: Toolbar) {
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back)
+        toolbar.setNavigationOnClickListener {
+            onBackPressed()
+        }
     }
 
     class SettingsFragment : PreferenceFragmentCompat() {
@@ -59,13 +67,6 @@ class SettingsActivity : AppCompatActivity() {
                 true
             }
         }
-//
-//        override fun onPreferenceTreeClick(preference: Preference?): Boolean {
-//            if (preference?.key == "clear_cache") {
-//                val context = this@SettingsFragment.activity!!
-//
-//            }
-//            return super.onPreferenceTreeClick(preference)
-//        }
+
     }
 }

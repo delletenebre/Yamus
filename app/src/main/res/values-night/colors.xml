@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="toolbarBackground">@color/colorPrimaryDark</color>
+
     <color name="textPrimary">#dddddd</color>
     <color name="textSecondary">#8fdddddd</color>
 </resources>

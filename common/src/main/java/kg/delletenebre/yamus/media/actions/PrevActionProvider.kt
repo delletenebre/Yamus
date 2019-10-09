@@ -15,17 +15,13 @@ class PrevActionProvider(val context: Context): MediaSessionConnector.CustomActi
     }
 
     override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? {
-        return if (CurrentPlaylist.type == CurrentPlaylist.TYPE_STATION) {
-            return null
-        } else {
-            PlaybackStateCompat.CustomAction
+        return PlaybackStateCompat.CustomAction
                     .Builder(
                             "ACTION_SKIP_TO_PREV",
-                            context.getString(R.string.custom_action_dislike),
+                            context.getString(R.string.custom_action_skip_to_prev),
                             R.drawable.ic_skip_previous
                     )
                     .build()
-        }
     }
 
     override fun onCustomAction(player: Player, controlDispatcher: ControlDispatcher, action: String, extras: Bundle) {
@@ -41,7 +37,9 @@ class PrevActionProvider(val context: Context): MediaSessionConnector.CustomActi
 //            controlDispatcher.dispatchSeekTo(player, windowIndex, 0)
 //        }
 //
-        if (player.hasPrevious() && (player.currentPosition <= MAX_POSITION_FOR_SEEK_TO_PREVIOUS)) {
+        if (CurrentPlaylist.type != CurrentPlaylist.TYPE_STATION
+                && player.hasPrevious()
+                && (player.currentPosition <= MAX_POSITION_FOR_SEEK_TO_PREVIOUS)) {
             player.previous()
         } else {
             player.seekTo(0)
