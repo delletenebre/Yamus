@@ -8,10 +8,12 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.multidex.MultiDexApplication
 import androidx.preference.PreferenceManager
-import kg.delletenebre.yamus.api.UserModel
+import com.jakewharton.threetenabp.AndroidThreeTen
 import kg.delletenebre.yamus.api.YandexCache
+import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
 import kg.delletenebre.yamus.utils.Utils
+import java.util.*
 
 
 class App : MultiDexApplication() {
@@ -21,10 +23,11 @@ class App : MultiDexApplication() {
         super.onCreate()
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         instance = this
-        UserModel.init(applicationContext)
-        AndroidAutoBrowser.init(applicationContext)
-        YandexCache.init(applicationContext)
-        prefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+        YandexUser.init(this)
+        AndroidAutoBrowser.init(this)
+        YandexCache.init(this)
+        prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        AndroidThreeTen.init(this)
     }
 
     fun getIntPreference(key: String, defaultValue: String? = null): Int {
@@ -70,6 +73,14 @@ class App : MultiDexApplication() {
         }
 
         return false
+    }
+
+    fun getLocale(): Locale {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            resources.configuration.locales.get(0)
+        } else {
+            resources.configuration.locale
+        }
     }
 
 

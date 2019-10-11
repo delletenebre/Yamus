@@ -9,9 +9,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.RecyclerView
 import kg.delletenebre.yamus.R
-import kg.delletenebre.yamus.api.UserModel
 import kg.delletenebre.yamus.api.YandexCache
 import kg.delletenebre.yamus.api.YandexMusic
+import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.databinding.ListItemPlaylistBinding
 import kotlinx.coroutines.GlobalScope
@@ -113,7 +113,7 @@ class PlaylistAdapter(
                 when (it.itemId) {
                     R.id.dislike -> {
                         GlobalScope.launch {
-                            if (UserModel.getDislikedIds().contains(trackId)) {
+                            if (YandexUser.getDislikedIds().contains(trackId)) {
                                 YandexMusic.removeDislike(trackId)
                             } else {
                                 YandexMusic.addDislike(trackId)
@@ -132,7 +132,7 @@ class PlaylistAdapter(
             }
 
             val icon = DrawableCompat.wrap(popup.menu.findItem(R.id.dislike).icon)
-            if (UserModel.getDislikedIds().contains(trackId)) {
+            if (YandexUser.getDislikedIds().contains(trackId)) {
                 DrawableCompat.setTint(icon.mutate(), ContextCompat.getColor(context, R.color.colorAccent))
             } else {
                 DrawableCompat.setTint(icon.mutate(), ContextCompat.getColor(context, R.color.textSecondary))

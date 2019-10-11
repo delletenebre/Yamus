@@ -64,6 +64,9 @@
 
     <!-- Profile Fragment -->
     <string name="title_profile">Профиль</string>
+    <string name="profile_subscription_title">Подписка Яндекс Музыка</string>
+    <string name="profile_subscription_not_available">Не активна</string>
+    <string name="profile_subscription_until">Активна до %1$s</string>
 
 
     <string name="title_playlists">Плейлисты</string>
@@ -93,11 +96,11 @@
     <!-- Preference Playback -->
     <string name="pref_header_playback">Воспроизведение</string>
     <string name="pref_title_shuffle_mode">Случайный порядок воспроизведения</string>
-    <string name="pref_summary_on_shuffle_mode">Проигрывать треки в случайном порядке</string>
-    <string name="pref_summary_off_shuffle_mode">Проигрывать треки последовательно</string>
+    <string name="pref_summary_on_shuffle_mode">При воспроизведении нового плейлиста, треки будут перемешаны</string>
+    <string name="pref_summary_off_shuffle_mode">Для нового плейлиста, треки будут воспроизводится последовательно</string>
     <string name="pref_title_repeat_mode">Режим повтора</string>
-    <string name="pref_summary_on_repeat_mode">Воспроизводить плейлист по окончанию</string>
-    <string name="pref_summary_off_repeat_mode">Останавливать воспроизведение по окончанию плейлиста</string>
+    <string name="pref_summary_on_repeat_mode">По окончанию нового плейлиста, воспроизведение начнётся заново</string>
+    <string name="pref_summary_off_repeat_mode">По окончанию нового плейлиста, воспроизведение остановится</string>
     <string name="pref_title_online_quality">Качество треков онлайн</string>
 
     <!-- Preference Cache -->
@@ -108,6 +111,15 @@
     <string name="pref_title_dialog_clear_cache">Удалить все сохранённые треки?</string>
     <string name="pref_summary_dialog_clear_cache">Вы уверены, что хотите удалить все сохранённые треки?</string>
     <string name="pref_title_cache_quality">Качество загружаемых треков</string>
+
+    <!-- Preference Android Auto Interface -->
+    <string name="pref_header_aa_interface">Интерфейс Android Auto</string>
+    <string name="pref_title_show_shuffle">Отображать &quot;Перемешивание&quot;</string>
+    <string name="pref_summary_on_show_shuffle">Кнопка управления режимом случайного воспроизведения будет отображаться</string>
+    <string name="pref_summary_off_show_shuffle">Кнопка управления режимом случайного воспроизведения скрыта</string>
+    <string name="pref_title_show_repeat">Отображать &quot;Повторное воспроизведение&quot;</string>
+    <string name="pref_summary_on_show_repeat">Кнопка управления режимом повторного воспроизведения будет отображаться</string>
+    <string name="pref_summary_off_show_repeat">Кнопка управления режимом повторного воспроизведения скрыта</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>

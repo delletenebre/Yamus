@@ -3,7 +3,6 @@ package kg.delletenebre.yamus.api
 import android.annotation.SuppressLint
 import android.content.Context
 import android.provider.Settings
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.andreacioccarelli.cryptoprefs.CryptoPrefs
@@ -20,7 +19,7 @@ import okhttp3.FormBody
 import okhttp3.Request
 import org.json.JSONObject
 
-object UserModel {
+object YandexUser {
     private val token_ = MutableLiveData<String>().apply {
         value = ""
     }
@@ -110,7 +109,6 @@ object UserModel {
             YandexApi.httpClient.newCall(request).execute().use { response ->
                 if (response.isSuccessful) {
                     val responseBody = response.body()!!.string()
-                    Log.d("ahoha", "response: $responseBody")
                     try {
                         val responseJson = JSONObject(responseBody)
                         token_.postValue(responseJson.getString("access_token"))
@@ -134,9 +132,15 @@ object UserModel {
                     try {
                         val json = JSONObject(response.body()!!.string())
                                 .getJSONObject("result")
-                        user_.postValue(Json.nonstrict.parse(User.serializer(), json.toString()))
-                        saveUser()
-                        HttpResult(true, response.code(), "")
+                        val user = Json.nonstrict.parse(User.serializer(), json.toString())
+                        if (user.account.serviceAvailable) {
+                            user_.postValue(user)
+                            saveUser()
+                            HttpResult(true, response.code(), "")
+                        } else {
+                            HttpResult(false, response.code(), App.instance.getString(R.string.ym_service_not_available_for_account))
+                        }
+
                     } catch (t: Throwable) {
                         t.printStackTrace()
                         HttpResult(false, response.code(), App.instance.getString(R.string.unknown_response_format))

@@ -64,6 +64,9 @@
 
     <!-- Profile Fragment -->
     <string name="title_profile">Profile</string>
+    <string name="profile_subscription_title">Yandex Music subscription</string>
+    <string name="profile_subscription_not_available">Not active</string>
+    <string name="profile_subscription_until">Active until %1$s</string>
 
 
     <string name="title_playlists">Playlists</string>
@@ -100,6 +103,7 @@
     <string name="pref_summary_off_repeat_mode">Stop playback at the end of the playlist</string>
     <string name="pref_title_online_quality">Online tracks quality</string>
     <string name="pref_default_online_quality" translatable="false">192|aac</string>
+
     <!-- Preference Cache -->
     <string name="pref_header_cache">Offline mode</string>
     <string name="pref_title_clear_cache">Delete downloaded tracks</string>
@@ -109,6 +113,15 @@
     <string name="pref_summary_dialog_clear_cache">Are you sure you want to delete all saved tracks?</string>
     <string name="pref_title_cache_quality">Downloadable tracks quality</string>
     <string name="pref_default_cache_quality" translatable="false">192|aac</string>
+
+    <!-- Preference Android Auto Interface -->
+    <string name="pref_header_aa_interface">Android Auto interface</string>
+    <string name="pref_title_show_shuffle">Display &quot;Shuffle mode&quot;</string>
+    <string name="pref_summary_on_show_shuffle">Shuffle mode button is displayed</string>
+    <string name="pref_summary_off_show_shuffle">Shuffle mode button is hidden</string>
+    <string name="pref_title_show_repeat">Display &quot;Repeat mode&quot;</string>
+    <string name="pref_summary_on_show_repeat">Repeat mode button is displayed</string>
+    <string name="pref_summary_off_show_repeat">Repeat mode button is hidden</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>

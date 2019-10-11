@@ -7,7 +7,6 @@ import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import kg.delletenebre.yamus.media.R
-import kg.delletenebre.yamus.media.library.CurrentPlaylist
 
 class NextActionProvider(val context: Context): MediaSessionConnector.CustomActionProvider {
     override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction {
@@ -21,20 +20,6 @@ class NextActionProvider(val context: Context): MediaSessionConnector.CustomActi
     }
 
     override fun onCustomAction(player: Player, controlDispatcher: ControlDispatcher, action: String, extras: Bundle) {
-//        val timeline = player.currentTimeline
-//        if (timeline.isEmpty || player.isPlayingAd) {
-//            return
-//        }
-//        val nextWindowIndex = player.nextWindowIndex
-//        if (nextWindowIndex != C.INDEX_UNSET) {
-//            controlDispatcher.dispatchSeekTo(player, nextWindowIndex, C.TIME_UNSET)
-//        }
-        if (player.hasNext()) {
-            player.next()
-        } else {
-            if (CurrentPlaylist.type != CurrentPlaylist.TYPE_STATION) {
-                player.stop()
-            }
-        }
+        CustomActionsHelper.next(player)
     }
 }

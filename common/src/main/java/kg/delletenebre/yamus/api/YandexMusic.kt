@@ -28,11 +28,11 @@ object YandexMusic {
     const val TAG = "Yamus"
 
     suspend fun getFavoriteTracks(): List<Track> {
-        return getTracks(UserModel.getLikedIds())
+        return getTracks(YandexUser.getLikedIds())
     }
 
     suspend fun getDislikedTracks(): List<Track> {
-        return getTracks(UserModel.getDislikedIds())
+        return getTracks(YandexUser.getDislikedIds())
     }
 
     suspend fun getUserTracksIds(type: String): List<String> {
@@ -43,7 +43,7 @@ object YandexMusic {
             currentRevision = cachedTracksIds.revision
         }
 
-        val url = "/users/${UserModel.getUid()}/${type}s/tracks?if-modified-since-revision=$currentRevision"
+        val url = "/users/${YandexUser.getUid()}/${type}s/tracks?if-modified-since-revision=$currentRevision"
 
         val httpResult = YandexApi.networkCall(url)
         try {
@@ -299,14 +299,16 @@ object YandexMusic {
     }
 
     suspend fun updateUserTrack(action: String, type: String, trackId: String) {
-        val url = "/users/${UserModel.getUid()}/${type}s/tracks/$action"
+        val url = "/users/${YandexUser.getUid()}/${type}s/tracks/$action"
 
         val formBody = FormBody.Builder()
                 .add("track-ids", trackId)
                 .build()
 
         YandexApi.networkCall(url, formBody)
-        UserModel.updateUserTracks(type)
+        withContext(Dispatchers.IO) {
+            YandexUser.updateUserTracks(type)
+        }
     }
 
     suspend fun addLike(trackId: String) {
@@ -386,7 +388,7 @@ object YandexMusic {
 //                    .add("track-ids", trackId)
 //            val request = Request.Builder()
 //                    .url("${YandexApi.API_URL_MUSIC}/tracks")
-//                    .addHeader("Authorization", "OAuth ${UserModel.getToken()}")
+//                    .addHeader("Authorization", "OAuth ${YandexUser.getToken()}")
 //                    .post(formBody.build())
 //                    .build()
 //
@@ -428,7 +430,7 @@ object YandexMusic {
 
     suspend fun getLikedAlbums(): List<Album> {
         val result = mutableListOf<Album>()
-        val url = "/users/${UserModel.getUid()}/likes/albums?rich=true"
+        val url = "/users/${YandexUser.getUid()}/likes/albums?rich=true"
         val httpResult = YandexApi.networkCall(url)
         if (httpResult.isSuccess) {
             try {
@@ -449,7 +451,7 @@ object YandexMusic {
 
     suspend fun getLikedArtists(): List<Artist> {
         var result = listOf<Artist>()
-        val url = "/users/${UserModel.getUid()}/likes/artists?with-timestamps=false"
+        val url = "/users/${YandexUser.getUid()}/likes/artists?with-timestamps=false"
         val httpResult = YandexApi.networkCall(url)
         if (httpResult.isSuccess) {
             try {
@@ -464,7 +466,7 @@ object YandexMusic {
 
     suspend fun getLikedPlaylists(): List<Playlist> {
         val result = mutableListOf<Playlist>()
-        val url = "/users/${UserModel.getUid()}/likes/playlists"
+        val url = "/users/${YandexUser.getUid()}/likes/playlists"
         val httpResult = YandexApi.networkCall(url)
         if (httpResult.isSuccess) {
             try {
@@ -485,7 +487,7 @@ object YandexMusic {
 
     suspend fun getUserPlaylists(): List<Playlist> {
         var result = listOf<Playlist>()
-        val url = "/users/${UserModel.getUid()}/playlists/list"
+        val url = "/users/${YandexUser.getUid()}/playlists/list"
         val httpResult = YandexApi.networkCall(url)
         if (httpResult.isSuccess) {
             try {
@@ -520,7 +522,7 @@ object YandexMusic {
             val downloadVariant = preferred ?: best ?: better ?: good ?: downloadVariants[0]
             val request = Request.Builder()
                     .url("${downloadVariant.downloadInfoUrl}&format=json")
-                    .addHeader("Authorization", "OAuth ${UserModel.getToken()}")
+                    .addHeader("Authorization", "OAuth ${YandexUser.getToken()}")
                     .build()
 
             YandexApi.httpClient.newCall(request).execute().use { response ->

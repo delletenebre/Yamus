@@ -38,6 +38,7 @@ object CurrentPlaylist: CoroutineScope {
     var id: String = ""
     var batchId: String = ""
     var type: String = TYPE_NONE
+    var isBuffering = false
 
 //    private val tracks_ = MutableLiveData<MutableList<Track>>().apply {
 //        value = mutableListOf()
@@ -56,6 +57,7 @@ object CurrentPlaylist: CoroutineScope {
     }
 
     suspend fun updatePlaylist(id: String, tracks: List<Track>, type: String = TYPE_NONE) {
+        isBuffering = true
         withContext(Dispatchers.Default) {
             this@CurrentPlaylist.id = id
             this@CurrentPlaylist.type = type
@@ -73,6 +75,7 @@ object CurrentPlaylist: CoroutineScope {
             mediaSource.clear()
             mediaSource.addMediaSources(tracksMetadata.toMediaSource())
             currentJob = null
+            isBuffering = false
         }
     }
 

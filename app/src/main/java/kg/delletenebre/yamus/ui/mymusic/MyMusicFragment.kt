@@ -11,8 +11,8 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import kg.delletenebre.yamus.MainActivity
 import kg.delletenebre.yamus.R
-import kg.delletenebre.yamus.api.UserModel
 import kg.delletenebre.yamus.api.YandexMusic
+import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.databinding.FragmentMyMusicBinding
 import kg.delletenebre.yamus.ui.playlist.PlaylistFragment
 import kotlinx.coroutines.*
@@ -37,14 +37,14 @@ class MyMusicFragment : Fragment(), CoroutineScope {
     ): View? {
         launch {
             withContext(Dispatchers.IO) {
-                UserModel.updateUserTracks()
+                YandexUser.updateUserTracks()
             }
         }
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_my_music,
                 container,false)
         binding.fragment = this
-        binding.userModel = UserModel
+        binding.userModel = YandexUser
         binding.likedTracksButton.setOnClickListener {
             val bundle = bundleOf(
                     "title" to resources.getString(R.string.card_title_liked_tracks),

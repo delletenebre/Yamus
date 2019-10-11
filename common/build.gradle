@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         multiDexEnabled true
-        versionCode 3
+        versionCode 4
         versionName "1.0"
 
         minSdkVersion rootProject.minSdkVersion
@@ -54,6 +54,7 @@ dependencies {
     api 'com.android.support:multidex:1.0.3'
 
     api "commons-io:commons-io:2.6"
+    api 'com.jakewharton.threetenabp:threetenabp:1.2.1'
 
     // Room
     def room_version = '2.2.0-rc01'

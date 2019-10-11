@@ -17,7 +17,7 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kg.delletenebre.yamus.api.UserModel
+import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.ui.login.LoginActivity
 import kg.delletenebre.yamus.ui.settings.SettingsActivity
 import kg.delletenebre.yamus.utils.InjectorUtils
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this, InjectorUtils.provideMainActivityViewModel(this))
                 .get(MainActivityViewModel::class.java)
 
-        UserModel.token.observe(this, Observer {
+        YandexUser.token.observe(this, Observer {
             if (it.isEmpty()) {
                 startActivity(Intent(this, LoginActivity::class.java))
                 finish()
@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        if (!UserModel.isAuth()) {
+        if (!YandexUser.isAuth()) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }

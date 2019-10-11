@@ -90,7 +90,7 @@ object YandexApi {
 
     private fun getRequest(requestBuilder: Request.Builder): Request {
         return requestBuilder
-                .addHeader("Authorization", "OAuth ${UserModel.getToken()}")
+                .addHeader("Authorization", "OAuth ${YandexUser.getToken()}")
                 .addHeader("X-Yandex-Music-Client", "WindowsPhone/3.20")
                 .addHeader("User-Agent", "Windows 10")
                 .build()

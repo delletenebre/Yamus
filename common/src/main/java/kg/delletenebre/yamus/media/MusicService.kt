@@ -16,39 +16,43 @@
 
 package kg.delletenebre.yamus.media
 
+import android.app.Notification
 import android.app.PendingIntent
-import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Bitmap
 import android.media.AudioManager
-import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat.MediaItem
-import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.ExoPlayerFactory
-import com.google.android.exoplayer2.Player
+import androidx.media.session.MediaButtonReceiver
+import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import kg.delletenebre.yamus.api.YandexMusic
+import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.media.actions.*
 import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kotlinx.coroutines.*
+import java.util.*
+
 
 open class MusicService : MediaBrowserServiceCompat() {
+    val CHANNEL_ID: String = "kg.delletenebre.yamus.media.NOW_PLAYING"
+    val NOTIFICATION_ID: Int = 0xb339
+
     private lateinit var becomingNoisyReceiver: BecomingNoisyReceiver
-    private lateinit var notificationManager: NotificationManagerCompat
-    private lateinit var notificationBuilder: NotificationBuilder
+    private lateinit var playerNotificationManager: PlayerNotificationManager
     private lateinit var packageValidator: PackageValidator
 
     private val serviceJob = SupervisorJob()
@@ -74,30 +78,15 @@ open class MusicService : MediaBrowserServiceCompat() {
         ExoPlayerFactory.newSimpleInstance(this).apply {
             setAudioAttributes(this@MusicService.audioAttributes, true)
             addListener(object : Player.EventListener {
-//                override fun onTracksChanged(trackGroups: TrackGroupArray?, trackSelections: TrackSelectionArray?) {}
-//                override fun onLoadingChanged(isLoading: Boolean) {}
-//                override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {}
-//                override fun onRepeatModeChanged(repeatMode: Int) {}
-//                override fun onPlayerError(error: ExoPlaybackException?) {}
-//                override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters?) {}
                 override fun onPositionDiscontinuity(reason: Int) {
                     if (reason == Player.DISCONTINUITY_REASON_PERIOD_TRANSITION
                             || reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
                         if (CurrentPlaylist.type == CurrentPlaylist.TYPE_STATION) {
                             val stationId = CurrentPlaylist.id
-                            serviceScope.launch {
-                                val trackId = CurrentPlaylist.tracks[1].getTrackId()
-                                YandexMusic.getStationFeedback(
-                                        stationId,
-                                        YandexMusic.STATION_FEEDBACK_TYPE_TRACK_STARTED,
-                                        CurrentPlaylist.batchId,
-                                        trackId
-                                )
-                            }
 
                             if (reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
+                                val trackId = CurrentPlaylist.tracks[0].getTrackId()
                                 serviceScope.launch {
-                                    val trackId = CurrentPlaylist.tracks[0].getTrackId()
                                     YandexMusic.getStationFeedback(
                                             stationId,
                                             YandexMusic.STATION_FEEDBACK_TYPE_SKIP,
@@ -108,9 +97,16 @@ open class MusicService : MediaBrowserServiceCompat() {
                                 }
                             }
 
-                            if (exoPlayer.currentWindowIndex == 2) {
-                                CurrentPlaylist.removeTrack(0)
+                            val trackId = CurrentPlaylist.tracks[1].getTrackId()
+                            serviceScope.launch {
+                                YandexMusic.getStationFeedback(
+                                        stationId,
+                                        YandexMusic.STATION_FEEDBACK_TYPE_TRACK_STARTED,
+                                        CurrentPlaylist.batchId,
+                                        trackId
+                                )
                             }
+                            CurrentPlaylist.removeTrack(0)
 
                             if (CurrentPlaylist.tracks.size == 3) {
                                 serviceScope.launch {
@@ -132,8 +128,6 @@ open class MusicService : MediaBrowserServiceCompat() {
     @ExperimentalCoroutinesApi
     override fun onCreate() {
         super.onCreate()
-//
-//        YandexApi.init(applicationContext)
 
         // Build a PendingIntent that can be used to launch the UI.
         val sessionActivityPendingIntent =
@@ -150,19 +144,17 @@ open class MusicService : MediaBrowserServiceCompat() {
 
         // Because ExoPlayer will manage the MediaSession, add the service as a callback for
         // state changes.
-        mediaController = MediaControllerCompat(this, mediaSession).also {
-            it.registerCallback(MediaControllerCallback())
-        }
-
-        notificationBuilder = NotificationBuilder(this)
-        notificationManager = NotificationManagerCompat.from(this)
+        mediaController = MediaControllerCompat(this, mediaSession)
 
         becomingNoisyReceiver =
             BecomingNoisyReceiver(context = this, sessionToken = mediaSession.sessionToken)
 
+        initializePlayerNotificationManager()
+
         // ExoPlayer will manage the MediaSession for us.
         mediaSessionConnector = MediaSessionConnector(mediaSession).also { connector ->
             connector.setPlayer(exoPlayer)
+            connector.setMediaButtonEventHandler(YamusMediaButtonEventHandler())
             connector.setPlaybackPreparer(YamusPlaybackPreparer(exoPlayer))
             connector.setMediaMetadataProvider(YamusMediaMetadataProvider(this)) // Получаем и отображаем сведения о текущем треке
             connector.setCustomActionProviders(
@@ -173,7 +165,6 @@ open class MusicService : MediaBrowserServiceCompat() {
                     RepeatModeActionProvider(this),
                     ShuffleModeActionProvider(this)
             )
-//            connector.setQueueNavigator(YamusQueueNavigator(mediaSession)) // Показывает кнопки предыдущий/следующий/плейлист. Но кнопку плейлист никак не скрыть (баг)
         }
 
         packageValidator = PackageValidator(this, R.xml.allowed_media_browser_callers)
@@ -202,6 +193,8 @@ open class MusicService : MediaBrowserServiceCompat() {
             isActive = false
             release()
         }
+        playerNotificationManager.setPlayer(null)
+        exoPlayer.release()
 
         // Cancel coroutines when the service is going away.
         serviceJob.cancel()
@@ -225,7 +218,6 @@ open class MusicService : MediaBrowserServiceCompat() {
             putBoolean(CONTENT_STYLE_SUPPORTED, true)
             putInt(CONTENT_STYLE_BROWSABLE_HINT, CONTENT_STYLE_GRID)
             putInt(CONTENT_STYLE_PLAYABLE_HINT, CONTENT_STYLE_LIST)
-            //putString(CONTENT_STYLE_GROUP_TITLE_HINT, "Albums")
         }
 
         return if (isKnownCaller) {
@@ -264,97 +256,206 @@ open class MusicService : MediaBrowserServiceCompat() {
         result.detach()
     }
 
-    /**
-     * Removes the [NOW_PLAYING_NOTIFICATION] notification.
-     *
-     * Since `stopForeground(false)` was already called (see
-     * [MediaControllerCallback.onPlaybackStateChanged], it's possible to cancel the notification
-     * with `notificationManager.cancel(NOW_PLAYING_NOTIFICATION)` if minSdkVersion is >=
-     * [Build.VERSION_CODES.LOLLIPOP].
-     *
-     * Prior to [Build.VERSION_CODES.LOLLIPOP], notifications associated with a foreground
-     * service remained marked as "ongoing" even after calling [Service.stopForeground],
-     * and cannot be cancelled normally.
-     *
-     * Fortunately, it's possible to simply call [Service.stopForeground] a second time, this
-     * time with `true`. This won't change anything about the service's state, but will simply
-     * remove the notification.
-     */
-    private fun removeNowPlayingNotification() {
-        stopForeground(true)
+    private fun initializePlayerNotificationManager() {
+        playerNotificationManager = YamusPlayerNotificationManager(this, CHANNEL_ID, NOTIFICATION_ID,
+                DescriptionAdapter(), YamusNotificationListener(), NotificationCustomActionReceiver())
+        playerNotificationManager.setUseChronometer(true)
+        playerNotificationManager.setSmallIcon(R.drawable.ic_notification)
+        playerNotificationManager.setMediaSessionToken(sessionToken)
+        playerNotificationManager.setPlayer(exoPlayer)
     }
 
-    /**
-     * Class to receive callbacks about state changes to the [MediaSessionCompat]. In response
-     * to those callbacks, this class:
-     *
-     * - Build/update the service's notification.
-     * - Register/unregister a broadcast receiver for [AudioManager.ACTION_AUDIO_BECOMING_NOISY].
-     * - Calls [Service.startForeground] and [Service.stopForeground].
-     */
-    private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
-        override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-            mediaController.playbackState?.let { updateNotification(it) }
+    private class YamusPlayerNotificationManager(
+            context: Context, 
+            channelId: String, 
+            notificationId: Int,
+            mediaDescriptionAdapter: MediaDescriptionAdapter,
+            notificationListener: NotificationListener,
+            customActionReceiver: CustomActionReceiver
+    ) : PlayerNotificationManager(
+            context,
+            channelId,
+            notificationId,
+            mediaDescriptionAdapter,
+            notificationListener,
+            customActionReceiver
+    ) {
+        override fun getActionIndicesForCompactView(actionNames: MutableList<String>, player: Player): IntArray {
+            val pauseActionIndex = actionNames.indexOf(ACTION_PAUSE)
+            val playActionIndex = actionNames.indexOf(ACTION_PLAY)
+            val skipPreviousActionIndex = actionNames.indexOf(CUSTOM_ACTION_PREV)
+            val skipNextActionIndex = actionNames.indexOf(CUSTOM_ACTION_NEXT)
+
+            val actions = mutableListOf<Int>()
+            actions.add(skipPreviousActionIndex)
+            val playWhenReady = player.playWhenReady
+            if (pauseActionIndex != -1 && playWhenReady) {
+                actions.add(pauseActionIndex)
+            } else if (playActionIndex != -1 && !playWhenReady) {
+                actions.add(playActionIndex)
+            }
+            actions.add(skipNextActionIndex)
+
+            return actions.toIntArray()
         }
 
-        override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
-            state?.let { updateNotification(it) }
+        override fun getActions(player: Player): MutableList<String> {
+            var enablePrevious = false
+            var enableNext = false
+            val timeline = player.currentTimeline
+            if (!timeline.isEmpty && !player.isPlayingAd) {
+                val window = Timeline.Window()
+                timeline.getWindow(player.currentWindowIndex, window)
+                enablePrevious = window.isSeekable || !window.isDynamic || player.hasPrevious()
+                enableNext = window.isDynamic || player.hasNext()
+            }
+
+            val stringActions = ArrayList<String>()
+
+            val currentTrack = CurrentPlaylist.tracks.getOrNull(player.currentWindowIndex)
+            if (currentTrack != null) {
+                if (YandexUser.getLikedIds().contains(currentTrack.getTrackId())) {
+                    stringActions.add(CUSTOM_ACTION_UNLIKE)
+                } else {
+                    stringActions.add(CUSTOM_ACTION_LIKE)
+                }
+
+                if (enablePrevious) {
+                    stringActions.add(CUSTOM_ACTION_PREV)
+                }
+
+                if (isPlaying(player)) {
+                    stringActions.add(ACTION_PAUSE)
+                } else {
+                    stringActions.add(ACTION_PLAY)
+                }
+
+                if (enableNext) {
+                    stringActions.add(CUSTOM_ACTION_NEXT)
+                }
+
+                stringActions.add(CUSTOM_ACTION_DISLIKE)
+            }
+
+            return stringActions
         }
 
-        private fun updateNotification(state: PlaybackStateCompat) {
-            val updatedState = state.state
+        private fun isPlaying(player: Player): Boolean {
+            return (player.playbackState != Player.STATE_ENDED
+                    && player.playbackState != Player.STATE_IDLE
+                    && player.playWhenReady)
+        }
+    }
 
-            // Skip building a notification when state is "none" and metadata is null.
-            val notification = if (mediaController.metadata != null
-                    && updatedState != PlaybackStateCompat.STATE_NONE) {
-                notificationBuilder.buildNotification(mediaSession.sessionToken)
+    private inner class DescriptionAdapter : PlayerNotificationManager.MediaDescriptionAdapter {
+        override fun getCurrentContentTitle(player: Player): String {
+            return getDescription(player.currentWindowIndex)?.title.toString()
+        }
+
+        override fun getCurrentContentText(player: Player): String? {
+            return getDescription(player.currentWindowIndex)?.subtitle.toString()
+        }
+
+        override fun getCurrentLargeIcon(player: Player,
+                                         callback: PlayerNotificationManager.BitmapCallback): Bitmap? {
+            return getDescription(player.currentWindowIndex)?.iconBitmap
+        }
+
+        override fun createCurrentContentIntent(player: Player): PendingIntent? {
+            return mediaController.sessionActivity
+        }
+
+        private fun getDescription(index: Int): MediaDescriptionCompat? {
+            return CurrentPlaylist.tracksMetadata.getOrNull(index)?.description
+        }
+    }
+
+    inner class YamusNotificationListener : PlayerNotificationManager.NotificationListener {
+        override fun onNotificationPosted(notificationId: Int, notification: Notification?, ongoing: Boolean) {
+            if (ongoing) {
+                becomingNoisyReceiver.register()
+                if (!isForegroundService) {
+                    ContextCompat.startForegroundService(
+                            applicationContext,
+                            Intent(applicationContext, this@MusicService.javaClass)
+                    )
+                    startForeground(notificationId, notification)
+                    isForegroundService = true
+                }
             } else {
-                null
-            }
-
-            when (updatedState) {
-                PlaybackStateCompat.STATE_BUFFERING,
-                PlaybackStateCompat.STATE_PLAYING -> {
-                    becomingNoisyReceiver.register()
-
-                    /**
-                     * This may look strange, but the documentation for [Service.startForeground]
-                     * notes that "calling this method does *not* put the service in the started
-                     * state itself, even though the name sounds like it."
-                     */
-                    if (notification != null) {
-                        notificationManager.notify(NOW_PLAYING_NOTIFICATION, notification)
-
-                        if (!isForegroundService) {
-                            ContextCompat.startForegroundService(
-                                applicationContext,
-                                Intent(applicationContext, this@MusicService.javaClass)
-                            )
-                            startForeground(NOW_PLAYING_NOTIFICATION, notification)
-                            isForegroundService = true
-                        }
-                    }
-                }
-                else -> {
-                    becomingNoisyReceiver.unregister()
-
-                    if (isForegroundService) {
-                        stopForeground(false)
-                        isForegroundService = false
-
-                        // If playback has ended, also stop the service.
-                        if (updatedState == PlaybackStateCompat.STATE_NONE) {
-                            stopSelf()
-                        }
-
-                        if (notification != null) {
-                            notificationManager.notify(NOW_PLAYING_NOTIFICATION, notification)
-                        } else {
-                            removeNowPlayingNotification()
-                        }
-                    }
+                becomingNoisyReceiver.unregister()
+                if (isForegroundService) {
+                    stopForeground(notification == null)
+                    isForegroundService = false
                 }
             }
+        }
+    }
+
+    private inner class NotificationCustomActionReceiver : PlayerNotificationManager.CustomActionReceiver {
+        private val skipToPreviousAction = NotificationCompat.Action(
+                R.drawable.exo_controls_previous,
+                getString(R.string.notification_skip_to_previous),
+                MediaButtonReceiver.buildMediaButtonPendingIntent(this@MusicService, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS))
+        private val skipToNextAction = NotificationCompat.Action(
+                R.drawable.exo_controls_next,
+                getString(R.string.notification_skip_to_next),
+                MediaButtonReceiver.buildMediaButtonPendingIntent(this@MusicService, PlaybackStateCompat.ACTION_SKIP_TO_NEXT))
+        private val likeAction = NotificationCompat.Action(
+                R.drawable.ic_favorite_border,
+                getString(R.string.notification_skip_to_next), // TODO
+                buildPendingIntent(CUSTOM_ACTION_LIKE))
+        private val unlikeAction = NotificationCompat.Action(
+                R.drawable.ic_favorite,
+                getString(R.string.notification_skip_to_next), // TODO
+                buildPendingIntent(CUSTOM_ACTION_UNLIKE))
+        private val dislikeAction = NotificationCompat.Action(
+                R.drawable.ic_do_not_disturb,
+                getString(R.string.notification_skip_to_next), // TODO
+                buildPendingIntent(CUSTOM_ACTION_DISLIKE))
+
+        override fun getCustomActions(player: Player): MutableList<String> {
+            val customActions = mutableListOf<String>()
+            customActions.add(CUSTOM_ACTION_PREV)
+            customActions.add(CUSTOM_ACTION_NEXT)
+            customActions.add(CUSTOM_ACTION_LIKE)
+            customActions.add(CUSTOM_ACTION_UNLIKE)
+            customActions.add(CUSTOM_ACTION_DISLIKE)
+            return customActions
+        }
+
+        override fun createCustomActions(context: Context, instanceId: Int)
+                : MutableMap<String, NotificationCompat.Action> {
+            val actions = mutableMapOf<String, NotificationCompat.Action>()
+            actions[CUSTOM_ACTION_PREV] = skipToPreviousAction
+            actions[CUSTOM_ACTION_NEXT] = skipToNextAction
+            actions[CUSTOM_ACTION_LIKE] = likeAction
+            actions[CUSTOM_ACTION_UNLIKE] = unlikeAction
+            actions[CUSTOM_ACTION_DISLIKE] = dislikeAction
+            return actions
+        }
+
+        override fun onCustomAction(player: Player, action: String, intent: Intent) {
+            val track = CurrentPlaylist.tracks.getOrNull(player.currentWindowIndex)
+            if (track != null) {
+                when (action) {
+                    CUSTOM_ACTION_LIKE -> {
+                        CustomActionsHelper.like(playerNotificationManager, track.getTrackId())
+                    }
+                    CUSTOM_ACTION_UNLIKE -> {
+                        CustomActionsHelper.unlike(playerNotificationManager, track.getTrackId())
+                    }
+                    CUSTOM_ACTION_DISLIKE -> {
+                        CustomActionsHelper.dislike(player, track.getTrackId())
+                    }
+                }
+            }
+        }
+
+        private fun buildPendingIntent(action: String, instanceId: Int = Random().nextInt()): PendingIntent {
+            val intent = Intent(action).setPackage(packageName)
+            return PendingIntent.getBroadcast(
+                    this@MusicService, instanceId, intent, PendingIntent.FLAG_CANCEL_CURRENT)
         }
     }
 }
@@ -406,3 +507,10 @@ private const val CONTENT_STYLE_PLAYABLE_HINT = "android.media.browse.CONTENT_ST
 private const val CONTENT_STYLE_SUPPORTED = "android.media.browse.CONTENT_STYLE_SUPPORTED"
 private const val CONTENT_STYLE_LIST = 1
 private const val CONTENT_STYLE_GRID = 2
+
+// CUSTOM ACTIONS
+private const val CUSTOM_ACTION_LIKE = "kg.delletenebre.yamus.CUSTOM_ACTION_LIKE"
+private const val CUSTOM_ACTION_UNLIKE = "kg.delletenebre.yamus.CUSTOM_ACTION_UNLIKE"
+private const val CUSTOM_ACTION_DISLIKE = "kg.delletenebre.yamus.CUSTOM_ACTION_DISLIKE"
+private const val CUSTOM_ACTION_NEXT = "kg.delletenebre.yamus.CUSTOM_ACTION_NEXT"
+private const val CUSTOM_ACTION_PREV = "kg.delletenebre.yamus.CUSTOM_ACTION_PREV"

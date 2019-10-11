@@ -2,7 +2,7 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
     <data>
         <variable name="viewModel" type="kg.delletenebre.yamus.ui.mymusic.MyMusicViewModel"/>
-        <variable name="userModel" type="kg.delletenebre.yamus.api.UserModel"/>
+        <variable name="userModel" type="kg.delletenebre.yamus.api.YandexUser"/>
         <variable name="fragment" type="kg.delletenebre.yamus.ui.mymusic.MyMusicFragment"/>
     </data>
 
