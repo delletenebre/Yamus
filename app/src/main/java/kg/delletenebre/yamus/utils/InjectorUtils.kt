@@ -24,12 +24,13 @@ import kg.delletenebre.yamus.media.MusicService
 import kg.delletenebre.yamus.viewmodels.MainActivityViewModel
 import kg.delletenebre.yamus.viewmodels.MediaItemFragmentViewModel
 import kg.delletenebre.yamus.viewmodels.NowPlayingFragmentViewModel
+import kg.delletenebre.yamus.viewmodels.NowPlayingViewModel
 
 /**
  * Static methods used to inject classes needed for various Activities and Fragments.
  */
 object InjectorUtils {
-    private fun provideMediaSessionConnection(context: Context): MediaSessionConnection {
+    fun provideMediaSessionConnection(context: Context): MediaSessionConnection {
         return MediaSessionConnection.getInstance(context,
                 ComponentName(context, MusicService::class.java))
     }
@@ -52,6 +53,14 @@ object InjectorUtils {
         val applicationContext = context.applicationContext
         val mediaSessionConnection = provideMediaSessionConnection(applicationContext)
         return NowPlayingFragmentViewModel.Factory(
+                applicationContext as Application, mediaSessionConnection)
+    }
+
+    fun provideNowPlayingViewModel(context: Context)
+            : NowPlayingViewModel.Factory {
+        val applicationContext = context.applicationContext
+        val mediaSessionConnection = provideMediaSessionConnection(applicationContext)
+        return NowPlayingViewModel.Factory(
                 applicationContext as Application, mediaSessionConnection)
     }
 }

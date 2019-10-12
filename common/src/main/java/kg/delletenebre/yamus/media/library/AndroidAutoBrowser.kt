@@ -30,7 +30,7 @@ import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.media.R
-import kg.delletenebre.yamus.media.extensions.toUri
+import kg.delletenebre.yamus.utils.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

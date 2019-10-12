@@ -12,10 +12,9 @@
             type="kg.delletenebre.yamus.api.response.Track" />
     </data>
 
-    <LinearLayout
+    <FrameLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:focusable="true"
@@ -23,91 +22,110 @@
             android:background="?attr/selectableItemBackground"
             android:onClick="@{() -> viewHolder.onClick(item)}">
 
-        <ImageView
-                android:id="@+id/cover"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:padding="8dp"
-                app:glideImgSrc="@{item.coverUri}"
-                app:glideImgSize="@{100}"/>
-
         <LinearLayout
-                android:layout_width="0dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background='@{item.playingState == "" ? @android:color/transparent : @color/playlistItemNowPlayingBackground}'>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:orientation="vertical">
+                android:layout_marginRight="8dp"
+                android:layout_marginEnd="8dp">
+                <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:glideImgSrc="@{item.coverUri}"
+                        app:glideImgSize="@{100}"/>
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="8dp"
+                    android:background="#66000000"
+                    android:src='@{item.playingState == "STATE_PLAYING" ? @drawable/exo_controls_pause : @drawable/exo_controls_play}'
+                    android:visibility='@{item.playingState != "" ? View.VISIBLE : View.GONE}' />
+            </RelativeLayout>
 
-            <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/title"
-                    android:layout_width="wrap_content"
+            <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@{item.title}" />
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"
+                    android:orientation="vertical">
 
-            <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/artist"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@android:color/darker_gray"
-                    android:text="@{item.artists[0].name}" />
+                <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{item.title}" />
 
-        </LinearLayout>
+                <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/artist"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@android:color/darker_gray"
+                        android:text="@{item.artists[0].name}" />
 
-        <ImageView
-            android:layout_width="16dp"
-            android:layout_height="match_parent"
-            app:srcCompat="@drawable/ic_explicit"
-            android:contentDescription="@string/content_description_explicit"
-            android:visibility="@{item.contentWarning.empty ? View.GONE : View.VISIBLE}"/>
-
-        <FrameLayout
-                android:layout_width="48dp"
-                android:layout_height="match_parent">
-
-            <androidx.appcompat.widget.AppCompatImageButton
-                    android:id="@+id/settings"
-                    android:layout_width="38dp"
-                    android:layout_height="match_parent"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    app:srcCompat="@drawable/ic_more_vert"
-                    android:onClick="@{() -> viewHolder.onClickMenu(item)}" />
-
-<!--            <ProgressBar-->
-<!--                android:layout_width="12dp"-->
-<!--                android:layout_height="12dp"-->
-<!--                android:layout_marginTop="4dp"-->
-<!--                android:layout_marginRight="4dp"-->
-<!--                android:layout_marginEnd="4dp"-->
-<!--                android:layout_gravity="top|end"-->
-<!--                android:visibility="@{item.downloadStatus == Track.DOWNLOAD_STATUS_PROGRESS &amp;&amp; item.downloadProgress == 0 ? View.VISIBLE : View.GONE}" />-->
-
-            <com.mikhaellopez.circularprogressbar.CircularProgressBar
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_gravity="top|end"
-                android:visibility="@{item.downloadStatus == Track.DOWNLOAD_STATUS_PROGRESS ? View.VISIBLE : View.GONE}"
-                app:cpb_progress="@{item.downloadProgress}"
-                app:cpb_indeterminate_mode='@{item.downloadProgress == 0}'
-                app:cpb_background_progressbar_color="#22888888"
-                app:cpb_background_progressbar_width="2dp"
-                app:cpb_progressbar_color="@color/colorPrimary"
-                app:cpb_progressbar_width="2dp"
-                app:cpb_round_border="true" />
+            </LinearLayout>
 
             <ImageView
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginRight="4dp"
-                android:layout_marginEnd="4dp"
-                android:layout_gravity="top|end"
-                android:visibility="@{item.downloadStatus == Track.DOWNLOAD_STATUS_DOWNLOADED || item.downloadStatus == Track.DOWNLOAD_STATUS_ERROR ? View.VISIBLE : View.GONE}"
-                android:src="@{item.downloadStatus == Track.DOWNLOAD_STATUS_ERROR ? @drawable/ic_error_red : @drawable/ic_check_circle_green}" />
+                android:layout_width="16dp"
+                android:layout_height="match_parent"
+                app:srcCompat="@drawable/ic_explicit"
+                android:contentDescription="@string/content_description_explicit"
+                android:visibility="@{item.contentWarning.empty ? View.GONE : View.VISIBLE}"/>
 
-        </FrameLayout>
-    </LinearLayout>
+            <FrameLayout
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent">
+
+                <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/settings"
+                        android:layout_width="38dp"
+                        android:layout_height="match_parent"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        app:srcCompat="@drawable/ic_more_vert"
+                        android:onClick="@{() -> viewHolder.onClickMenu(item)}" />
+
+    <!--            <ProgressBar-->
+    <!--                android:layout_width="12dp"-->
+    <!--                android:layout_height="12dp"-->
+    <!--                android:layout_marginTop="4dp"-->
+    <!--                android:layout_marginRight="4dp"-->
+    <!--                android:layout_marginEnd="4dp"-->
+    <!--                android:layout_gravity="top|end"-->
+    <!--                android:visibility="@{item.downloadStatus == Track.DOWNLOAD_STATUS_PROGRESS &amp;&amp; item.downloadProgress == 0 ? View.VISIBLE : View.GONE}" />-->
+
+                <com.mikhaellopez.circularprogressbar.CircularProgressBar
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_gravity="top|end"
+                    android:visibility="@{item.downloadStatus == Track.DOWNLOAD_STATUS_PROGRESS ? View.VISIBLE : View.GONE}"
+                    app:cpb_progress="@{item.downloadProgress}"
+                    app:cpb_indeterminate_mode='@{item.downloadProgress == 0}'
+                    app:cpb_background_progressbar_color="#22888888"
+                    app:cpb_background_progressbar_width="2dp"
+                    app:cpb_progressbar_color="@color/colorPrimary"
+                    app:cpb_progressbar_width="2dp"
+                    app:cpb_round_border="true" />
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginRight="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_gravity="top|end"
+                    android:visibility="@{item.downloadStatus == Track.DOWNLOAD_STATUS_DOWNLOADED || item.downloadStatus == Track.DOWNLOAD_STATUS_ERROR ? View.VISIBLE : View.GONE}"
+                    android:src="@{item.downloadStatus == Track.DOWNLOAD_STATUS_ERROR ? @drawable/ic_error_red : @drawable/ic_check_circle_green}" />
+
+            </FrameLayout>
+        </LinearLayout>
+    </FrameLayout>
 
 </layout>

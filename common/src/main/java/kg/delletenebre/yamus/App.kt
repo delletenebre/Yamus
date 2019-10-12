@@ -46,14 +46,6 @@ class App : MultiDexApplication() {
                 defaultValue ?: resources.getString(Utils.getStringIdentifier(this, "pref_default_$key")))!!
     }
 
-    fun getMusicDir(): String {
-        return getExternalFilesDir("tracks").toString()
-    }
-
-    fun getArtDir(): String {
-        return getExternalFilesDir("arts").toString()
-    }
-
     fun isNetworkAvailable(): Boolean {
         val cm = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 

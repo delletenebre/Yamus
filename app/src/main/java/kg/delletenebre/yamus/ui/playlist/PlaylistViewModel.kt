@@ -6,9 +6,10 @@ import androidx.lifecycle.viewModelScope
 import kg.delletenebre.yamus.api.YandexCache
 import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.api.response.Track
+import kg.delletenebre.yamus.viewmodels.NowPlayingViewModel
 import kotlinx.coroutines.launch
 
-class PlaylistViewModel(type: String, uid: Int, kind: Int) : ViewModel() {
+class PlaylistViewModel(type: String, uid: Int, kind: Int, nowPlayingViewModel: NowPlayingViewModel, private val playlistIdentifier: String) : ViewModel() {
     val tracks: MutableLiveData<List<Track>> = MutableLiveData()
 
     init {
@@ -35,6 +36,5 @@ class PlaylistViewModel(type: String, uid: Int, kind: Int) : ViewModel() {
                 }
             )
         }
-
     }
 }

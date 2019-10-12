@@ -133,6 +133,7 @@ object CurrentPlaylist: CoroutineScope {
 
         }
 
+        trackId = track.getTrackId()
         id = track.id
         title = track.title
         artist = artistName

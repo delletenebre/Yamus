@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package kg.delletenebre.yamus.media.extensions
+package kg.delletenebre.yamus.utils
 
 import android.net.Uri
+import okhttp3.FormBody
 import java.math.BigInteger
 import java.net.URLEncoder
 import java.nio.charset.Charset
@@ -58,4 +59,12 @@ fun String?.toUri(): Uri = this?.let { Uri.parse(it) } ?: Uri.EMPTY
 fun String.md5(): String {
     val md = MessageDigest.getInstance("MD5")
     return BigInteger(1, md.digest(toByteArray())).toString(16).padStart(32, '0')
+}
+
+fun FormBody.stringify(): String {
+    val result = mutableListOf<String>()
+    for (i in 0 until this.size()) {
+        result.add("${this.name(i)}:${this.value(i)}")
+    }
+    return result.joinToString("|")
 }

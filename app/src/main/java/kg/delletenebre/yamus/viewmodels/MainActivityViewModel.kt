@@ -68,6 +68,20 @@ class MainActivityViewModel(
         }
     }
 
+    fun trackClicked(clickedTrack: Track, tracks: List<Track>, playlistIdentifier: String) {
+        if (CurrentPlaylist.id == playlistIdentifier) {
+            playTracks(clickedTrack, pauseAllowed = true)
+        } else {
+            currentJob?.cancel()
+            currentJob = viewModelScope.launch {
+                CurrentPlaylist.batchId = ""
+                CurrentPlaylist.updatePlaylist(playlistIdentifier, tracks, CurrentPlaylist.TYPE_TRACKS)
+                playTracks(clickedTrack, pauseAllowed = true)
+                currentJob = null
+            }
+        }
+    }
+
     fun stationClicked(station: Station) {
         viewModelScope.launch {
 //            val stationId = station.getId()
@@ -108,11 +122,11 @@ class MainActivityViewModel(
      *   then pause playback, otherwise send "play" to resume playback.
      */
 //    fun playMedia(mediaItem: MediaItemData, pauseAllowed: Boolean = true) {
-//        val nowPlaying = mediaSessionConnection.nowPlaying.value
+//        val nowPlayingInfo = mediaSessionConnection.nowPlayingInfo.value
 //        val transportControls = mediaSessionConnection.transportControls
 //
 //        val isPrepared = mediaSessionConnection.playbackState.value?.isPrepared ?: false
-//        if (isPrepared && mediaItem.mediaId == nowPlaying?.id) {
+//        if (isPrepared && mediaItem.mediaId == nowPlayingInfo?.id) {
 //            mediaSessionConnection.playbackState.value?.let { playbackState ->
 //                when {
 //                    playbackState.isPlaying ->
@@ -220,15 +234,5 @@ class MainActivityViewModel(
         }
     }
 }
-
-/**
- * Helper class used to pass fragment navigation requests between MainActivity
- * and its corresponding ViewModel.
- */
-//data class FragmentNavigationRequest(
-//    val fragment: Fragment,
-//    val backStack: Boolean = false,
-//    val tag: String? = null
-//)
 
 private const val TAG = "MainActivitytVM"

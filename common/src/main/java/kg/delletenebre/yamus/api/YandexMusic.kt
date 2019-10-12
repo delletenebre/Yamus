@@ -4,7 +4,7 @@ import android.util.Log
 import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.database.table.UserTracksIdsEntity
 import kg.delletenebre.yamus.api.response.*
-import kg.delletenebre.yamus.media.extensions.md5
+import kg.delletenebre.yamus.utils.md5
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.internal.ArrayListSerializer

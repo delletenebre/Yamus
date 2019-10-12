@@ -33,6 +33,7 @@ data class Track(
     }
     var downloadStatus = ""
     var downloadProgress = 0
+    var playingState: String = ""
 
     @Serializable
     data class Major(

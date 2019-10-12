@@ -20,6 +20,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaMetadataCompat
+import kg.delletenebre.yamus.utils.toUri
 
 /**
  * Useful extensions for [MediaMetadataCompat].
@@ -113,6 +114,9 @@ inline val MediaMetadataCompat.downloadStatus
 
 inline val MediaMetadataCompat.explicit
     get() = getLong(EXTRA_IS_EXPLICIT)
+
+inline val MediaMetadataCompat.trackId: String
+    get() = this.getString(METADATA_KEY_TRACK_ID)
 
 /**
  * Custom property for storing whether a [MediaMetadataCompat] item represents an
@@ -247,6 +251,13 @@ inline var MediaMetadataCompat.Builder.explicit: Long
     set(value) {
         putLong(EXTRA_IS_EXPLICIT, value)
     }
+
+inline var MediaMetadataCompat.Builder.trackId: String
+    @Deprecated(NO_GET, level = DeprecationLevel.ERROR)
+    get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
+    set(value) {
+        putString(METADATA_KEY_TRACK_ID, value)
+    }
 /**
  * Custom property for storing whether a [MediaMetadataCompat] item represents an
  * item that is [MediaItem.FLAG_BROWSABLE] or [MediaItem.FLAG_PLAYABLE].
@@ -312,3 +323,4 @@ inline var MediaMetadataCompat.Builder.explicit: Long
  * [MediaItem.FLAG_PLAYABLE].
  */
 const val EXTRA_IS_EXPLICIT = "android.media.IS_EXPLICIT"
+const val METADATA_KEY_TRACK_ID = "kg.delletenebre.yamus.METADATA_KEY_TRACK_ID"

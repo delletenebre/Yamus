@@ -1,6 +1,8 @@
 package kg.delletenebre.yamus.ui.playlist
 
 import android.os.Bundle
+import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,8 +19,12 @@ import com.tonyodev.fetch2.Download
 import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.api.YandexCache
 import kg.delletenebre.yamus.api.response.Track
+import kg.delletenebre.yamus.media.extensions.stateName
+import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kg.delletenebre.yamus.utils.InjectorUtils
+import kg.delletenebre.yamus.utils.md5
 import kg.delletenebre.yamus.viewmodels.MainActivityViewModel
+import kg.delletenebre.yamus.viewmodels.NowPlayingViewModel
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -30,13 +36,15 @@ class PlaylistFragment : Fragment(), CoroutineScope {
 
     private lateinit var viewModel: PlaylistViewModel
     private lateinit var mainViewModel: MainActivityViewModel
+    private lateinit var nowPlayingViewModel: NowPlayingViewModel
     private lateinit var recyclerView: RecyclerView
     private lateinit var playlistAdapter: PlaylistAdapter
+    private lateinit var playlistIdentifier: String
 
     private val fetchListener = object : AbstractFetchListener() {
         override fun onAdded(download: Download) {
             playlistAdapter.setDownloadStatus(download.identifier.toString(), Track.DOWNLOAD_STATUS_PROGRESS)
-        }
+    }
 
         override fun onCompleted(download: Download) {
             playlistAdapter.setDownloadStatus(download.identifier.toString(), Track.DOWNLOAD_STATUS_DOWNLOADED)
@@ -65,17 +73,33 @@ class PlaylistFragment : Fragment(), CoroutineScope {
         val argUid = arguments?.getInt("uid") ?: -1
         val argKind = arguments?.getInt("kind") ?: -1
 
+        playlistIdentifier = "${argType}${argUid}${argKind}".md5()
+
         mainViewModel = ViewModelProvider(context, InjectorUtils.provideMainActivityViewModel(context))
                 .get(MainActivityViewModel::class.java)
 
+        nowPlayingViewModel = ViewModelProvider(context, InjectorUtils.provideNowPlayingViewModel(context))
+                .get(NowPlayingViewModel::class.java)
+
         viewModel = ViewModelProvider(
-                this, viewModelFactory { PlaylistViewModel(argType, argUid, argKind) })
+                this, viewModelFactory { PlaylistViewModel(argType, argUid, argKind, nowPlayingViewModel, playlistIdentifier) })
                 .get(PlaylistViewModel::class.java)
 
         viewModel.tracks.observe(this, Observer { tracks ->
-            playlistAdapter.items.clear()
-            playlistAdapter.items.addAll(tracks)
+            playlistAdapter.items = tracks.toMutableList()
             playlistAdapter.notifyDataSetChanged()
+            updateNowPlayingTrack(nowPlayingViewModel.playbackState)
+        })
+
+        playlistAdapter = PlaylistAdapter(object: PlaylistAdapter.PlaylistTrackListener {
+            override fun onClick(track: Track, position: Int) {
+                mainViewModel.trackClicked(track, playlistAdapter.items, playlistIdentifier)
+            }
+        })
+        recyclerView.adapter = playlistAdapter
+
+        nowPlayingViewModel.playbackState1.observe(this, Observer { playbackState ->
+            updateNowPlayingTrack(playbackState)
         })
     }
 
@@ -86,12 +110,7 @@ class PlaylistFragment : Fragment(), CoroutineScope {
         val root = inflater.inflate(R.layout.fragment_playlist, container, false)
         setupToolbar(root.findViewById(R.id.toolbar))
         recyclerView = root.findViewById(R.id.playlist)
-        playlistAdapter = PlaylistAdapter(arrayListOf(), object: PlaylistAdapter.PlaylistTrackListener {
-            override fun onClick(track: Track, position: Int) {
-                mainViewModel.trackClicked(track, playlistAdapter.items)
-            }
-        })
-        recyclerView.adapter = playlistAdapter
+
         YandexCache.fetch.addListener(fetchListener)
         return root
     }
@@ -117,6 +136,32 @@ class PlaylistFragment : Fragment(), CoroutineScope {
                 }
             }
             super.onOptionsItemSelected(it)
+        }
+    }
+
+    private fun updateNowPlayingTrack(playbackState: PlaybackStateCompat) {
+        if (CurrentPlaylist.id == playlistIdentifier) {
+            val nowPlayingTrack = nowPlayingViewModel.track.value
+            if (nowPlayingTrack != null) {
+                val trackIndex = playlistAdapter.items.indexOf(nowPlayingTrack)
+                if (trackIndex > -1) {
+                    val track = playlistAdapter.items[trackIndex]
+
+                    val lastPlayingTrack = playlistAdapter.items.find {
+                        it.playingState != "" && it.getTrackId() != track.getTrackId()
+                    }
+                    if (lastPlayingTrack != null) {
+                        lastPlayingTrack.playingState = ""
+                        playlistAdapter.notifyItemChanged(playlistAdapter.items.indexOf(lastPlayingTrack))
+                    }
+
+                    if (track.playingState != playbackState.stateName) {
+                        track.playingState = playbackState.stateName
+                        playlistAdapter.notifyItemChanged(trackIndex)
+                    }
+                }
+                Log.d("ahoha", "playbackState.stateName: ${playbackState.stateName}, index: ${trackIndex}")
+            }
         }
     }
 

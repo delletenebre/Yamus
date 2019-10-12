@@ -18,10 +18,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 
-class PlaylistAdapter(
-        var items: ArrayList<Track>,
-        val playlistTrackListener: PlaylistTrackListener?
+class PlaylistAdapter(val playlistTrackListener: PlaylistTrackListener?
     ): RecyclerView.Adapter<PlaylistAdapter.ViewHolder>() {
+
+    var items = mutableListOf<Track>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -69,35 +69,10 @@ class PlaylistAdapter(
             private val binding: ListItemPlaylistBinding
         ): RecyclerView.ViewHolder(binding.root) {
 
-        var downloadProgress: Int = 0
-
-//        private val downloadObserver: DownloadListener = object : DownloadListener() {
-//            override fun onProgress(progress: Int) {
-//                downloadProgress = progress
-//                notifyItemChanged(items.indexOf(binding.item!!))
-//                setDownloadStatus(Track.DOWNLOAD_STATUS_PROGRESS)
-//            }
-//
-//            override fun filter(downloadInfo: DownloadInfo): Boolean {
-//                return downloadInfo.tag == binding.item?.realId
-//            }
-//
-//            override fun onSuccess() {
-//                setDownloadStatus(Track.DOWNLOAD_STATUS_DOWNLOADED)
-//                YandexCache.addID3Tags(binding.item!!)
-//            }
-//
-//            override fun onFailed() {
-//                setDownloadStatus(Track.DOWNLOAD_STATUS_ERROR)
-//            }
-//        }
-
         fun bind(item: Track) {
             binding.viewHolder = this
             binding.item = item
             binding.executePendingBindings()
-//            downloadObserver.enable()
-
         }
 
         fun onClick(item: Track) {

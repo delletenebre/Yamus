@@ -25,4 +25,6 @@
 
     <color name="textPrimary">#222222</color>
     <color name="textSecondary">#8f222222</color>
+
+    <color name="playlistItemNowPlayingBackground">#11ffffff</color>
 </resources>
