@@ -37,14 +37,7 @@ object YandexUser {
     @SuppressLint("HardwareIds")
     fun init(context: Context) {
         val masterKeyAlias = HashUtils.sha512(Settings.Secure.getString(context.contentResolver,
-                Settings.Secure.ANDROID_ID)) // MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
-//        prefs = EncryptedSharedPreferences.create(
-//                "user",
-//                masterKeyAlias,
-//                context,
-//                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-//                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-//        )
+                Settings.Secure.ANDROID_ID))
         prefs = CryptoPrefs(context, "user", masterKeyAlias)
         loadUser()
         GlobalScope.launch {

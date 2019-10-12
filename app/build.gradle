@@ -8,8 +8,8 @@ android {
     defaultConfig {
         multiDexEnabled true
         applicationId "kg.delletenebre.yamus"
-        versionCode 16
-        versionName "19.10.10"
+        versionCode 17
+        versionName "19.10.12"
 
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
@@ -56,7 +56,7 @@ dependencies {
     implementation 'androidx.preference:preference:1.1.0'
 
     // Lifecycle
-    def lifecycle_version = '2.2.0-alpha05'
+    def lifecycle_version = '2.2.0-beta01'
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
