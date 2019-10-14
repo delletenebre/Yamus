@@ -89,6 +89,7 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
             exoPlayer.seekTo(position, 0)
             exoPlayer.playWhenReady = true
         }
+        CurrentPlaylist.player.value = exoPlayer
     }
 
     /**

@@ -19,19 +19,23 @@ import kg.delletenebre.yamus.media.extensions.trackId
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 
 class NowPlayingViewModel(
-        private val app: Application,
+        app: Application,
         mediaSessionConnection: MediaSessionConnection
 ) : AndroidViewModel(app) {
 
-    var playbackState: PlaybackStateCompat = EMPTY_PLAYBACK_STATE
-    val track = MutableLiveData<Track?>()
+    val track = MutableLiveData<Track>().apply {
+        value = Track()
+    }
     val position = MutableLiveData<Long>().apply {
         postValue(0L)
     }
-    val buttonRes = MutableLiveData<Int>().apply {
-        postValue(R.drawable.ic_album)
+
+    val playPauseDrawable = MutableLiveData<Int>().apply {
+        postValue(R.drawable.ic_pause)
     }
-    var playbackState1 = MutableLiveData<PlaybackStateCompat>().apply {
+
+
+    var playbackState = MutableLiveData<PlaybackStateCompat>().apply {
         value = EMPTY_PLAYBACK_STATE
     }
 
@@ -44,9 +48,8 @@ class NowPlayingViewModel(
      * (i.e.: play/pause button or blank)
      */
     private val playbackStateObserver = Observer<PlaybackStateCompat> {
-        playbackState = it ?: EMPTY_PLAYBACK_STATE
         val metadata = mediaSessionConnection.nowPlaying.value ?: NOTHING_PLAYING
-        updateState(playbackState, metadata)
+        updateState(it ?: EMPTY_PLAYBACK_STATE, metadata)
     }
 
     /**
@@ -56,7 +59,7 @@ class NowPlayingViewModel(
      * changed. (i.e.: play/pause button or blank)
      */
     private val mediaMetadataObserver = Observer<MediaMetadataCompat> {
-        updateState(playbackState, it)
+        updateState(playbackState.value!!, it)
     }
 
     /**
@@ -85,7 +88,7 @@ class NowPlayingViewModel(
      * has changed.
      */
     private fun checkPlaybackPosition(): Boolean = handler.postDelayed({
-        val currPosition = playbackState.currentPlayBackPosition
+        val currPosition = playbackState.value!!.currentPlayBackPosition
         if (position.value != currPosition)
             position.postValue(currPosition)
         if (updatePosition)
@@ -114,20 +117,23 @@ class NowPlayingViewModel(
             playbackState: PlaybackStateCompat,
             mediaMetadata: MediaMetadataCompat
     ) {
-        playbackState1.value = playbackState
+        this.playbackState.value = playbackState
         // Only update media item once we have duration available
         if (mediaMetadata.duration != 0L) {
-            val track = CurrentPlaylist.tracks.find {
+            var track = CurrentPlaylist.tracks.find {
                 it.getTrackId() == mediaMetadata.trackId
+            }
+            if (track == null) {
+                track = Track()
             }
             this.track.postValue(track)
         }
 
         // Update the media button resource ID
-        buttonRes.postValue(
+        playPauseDrawable.postValue(
                 when (playbackState.isPlaying) {
-                    true -> R.drawable.ic_pause
-                    else -> R.drawable.ic_play
+                    true -> R.drawable.avd_play_pause
+                    else -> R.drawable.avd_pause_play
                 }
         )
     }

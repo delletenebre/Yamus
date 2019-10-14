@@ -44,7 +44,7 @@
                     android:layout_height="40dp"
                     android:padding="8dp"
                     android:background="#66000000"
-                    android:src='@{item.playingState == "STATE_PLAYING" ? @drawable/exo_controls_pause : @drawable/exo_controls_play}'
+                    app:animateDrawable='@{item.playingState == "STATE_PLAYING" ? @drawable/avd_play_pause : @drawable/avd_pause_play}'
                     android:visibility='@{item.playingState != "" ? View.VISIBLE : View.GONE}' />
             </RelativeLayout>
 

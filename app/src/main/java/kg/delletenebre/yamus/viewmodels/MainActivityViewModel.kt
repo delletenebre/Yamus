@@ -38,7 +38,7 @@ import kotlinx.coroutines.launch
  * and provides the root/initial media ID of the underlying [MediaBrowserCompat].
  */
 class MainActivityViewModel(
-    private val mediaSessionConnection: MediaSessionConnection
+    val mediaSessionConnection: MediaSessionConnection
 ) : ViewModel() {
 
     /**
@@ -221,6 +221,23 @@ class MainActivityViewModel(
             }
         } else {
             transportControls.playFromMediaId(mediaId, null)
+        }
+    }
+
+    fun playerViewPlayPauseClick() {
+        mediaSessionConnection.playbackState.value?.let { playbackState ->
+            val transportControls = mediaSessionConnection.transportControls
+            when {
+                playbackState.isPlaying -> {
+                    transportControls.pause()
+                }
+                playbackState.isPlayEnabled -> {
+                    transportControls.play()
+                }
+                else -> {
+                    Log.w(TAG, "Playable item clicked but neither play nor pause are enabled!")
+                }
+            }
         }
     }
 

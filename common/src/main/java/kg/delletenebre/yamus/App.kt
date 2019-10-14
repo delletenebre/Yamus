@@ -23,11 +23,11 @@ class App : MultiDexApplication() {
         super.onCreate()
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         instance = this
-        YandexUser.init(this)
-        AndroidAutoBrowser.init(this)
-        YandexCache.init(this)
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
         AndroidThreeTen.init(this)
+        YandexUser.init(this)
+        YandexCache.init(this)
+        AndroidAutoBrowser.init(this)
     }
 
     fun getIntPreference(key: String, defaultValue: String? = null): Int {

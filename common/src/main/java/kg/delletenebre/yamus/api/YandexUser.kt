@@ -29,8 +29,12 @@ object YandexUser {
     }
     val user: LiveData<User> = user_
 
-    val likedTracksIds = MutableLiveData<List<String>>()
-    val dislikedTracksIds = MutableLiveData<List<String>>()
+    val likedTracksIds = MutableLiveData<List<String>>().apply {
+        value = listOf()
+    }
+    val dislikedTracksIds = MutableLiveData<List<String>>().apply {
+        value = listOf()
+    }
 
     private lateinit var prefs: CryptoPrefs
 

@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Track(
-        val id: String,
+        val id: String = "null",
         var playlistId: String = "",
         val albums: List<Album> = listOf(),
         val artists: List<Artist> = listOf(),
@@ -53,5 +53,13 @@ data class Track(
             result += ":${albums[0].id}"
         }
         return result
+    }
+
+    fun getArtistName(): String {
+        return if (artists.isNotEmpty()) {
+            artists[0].name
+        } else {
+            ""
+        }
     }
 }

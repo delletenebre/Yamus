@@ -1,12 +1,16 @@
 package kg.delletenebre.yamus.utils
 
 import android.graphics.Color
+import android.graphics.drawable.Animatable
+import android.graphics.drawable.Drawable
 import android.widget.ImageView
+import androidx.core.content.ContextCompat
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.mikhaellopez.circularprogressbar.CircularProgressBar
 import kg.delletenebre.yamus.api.YandexApi
+
 
 object BindingAdapters {
     @JvmStatic @BindingAdapter("glideImgSrc")
@@ -44,5 +48,21 @@ object BindingAdapters {
     @JvmStatic @BindingAdapter("cpb_indeterminate_mode")
     fun CircularProgressBar.cpb_indeterminate_mode(enabled: Boolean) {
         this.indeterminateMode = enabled
+    }
+
+    @JvmStatic @BindingAdapter("animateDrawable")
+    fun ImageView.animateDrawable(backDrawable: Drawable?) {
+        this.setImageDrawable(backDrawable)
+        val drawable = this.drawable as Animatable
+        drawable.start()
+    }
+
+    @JvmStatic @BindingAdapter("animateDrawable")
+    fun ImageView.animateDrawable(id: Int?) {
+        if (id != null) {
+            this.setImageDrawable(ContextCompat.getDrawable(this.context, id))
+            val drawable = this.drawable as Animatable
+            drawable.start()
+        }
     }
 }

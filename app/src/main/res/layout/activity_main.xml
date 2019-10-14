@@ -1,54 +1,147 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View" />
+        <import type="android.support.v4.media.session.PlaybackStateCompat" />
+        <variable name="viewModel" type="kg.delletenebre.yamus.viewmodels.MainActivityViewModel"/>
+        <variable name="nowPlayingModel" type="kg.delletenebre.yamus.viewmodels.NowPlayingViewModel"/>
+    </data>
 
-    <fragment
-        android:id="@+id/fragmentContainer"
-        android:name="androidx.navigation.fragment.NavHostFragment"
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="?attr/actionBarSize"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        app:defaultNavHost="true"
-        app:navGraph="@navigation/mobile_navigation" />
+        tools:context=".MainActivity">
 
-    <com.google.android.material.bottomappbar.BottomAppBar
-        android:id="@+id/bottom_app_bar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:layout_gravity="bottom"
-        app:fabAlignmentMode="center" />
+        <fragment
+            android:id="@+id/fragmentContainer"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="?attr/actionBarSize"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            app:defaultNavHost="true"
+            app:navGraph="@navigation/mobile_navigation" />
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom">
+        <LinearLayout
+            android:id="@+id/bottomSheet"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/background_dark"
+            android:orientation="vertical"
+            android:layout_marginBottom="?attr/actionBarSize"
+            app:behavior_hideable="false"
+            app:behavior_peekHeight="?attr/actionBarSize"
+            app:behavior_fitToContents="false"
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility='@{nowPlayingModel.track.id == "null" ? View.GONE : View.VISIBLE}'>
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/nav_view"
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/npToolbar"
+                app:title="Now playing"
+                android:visibility="gone"
+                style="@style/AppToolbar" />
+
+    <!--        <com.google.android.exoplayer2.ui.PlayerControlView-->
+    <!--            android:id="@+id/player_control_view"-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="wrap_content" />-->
+
+            <LinearLayout
+
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@android:color/black"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true">
+
+<!--                <ImageView-->
+<!--                    android:layout_width="?attr/actionBarSize"-->
+<!--                    android:layout_height="?attr/actionBarSize"-->
+<!--                    android:padding="8dp"-->
+<!--                    app:glideImgSrc="@{nowPlayingModel.track.coverUri}"-->
+<!--                    app:glideImgSize="@{100}" />-->
+                <ImageView
+                    android:layout_width="?attr/actionBarSize"
+                    android:layout_height="?attr/actionBarSize"
+                    android:padding="8dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="?attr/selectableItemBackground"
+                    android:visibility="invisible" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_horizontal">
+
+                    <TextView
+                        android:id="@+id/trackTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{nowPlayingModel.track.title}" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{nowPlayingModel.track.getArtistName()}" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="?attr/actionBarSize"
+                    android:layout_height="?attr/actionBarSize"
+                    android:padding="16dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="?attr/selectableItemBackground"
+                    android:onClick="@{() -> viewModel.playerViewPlayPauseClick()}"
+                    app:animateDrawable="@{nowPlayingModel.playPauseDrawable}" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+        <com.google.android.material.bottomappbar.BottomAppBar
+            android:id="@+id/bottom_app_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:layout_gravity="bottom"
+            app:fabAlignmentMode="center" />
+
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?android:attr/windowBackground"
-            app:labelVisibilityMode="labeled"
-            app:menu="@menu/menu_bottom_navigation" />
+            android:layout_gravity="bottom">
 
-    </FrameLayout>
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/nav_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/windowBackground"
+                app:labelVisibilityMode="labeled"
+                app:menu="@menu/menu_bottom_navigation" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/play_pause_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:focusable="true"
-        android:clickable="true"
-        app:srcCompat="@drawable/ic_play"
-        app:fabSize="auto"
-        app:layout_anchor="@+id/bottom_app_bar"
-        app:layout_anchorGravity="center|top" />
+        </FrameLayout>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/play_pause_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:focusable="true"
+            android:clickable="true"
+            app:srcCompat="@drawable/ic_play"
+            app:fabSize="auto"
+            app:layout_anchor="@+id/bottom_app_bar"
+            app:layout_anchorGravity="center|top" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

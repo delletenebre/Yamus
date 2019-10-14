@@ -4,9 +4,11 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
+import androidx.lifecycle.MutableLiveData
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
@@ -39,6 +41,8 @@ object CurrentPlaylist: CoroutineScope {
     var batchId: String = ""
     var type: String = TYPE_NONE
     var isBuffering = false
+
+    val player = MutableLiveData<ExoPlayer?>()
 
 //    private val tracks_ = MutableLiveData<MutableList<Track>>().apply {
 //        value = mutableListOf()

@@ -88,7 +88,7 @@ class PlaylistFragment : Fragment(), CoroutineScope {
         viewModel.tracks.observe(this, Observer { tracks ->
             playlistAdapter.items = tracks.toMutableList()
             playlistAdapter.notifyDataSetChanged()
-            updateNowPlayingTrack(nowPlayingViewModel.playbackState)
+            updateNowPlayingTrack(nowPlayingViewModel.playbackState.value!!)
         })
 
         playlistAdapter = PlaylistAdapter(object: PlaylistAdapter.PlaylistTrackListener {
@@ -98,7 +98,7 @@ class PlaylistFragment : Fragment(), CoroutineScope {
         })
         recyclerView.adapter = playlistAdapter
 
-        nowPlayingViewModel.playbackState1.observe(this, Observer { playbackState ->
+        nowPlayingViewModel.playbackState.observe(this, Observer { playbackState ->
             updateNowPlayingTrack(playbackState)
         })
     }
@@ -144,7 +144,7 @@ class PlaylistFragment : Fragment(), CoroutineScope {
             val nowPlayingTrack = nowPlayingViewModel.track.value
             if (nowPlayingTrack != null) {
                 val trackIndex = playlistAdapter.items.indexOf(nowPlayingTrack)
-                if (trackIndex > -1) {
+                if (trackIndex != -1) {
                     val track = playlistAdapter.items[trackIndex]
 
                     val lastPlayingTrack = playlistAdapter.items.find {

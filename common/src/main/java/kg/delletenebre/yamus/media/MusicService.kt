@@ -24,6 +24,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
@@ -284,17 +285,26 @@ open class MusicService : MediaBrowserServiceCompat() {
             val pauseActionIndex = actionNames.indexOf(ACTION_PAUSE)
             val playActionIndex = actionNames.indexOf(ACTION_PLAY)
             val skipPreviousActionIndex = actionNames.indexOf(CUSTOM_ACTION_PREV)
-            val skipNextActionIndex = actionNames.indexOf(CUSTOM_ACTION_NEXT)
+            val nextActionName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                CUSTOM_ACTION_PREV
+            } else {
+                ACTION_NEXT
+            }
+            val skipNextActionIndex = actionNames.indexOf(nextActionName)
 
             val actions = mutableListOf<Int>()
-            actions.add(skipPreviousActionIndex)
+            if (skipPreviousActionIndex != -1) {
+                actions.add(skipPreviousActionIndex)
+            }
             val playWhenReady = player.playWhenReady
             if (pauseActionIndex != -1 && playWhenReady) {
                 actions.add(pauseActionIndex)
             } else if (playActionIndex != -1 && !playWhenReady) {
                 actions.add(playActionIndex)
             }
-            actions.add(skipNextActionIndex)
+            if (skipNextActionIndex != -1) {
+                actions.add(skipNextActionIndex)
+            }
 
             return actions.toIntArray()
         }
