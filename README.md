@@ -3,12 +3,6 @@ Yamus
 
 Альтернативный Android-клиент с поддержкой Android Auto для сервиса Яндекс Музыка.
 
-Требования
-----------
-
-- Android Studio 3.2 и выше
-- Минимальная версия Android SDK 23 (Android 6.0 Marshmallow), т.к. используется библиотека
-[androidx.security:security-crypto](https://developer.android.com/jetpack/androidx/releases/security)
 
 Поддерживаемые функции
 ----------------------
