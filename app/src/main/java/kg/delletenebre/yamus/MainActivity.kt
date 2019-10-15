@@ -20,6 +20,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.firebase.analytics.FirebaseAnalytics
 import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.databinding.ActivityMainBinding
 import kg.delletenebre.yamus.ui.login.LoginActivity
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainActivityViewModel
     private lateinit var nowPlayingViewModel: NowPlayingViewModel
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
 
 
 
@@ -52,6 +54,8 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
         })
+
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
         viewModel = ViewModelProvider(this, InjectorUtils.provideMainActivityViewModel(this))
                 .get(MainActivityViewModel::class.java)

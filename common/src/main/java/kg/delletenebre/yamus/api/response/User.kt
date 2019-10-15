@@ -22,7 +22,7 @@ data class User(
                 val now: String = "",
                 val secondName: String = "",
                 val serviceAvailable: Boolean = false,
-                val uid: Int = 0
+                val uid: Long = 0
         )
 
         @Serializable

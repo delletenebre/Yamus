@@ -54,7 +54,7 @@ data class Feed(
                     val availablePartially: Boolean,
                     val bests: List<Int>,
                     @Transient
-                    val buy: List<String> = listOf(),
+                    val buy: List<Buy> = listOf(),
                     val contentWarning: String,
                     val coverUri: String,
                     val genre: String,

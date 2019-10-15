@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.Toolbar
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -19,6 +20,7 @@ import com.tonyodev.fetch2.Download
 import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.api.YandexCache
 import kg.delletenebre.yamus.api.response.Track
+import kg.delletenebre.yamus.databinding.FragmentPlaylistBinding
 import kg.delletenebre.yamus.media.extensions.stateName
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kg.delletenebre.yamus.utils.InjectorUtils
@@ -34,6 +36,7 @@ class PlaylistFragment : Fragment(), CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
+    private lateinit var binding: FragmentPlaylistBinding
     private lateinit var viewModel: PlaylistViewModel
     private lateinit var mainViewModel: MainActivityViewModel
     private lateinit var nowPlayingViewModel: NowPlayingViewModel
@@ -73,23 +76,18 @@ class PlaylistFragment : Fragment(), CoroutineScope {
         val argUid = arguments?.getInt("uid") ?: -1
         val argKind = arguments?.getInt("kind") ?: -1
 
-        playlistIdentifier = "${argType}${argUid}${argKind}".md5()
-
         mainViewModel = ViewModelProvider(context, InjectorUtils.provideMainActivityViewModel(context))
                 .get(MainActivityViewModel::class.java)
 
         nowPlayingViewModel = ViewModelProvider(context, InjectorUtils.provideNowPlayingViewModel(context))
                 .get(NowPlayingViewModel::class.java)
 
-        viewModel = ViewModelProvider(
-                this, viewModelFactory { PlaylistViewModel(argType, argUid, argKind, nowPlayingViewModel, playlistIdentifier) })
-                .get(PlaylistViewModel::class.java)
-
         viewModel.tracks.observe(this, Observer { tracks ->
             playlistAdapter.items = tracks.toMutableList()
             playlistAdapter.notifyDataSetChanged()
             updateNowPlayingTrack(nowPlayingViewModel.playbackState.value!!)
         })
+
 
         playlistAdapter = PlaylistAdapter(object: PlaylistAdapter.PlaylistTrackListener {
             override fun onClick(track: Track, position: Int) {
@@ -107,12 +105,25 @@ class PlaylistFragment : Fragment(), CoroutineScope {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val root = inflater.inflate(R.layout.fragment_playlist, container, false)
-        setupToolbar(root.findViewById(R.id.toolbar))
-        recyclerView = root.findViewById(R.id.playlist)
+        val argType = arguments?.getString("type") ?: ""
+        val argUid = arguments?.getInt("uid") ?: -1
+        val argKind = arguments?.getInt("kind") ?: -1
+        playlistIdentifier = "${argType}${argUid}${argKind}".md5()
+
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_playlist,
+                container,false)
+        binding.lifecycleOwner = this
 
         YandexCache.fetch.addListener(fetchListener)
-        return root
+        setupToolbar(binding.toolbar)
+        recyclerView = binding.root.findViewById(R.id.playlist)
+
+        viewModel = ViewModelProvider(
+                this, viewModelFactory { PlaylistViewModel(argType, argUid, argKind) })
+                .get(PlaylistViewModel::class.java)
+
+        binding.viewModel = viewModel
+        return binding.root
     }
 
     private fun setupToolbar(toolbar: Toolbar) {

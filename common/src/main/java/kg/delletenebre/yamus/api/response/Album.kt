@@ -10,7 +10,7 @@ data class Album(
         val availableForPremiumUsers: Boolean = false,
         val availablePartially: Boolean = false,
         val bests: List<Int> = listOf(),
-        val buy: List<String> = listOf(),
+        val buy: List<Buy> = listOf(),
         val contentWarning: String = "",
         val coverUri: String = "",
         val genre: String = "",

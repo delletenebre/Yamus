@@ -6,35 +6,41 @@ import androidx.lifecycle.viewModelScope
 import kg.delletenebre.yamus.api.YandexCache
 import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.api.response.Track
-import kg.delletenebre.yamus.viewmodels.NowPlayingViewModel
 import kotlinx.coroutines.launch
 
-class PlaylistViewModel(type: String, uid: Int, kind: Int, nowPlayingViewModel: NowPlayingViewModel, private val playlistIdentifier: String) : ViewModel() {
-    val tracks: MutableLiveData<List<Track>> = MutableLiveData()
+class PlaylistViewModel(type: String, uid: Int, kind: Int) : ViewModel() {
+    val tracks = MutableLiveData<List<Track>>().apply {
+        value = emptyList()
+    }
+    val isLoading = MutableLiveData<Boolean>().apply {
+        value = true
+    }
+
 
     init {
         viewModelScope.launch {
-            tracks.postValue(
-                when(type) {
-                    PlaylistFragment.PLAYLIST_TYPE_FAVORITE_TRACKS -> {
-                        YandexMusic.getFavoriteTracks()
-                    }
-                    PlaylistFragment.PLAYLIST_TYPE_GENERAL -> {
-                        YandexMusic.getPlaylist(uid.toString(), kind.toString())
-                    }
-                    PlaylistFragment.PLAYLIST_TYPE_DISLIKES -> {
-                        YandexMusic.getDislikedTracks()
-                    }
-                    else -> {
-                        listOf()
-                    }
-                }.map {
-                    if (YandexCache.getTrackFile(it).exists()) {
-                        it.downloadStatus = Track.DOWNLOAD_STATUS_DOWNLOADED
-                    }
-                    it
+            isLoading.postValue(true)
+            val playlistItems = when(type) {
+                PlaylistFragment.PLAYLIST_TYPE_FAVORITE_TRACKS -> {
+                    YandexMusic.getFavoriteTracks()
                 }
-            )
+                PlaylistFragment.PLAYLIST_TYPE_GENERAL -> {
+                    YandexMusic.getPlaylist(uid.toString(), kind.toString())
+                }
+                PlaylistFragment.PLAYLIST_TYPE_DISLIKES -> {
+                    YandexMusic.getDislikedTracks()
+                }
+                else -> {
+                    listOf()
+                }
+            }.map {
+                if (YandexCache.getTrackFile(it).exists()) {
+                    it.downloadStatus = Track.DOWNLOAD_STATUS_DOWNLOADED
+                }
+                it
+            }
+            tracks.postValue(playlistItems)
+            isLoading.postValue(false)
         }
     }
 }

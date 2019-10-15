@@ -39,6 +39,7 @@ import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
+import com.google.android.exoplayer2.util.NotificationUtil
 import kg.delletenebre.yamus.api.YandexMusic
 import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.media.actions.*
@@ -49,8 +50,9 @@ import java.util.*
 
 
 open class MusicService : MediaBrowserServiceCompat() {
-    val CHANNEL_ID: String = "kg.delletenebre.yamus.media.NOW_PLAYING"
-    val NOTIFICATION_ID: Int = 0xb339
+    val CHANNEL_ID: String = "yamus_playback_channel"
+    val CHANNEL_NAME: String = "Yamus Playback Channel"
+    val NOTIFICATION_ID: Int = 1
 
     private lateinit var becomingNoisyReceiver: BecomingNoisyReceiver
     private lateinit var playerNotificationManager: PlayerNotificationManager
@@ -258,8 +260,16 @@ open class MusicService : MediaBrowserServiceCompat() {
     }
 
     private fun initializePlayerNotificationManager() {
-        playerNotificationManager = YamusPlayerNotificationManager(this, CHANNEL_ID, NOTIFICATION_ID,
-                DescriptionAdapter(), YamusNotificationListener(), NotificationCustomActionReceiver())
+        val context = this
+        NotificationUtil.createNotificationChannel(context, CHANNEL_ID,
+                R.string.playback_channel_name, R.string.playback_channel_description,
+                NotificationUtil.IMPORTANCE_LOW)
+        playerNotificationManager = YamusPlayerNotificationManager(context,
+                CHANNEL_ID, NOTIFICATION_ID,
+                DescriptionAdapter(),
+                YamusNotificationListener(),
+                NotificationCustomActionReceiver()
+        )
         playerNotificationManager.setUseChronometer(true)
         playerNotificationManager.setSmallIcon(R.drawable.ic_notification)
         playerNotificationManager.setMediaSessionToken(sessionToken)
@@ -405,23 +415,23 @@ open class MusicService : MediaBrowserServiceCompat() {
     private inner class NotificationCustomActionReceiver : PlayerNotificationManager.CustomActionReceiver {
         private val skipToPreviousAction = NotificationCompat.Action(
                 R.drawable.exo_controls_previous,
-                getString(R.string.notification_skip_to_previous),
+                getString(R.string.playback_action_skip_to_previous),
                 MediaButtonReceiver.buildMediaButtonPendingIntent(this@MusicService, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS))
         private val skipToNextAction = NotificationCompat.Action(
                 R.drawable.exo_controls_next,
-                getString(R.string.notification_skip_to_next),
+                getString(R.string.playback_action_skip_to_next),
                 MediaButtonReceiver.buildMediaButtonPendingIntent(this@MusicService, PlaybackStateCompat.ACTION_SKIP_TO_NEXT))
         private val likeAction = NotificationCompat.Action(
                 R.drawable.ic_favorite_border,
-                getString(R.string.notification_skip_to_next), // TODO
+                getString(R.string.playback_action_like),
                 buildPendingIntent(CUSTOM_ACTION_LIKE))
         private val unlikeAction = NotificationCompat.Action(
                 R.drawable.ic_favorite,
-                getString(R.string.notification_skip_to_next), // TODO
+                getString(R.string.playback_action_unlike),
                 buildPendingIntent(CUSTOM_ACTION_UNLIKE))
         private val dislikeAction = NotificationCompat.Action(
                 R.drawable.ic_do_not_disturb,
-                getString(R.string.notification_skip_to_next), // TODO
+                getString(R.string.playback_action_dislike),
                 buildPendingIntent(CUSTOM_ACTION_DISLIKE))
 
         override fun getCustomActions(player: Player): MutableList<String> {

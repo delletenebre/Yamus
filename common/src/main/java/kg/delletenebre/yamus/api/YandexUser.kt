@@ -3,6 +3,7 @@ package kg.delletenebre.yamus.api
 import android.annotation.SuppressLint
 import android.content.Context
 import android.provider.Settings
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.andreacioccarelli.cryptoprefs.CryptoPrefs
@@ -73,7 +74,7 @@ object YandexUser {
     }
 
 
-    fun getUid(): Int {
+    fun getUid(): Long {
         return user.value!!.account.uid
     }
 
@@ -115,6 +116,7 @@ object YandexUser {
                         HttpResult(false, response.code(), App.instance.getString(R.string.unknown_response_format))
                     }
                 } else {
+                    Log.e("ahoha", "resp: ${response.body()?.string()}")
                     HttpResult(false, response.code(), App.instance.getString(R.string.user_not_found))
                 }
             }
@@ -130,13 +132,13 @@ object YandexUser {
                         val json = JSONObject(response.body()!!.string())
                                 .getJSONObject("result")
                         val user = Json.nonstrict.parse(User.serializer(), json.toString())
-                        if (user.account.serviceAvailable) {
+//                        if (user.account.serviceAvailable) {
                             user_.postValue(user)
                             saveUser()
                             HttpResult(true, response.code(), "")
-                        } else {
-                            HttpResult(false, response.code(), App.instance.getString(R.string.ym_service_not_available_for_account))
-                        }
+//                        } else {
+//                            HttpResult(false, response.code(), App.instance.getString(R.string.ym_service_not_available_for_account))
+//                        }
 
                     } catch (t: Throwable) {
                         t.printStackTrace()

@@ -7,18 +7,18 @@
     </plurals>
 
     <!-- Notificaiton -->
-    <!-- Notificaiton Channel -->
-    <string name="notification_channel">Сейчас играет</string>
-    <string name="notification_channel_description">Показать!!!</string>
+        <!-- Notificaiton Channel -->
+        <string name="playback_channel_name">Уведомление Ямуз</string>
+        <string name="playback_channel_description">Отображает какой трек играет в Ямуз в данный момент</string>
 
     <!-- Notification actions -->
-    <string name="notification_skip_to_previous">Предыдущий</string>
-    <string name="notification_skip_to_next">Следующий</string>
-    <string name="notification_play">Воспроизведение</string>
-    <string name="notification_pause">Пауза</string>
-
-    <!-- Error messages -->
-    <string name="error_media_not_found">Could not locate requested media.</string>
+    <string name="playback_action_skip_to_previous">Предыдущий</string>
+    <string name="playback_action_skip_to_next">Следующий</string>
+    <string name="playback_action_play">Воспроизведение</string>
+    <string name="playback_action_pause">Пауза</string>
+    <string name="playback_action_like">Добавить в избранное</string>
+    <string name="playback_action_unlike">Убрать из избранного</string>
+    <string name="playback_action_dislike">Не рекомендовать</string>
 
     <!-- Allowed caller template -->
     <string name="allowed_caller_log">
