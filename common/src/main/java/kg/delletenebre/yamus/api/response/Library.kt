@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class Library(
     val revision: Int,
     val tracks: List<Track>,
-    val uid: Int
+    val uid: Long
 ) {
     @Serializable
     data class Track(

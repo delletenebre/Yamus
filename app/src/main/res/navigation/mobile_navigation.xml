@@ -9,19 +9,19 @@
         android:id="@+id/fragmentHome"
         android:name="kg.delletenebre.yamus.ui.home.HomeFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/home_fragment" />
 
     <fragment
         android:id="@+id/fragmentStations"
         android:name="kg.delletenebre.yamus.ui.stations.StationsFragment"
         android:label="@string/title_stations"
-        tools:layout="@layout/fragment_stations" />
+        tools:layout="@layout/stations_fragment" />
 
     <fragment
         android:id="@+id/fragmentMyMusic"
         android:name="kg.delletenebre.yamus.ui.mymusic.MyMusicFragment"
         android:label="@string/title_my_music"
-        tools:layout="@layout/fragment_my_music" />
+        tools:layout="@layout/my_music_fragment" />
 
     <fragment
         android:id="@+id/fragmentSearch"
@@ -33,19 +33,18 @@
         android:id="@+id/fragmentProfile"
         android:name="kg.delletenebre.yamus.ui.profile.ProfileFragment"
         android:label="@string/title_profile"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/profile_fragment" />
 
     <fragment
         android:id="@+id/fragmentPlaylist"
         android:name="kg.delletenebre.yamus.ui.playlist.PlaylistFragment"
         android:label="@string/title_playlist"
-        tools:layout="@layout/fragment_playlist">
+        tools:layout="@layout/playlist_fragment">
     </fragment>
 
     <fragment
-        android:id="@+id/fragmentMixPlaylists"
-        android:name="kg.delletenebre.yamus.ui.mix.playlists.PlaylistsFragment"
-        android:label="@string/title_playlist"
-        tools:layout="@layout/fragment_playlists">
-    </fragment>
+        android:id="@+id/mediaItemsFragment"
+        android:name="kg.delletenebre.yamus.ui.mediaitems.MediaItemsFragment"
+        android:label="@string/title_profile"
+        tools:layout="@layout/media_items_fragment" />
 </navigation>

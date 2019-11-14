@@ -12,7 +12,13 @@ import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.util.Assertions
 import com.google.android.exoplayer2.util.Log
 import com.google.android.exoplayer2.util.Predicate
-import kg.delletenebre.yamus.api.YandexMusic
+import kg.delletenebre.yamus.api.YaApi
+import kg.delletenebre.yamus.media.extensions.duration
+import kg.delletenebre.yamus.media.extensions.mediaUri
+import kg.delletenebre.yamus.media.extensions.uniqueId
+import kg.delletenebre.yamus.media.library.CurrentPlaylist
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
@@ -25,6 +31,7 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.regex.Pattern
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 class YandexDataSource(
         private val userAgent: String,
@@ -185,21 +192,25 @@ class YandexDataSource(
         }
     }
 
-//    protected fun bytesSkipped(): Long {
-//        return bytesSkipped
-//    }
-//
-//    protected fun bytesRead(): Long {
-//        return bytesRead
-//    }
-
     private fun bytesRemaining(): Long {
         return if (bytesToRead == C.LENGTH_UNSET.toLong()) bytesToRead else bytesToRead - bytesRead
     }
 
     @Throws(IOException::class)
     private fun makeConnection(dataSpec: DataSpec): HttpURLConnection {
-        var url = URL(YandexMusic.getDirectUrl(dataSpec.uri.toString()))//URL(dataSpec.uri.toString())
+        var url = URL(YaApi.getDirectUrl(dataSpec.uri.toString()))//URL(dataSpec.uri.toString())
+
+        GlobalScope.launch {
+            val track = CurrentPlaylist.tracks.find {
+                it.mediaUri == dataSpec.uri
+            }
+            if (track != null) {
+                val uniqueId = track.uniqueId.split(":")
+                if (uniqueId.size == 2) {
+                    YaApi.playAudio(uniqueId[0], uniqueId[1], (track.duration / 1000.0).roundToInt())
+                }
+            }
+        }
 
         @HttpMethod var httpMethod = dataSpec.httpMethod
         var httpBody = dataSpec.httpBody

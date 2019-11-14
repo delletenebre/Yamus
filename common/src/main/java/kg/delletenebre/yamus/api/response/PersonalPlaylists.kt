@@ -42,7 +42,7 @@ data class PersonalPlaylists(
                 val tags: List<String> = listOf(),
                 val title: String = "",
                 val trackCount: Int = 0,
-                val uid: Int = 0,
+                val uid: Long = 0,
                 val visibility: String = ""
         ) {
             @Serializable
@@ -64,7 +64,7 @@ data class PersonalPlaylists(
                 val login: String = "",
                 val name: String = "",
                 val sex: String = "",
-                val uid: Int = 0,
+                val uid: Long = 0,
                 val verified: Boolean = false
             )
         }

@@ -13,8 +13,6 @@ import okhttp3.FormBody
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.util.*
 
 
 object YandexMusic {
@@ -72,14 +70,14 @@ object YandexMusic {
                                         UserTracksIdsEntity(
                                                 type,
                                                 library.revision,
-                                                result.joinToString(","),
-                                                library.tracks.size
+                                                result.joinToString(",")
                                         )
                                 )
                     }
                 }
             }
         } catch (t: Throwable) {
+            t.printStackTrace()
             if (cachedTracksIds != null) {
                 result = cachedTracksIds.tracksIds.split(",")
             }
@@ -133,64 +131,6 @@ object YandexMusic {
         return result
     }
 
-    suspend fun getStationTracks(stationId: String, queue: String = ""): StationTracks {
-        var result = StationTracks()
-
-        var url = "/rotor/station/$stationId/tracks?settings2=true"
-        if (queue.isNotEmpty()) {
-            url = "$url&queue=$queue"
-        }
-
-        val httpResult = YandexApi.networkCall(url, useCache = false)
-        if (httpResult.isSuccess) {
-            try {
-                val stations = JSONObject(httpResult.message)
-                        .getJSONObject("result")
-
-                result = Json.nonstrict.parse(
-                        StationTracks.serializer(),
-                        stations.toString()
-                )
-            } catch (t: Throwable) {
-                Log.e(TAG, "getStationTracks: ${t.localizedMessage}")
-            }
-        }
-
-        return result
-    }
-
-    suspend fun getStationFeedback(stationId: String = "",
-                                   type: String = STATION_FEEDBACK_TYPE_RADIO_STARTED,
-                                   batchId: String = "",
-                                   trackId: String = "",
-                                   totalPlayedSeconds: Int = 60) {
-        var url = "/rotor/station/$stationId/feedback"
-
-        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault())
-        val now = formatter.format(Date(System.currentTimeMillis()))
-
-        val jsonData = JSONObject()
-        with(jsonData) {
-            put("type", type)
-            put("timestamp", now)
-        }
-
-        if (batchId.isNotEmpty()) {
-            url = "$url?batch-id=$batchId"
-            jsonData.put("trackId", trackId)
-            if (type == STATION_FEEDBACK_TYPE_SKIP) {
-                jsonData.put("totalPlayedSeconds", totalPlayedSeconds)
-            }
-        }
-
-        withContext(Dispatchers.IO) {
-            YandexApi.httpClient.newCall(YandexApi.getRequest(url, jsonData)).execute().use { response ->
-                if (!response.isSuccessful) {
-                    Log.e("ahoha", "Could not get feedback response: ${response.message()}")
-                }
-            }
-        }
-    }
 
     suspend fun getPersonalPlaylists(): List<PersonalPlaylists> {
         var result = listOf<PersonalPlaylists>()
@@ -305,8 +245,8 @@ object YandexMusic {
                 .add("track-ids", trackId)
                 .build()
 
-        YandexApi.networkCall(url, formBody)
         withContext(Dispatchers.IO) {
+            YandexApi.networkCall(url, formBody)
             YandexUser.updateUserTracks(type)
         }
     }
@@ -370,63 +310,7 @@ object YandexMusic {
         }
         return result
     }
-//
-//    suspend fun getTrack(trackId: String): Track {
-//        var result: Track = Track("0")
-//
-//        val id = if (trackId.contains(':')) {
-//            trackId.split(":")[0]
-//        } else {
-//            trackId
-//        }
-//
-//        val cachedTrack = YandexApi.database.trackDao().findById(id)
-//        if (cachedTrack != null) {
-//            result = Json.nonstrict.parse(Track.serializer(), cachedTrack.data)
-//        } else {
-//            val formBody = FormBody.Builder()
-//                    .add("track-ids", trackId)
-//            val request = Request.Builder()
-//                    .url("${YandexApi.API_URL_MUSIC}/tracks")
-//                    .addHeader("Authorization", "OAuth ${YandexUser.getToken()}")
-//                    .post(formBody.build())
-//                    .build()
-//
-//            withContext(Dispatchers.IO) {
-//                YandexApi.httpClient.newCall(request).execute().use { response ->
-//                    if (response.isSuccessful) {
-//                        if (response.body != null) {
-//                            val responseBody = response.body!!.string()
-//                            try {
-//                                val responseJson = JSONObject(responseBody)
-//                                val json = Json.nonstrict.parse(Tracks.serializer(), responseBody)
-//                                if (json.result.isNotEmpty()) {
-//                                    result = json.result[0]
-//                                    YandexApi.database.trackDao()
-//                                            .insert(
-//                                                TrackEntity(
-//                                                    result.id,
-//                                                    Json.nonstrict.stringify(
-//                                                            Track.serializer(),
-//                                                            result
-//                                                    ),
-//                                                    System.currentTimeMillis()
-//                                                )
-//                                            )
-//                                }
-////                                Log.d("ahoha", "Response: $responseJson")
-//                            } catch (exception: Exception) {
-//                                exception.printStackTrace()
-//                                Log.e("ahoha", "Could not parse malformed JSON: $responseBody")
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        return result
-//    }
+
 
     suspend fun getLikedAlbums(): List<Album> {
         val result = mutableListOf<Album>()

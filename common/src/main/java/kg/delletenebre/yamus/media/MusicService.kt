@@ -23,6 +23,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
@@ -31,28 +33,39 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import com.google.android.exoplayer2.source.TrackGroupArray
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.google.android.exoplayer2.util.NotificationUtil
-import kg.delletenebre.yamus.api.YandexMusic
-import kg.delletenebre.yamus.api.YandexUser
+import kg.delletenebre.yamus.App
+import kg.delletenebre.yamus.GlideApp
+import kg.delletenebre.yamus.api.YaApi
 import kg.delletenebre.yamus.media.actions.*
-import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
+import kg.delletenebre.yamus.media.extensions.fullDescription
+import kg.delletenebre.yamus.media.extensions.id
+import kg.delletenebre.yamus.media.extensions.uniqueId
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
+import kg.delletenebre.yamus.media.library.MediaLibrary
 import kotlinx.coroutines.*
 import java.util.*
 
 
 open class MusicService : MediaBrowserServiceCompat() {
-    val CHANNEL_ID: String = "yamus_playback_channel"
-    val CHANNEL_NAME: String = "Yamus Playback Channel"
-    val NOTIFICATION_ID: Int = 1
+    companion object {
+        private const val CHANNEL_ID: String = "yamus_playback_channel"
+        private const val NOTIFICATION_ID: Int = 1
+    }
 
     private lateinit var becomingNoisyReceiver: BecomingNoisyReceiver
     private lateinit var playerNotificationManager: PlayerNotificationManager
@@ -73,53 +86,88 @@ open class MusicService : MediaBrowserServiceCompat() {
         .setUsage(C.USAGE_MEDIA)
         .build()
 
-    /**
-     * Configure ExoPlayer to handle audio focus for us.
-     * See [Player.AudioComponent.setAudioAttributes] for details.
-     */
     private val exoPlayer: ExoPlayer by lazy {
         ExoPlayerFactory.newSimpleInstance(this).apply {
             setAudioAttributes(this@MusicService.audioAttributes, true)
             addListener(object : Player.EventListener {
+                override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+                    super.onPlayerStateChanged(playWhenReady, playbackState)
+
+                    val state = if (playWhenReady && playbackState == Player.STATE_READY) {
+                        // Active playback.
+                        "STATE_PLAYING"
+                    } else if (playWhenReady) {
+                        // Not playing because playback ended, the player is buffering, stopped or
+                        // failed. Check playbackState and player.getPlaybackError for details.
+                        if (playbackState == Player.STATE_BUFFERING) {
+                            "STATE_BUFFERING"
+                        } else {
+                            ""
+                        }
+                    } else {
+                        // Paused by app.
+                        "STATE_PAUSED"
+                    }
+//                    val track = CurrentPlaylist.track.value
+//                    track?.playState = state
+//                    CurrentPlaylist.track.postValue(track)
+                    CurrentPlaylist.playbackState.postValue(state)
+                }
+
+                override fun onTracksChanged(trackGroups: TrackGroupArray?, trackSelections: TrackSelectionArray?) {
+                    super.onTracksChanged(trackGroups, trackSelections)
+                    val track = CurrentPlaylist.tracks.getOrNull(currentWindowIndex)
+                    //CurrentPlaylist.currentTrack.postValue(track)
+//                    CurrentPlaylist.track.postValue(CurrentPlaylist.Track.fromMetadata(track))
+                }
+
                 override fun onPositionDiscontinuity(reason: Int) {
+                    super.onPositionDiscontinuity(reason)
                     if (reason == Player.DISCONTINUITY_REASON_PERIOD_TRANSITION
                             || reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
                         if (CurrentPlaylist.type == CurrentPlaylist.TYPE_STATION) {
+                            CurrentPlaylist.loading = true
                             val stationId = CurrentPlaylist.id
 
-                            if (reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
-                                val trackId = CurrentPlaylist.tracks[0].getTrackId()
-                                serviceScope.launch {
-                                    YandexMusic.getStationFeedback(
+//                            Log.d("tenebre", "=======PLAYLIST=======")
+//                            for (i in 0 until CurrentPlaylist.tracks.size) {
+//                                val track = CurrentPlaylist.tracks[i]
+//                                val append = if (currentWindowIndex == i) {
+//                                    " <<<<<<"
+//                                } else {
+//                                    ""
+//                                }
+//                                Log.d("tenebre", "${track.description.title} - ${track.description.subtitle} $append")
+//                            }
+//                            Log.d("tenebre", "======================")
+
+                            serviceScope.launch {
+                                if (reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
+                                    val trackId = CurrentPlaylist.tracks[0].uniqueId
+                                    YaApi.getStationFeedback(
                                             stationId,
-                                            YandexMusic.STATION_FEEDBACK_TYPE_SKIP,
+                                            YaApi.STATION_FEEDBACK_TYPE_SKIP,
                                             CurrentPlaylist.batchId,
                                             trackId,
                                             60
                                     )
                                 }
-                            }
 
-                            val trackId = CurrentPlaylist.tracks[1].getTrackId()
-                            serviceScope.launch {
-                                YandexMusic.getStationFeedback(
+                                val trackId = CurrentPlaylist.tracks[1].uniqueId
+                                YaApi.getStationFeedback(
                                         stationId,
-                                        YandexMusic.STATION_FEEDBACK_TYPE_TRACK_STARTED,
+                                        YaApi.STATION_FEEDBACK_TYPE_TRACK_STARTED,
                                         CurrentPlaylist.batchId,
                                         trackId
                                 )
-                            }
-                            CurrentPlaylist.removeTrack(0)
+                                CurrentPlaylist.removeTrack(0)
 
-                            if (CurrentPlaylist.tracks.size == 3) {
-                                serviceScope.launch {
+                                if (CurrentPlaylist.tracks.size <= 3) {
                                     val queue = CurrentPlaylist.tracks[1].id
-                                    val stationTracks = YandexMusic.getStationTracks(stationId, queue)
-                                    val tracks = stationTracks.sequence.map {
-                                        it.track
-                                    }
+                                    val (_, tracks) = YaApi.getStationTracks(stationId, queue)
                                     CurrentPlaylist.addTracksToPlaylist(tracks)
                                 }
+                                CurrentPlaylist.loading = false
                             }
                         }
                     }
@@ -159,15 +207,17 @@ open class MusicService : MediaBrowserServiceCompat() {
             connector.setPlayer(exoPlayer)
             connector.setMediaButtonEventHandler(YamusMediaButtonEventHandler())
             connector.setPlaybackPreparer(YamusPlaybackPreparer(exoPlayer))
-            connector.setMediaMetadataProvider(YamusMediaMetadataProvider(this)) // Получаем и отображаем сведения о текущем треке
+            connector.setQueueNavigator(YamusQueueNavigator(mediaSession))
+//            connector.setMediaMetadataProvider(YamusMediaMetadataProvider(this)) // Получаем и отображаем сведения о текущем треке
             connector.setCustomActionProviders(
-                    PrevActionProvider(this),
-                    NextActionProvider(this),
-                    FavoriteActionProvider(this),
-                    DislikeActionProvider(this),
-                    RepeatModeActionProvider(this),
-                    ShuffleModeActionProvider(this)
+//                PrevActionProvider(this),
+//                NextActionProvider(this),
+                FavoriteActionProvider(this),
+                DislikeActionProvider(this),
+                RepeatModeActionProvider(this),
+                ShuffleModeActionProvider(this)
             )
+
         }
 
         packageValidator = PackageValidator(this, R.xml.allowed_media_browser_callers)
@@ -180,14 +230,6 @@ open class MusicService : MediaBrowserServiceCompat() {
      */
     override fun onTaskRemoved(rootIntent: Intent) {
         super.onTaskRemoved(rootIntent)
-
-        /**
-         * By stopping playback, the player will transition to [Player.STATE_IDLE]. This will
-         * cause a state change in the MediaSession, and (most importantly) call
-         * [MediaControllerCallback.onPlaybackStateChanged]. Because the playback state will
-         * be reported as [PlaybackStateCompat.STATE_NONE], the service will first remove
-         * itself as a foreground service, and will then call [stopSelf].
-         */
         exoPlayer.stop(true)
     }
 
@@ -199,14 +241,9 @@ open class MusicService : MediaBrowserServiceCompat() {
         playerNotificationManager.setPlayer(null)
         exoPlayer.release()
 
-        // Cancel coroutines when the service is going away.
         serviceJob.cancel()
     }
 
-    /**
-     * Returns the "root" media ID that the client should request to get the list of
-     * [MediaItem]s to browse/play.
-     */
     override fun onGetRoot(
         clientPackageName: String,
         clientUid: Int,
@@ -215,18 +252,18 @@ open class MusicService : MediaBrowserServiceCompat() {
         val isKnownCaller = packageValidator.isKnownCaller(clientPackageName, clientUid)
         val rootExtras = Bundle().apply {
             putBoolean(
-                AndroidAutoBrowser.MEDIA_SEARCH_SUPPORTED,
-                isKnownCaller || AndroidAutoBrowser.SEARCHABLE_BY_UNKNOWN_CALLER
+                MediaLibrary.MEDIA_SEARCH_SUPPORTED,
+                isKnownCaller || MediaLibrary.SEARCHABLE_BY_UNKNOWN_CALLER
             )
-            putBoolean(CONTENT_STYLE_SUPPORTED, true)
-            putInt(CONTENT_STYLE_BROWSABLE_HINT, CONTENT_STYLE_GRID)
-            putInt(CONTENT_STYLE_PLAYABLE_HINT, CONTENT_STYLE_LIST)
+            putBoolean(MediaLibrary.CONTENT_STYLE_SUPPORTED, true)
+            putInt(MediaLibrary.CONTENT_STYLE_BROWSABLE_HINT, MediaLibrary.CONTENT_STYLE_LIST)
+            putInt(MediaLibrary.CONTENT_STYLE_PLAYABLE_HINT, MediaLibrary.CONTENT_STYLE_LIST)
         }
 
         return if (isKnownCaller) {
-            BrowserRoot(AndroidAutoBrowser.MEDIA_LIBRARY_PATH_ROOT, rootExtras)
+            BrowserRoot(MediaLibrary.PATH_ROOT, rootExtras)
         } else {
-            BrowserRoot(AndroidAutoBrowser.MEDIA_LIBRARY_PATH_EMPTY, rootExtras)
+            BrowserRoot(MediaLibrary.PATH_EMPTY, rootExtras)
         }
     }
 
@@ -234,11 +271,10 @@ open class MusicService : MediaBrowserServiceCompat() {
         path: String,
         result: Result<List<MediaItem>>
     ) {
-        serviceScope.launch {
-            result.sendResult(AndroidAutoBrowser.getItems(path))
-        }
-
         result.detach()
+        serviceScope.launch {
+            result.sendResult(MediaLibrary.getFolder(path))
+        }
     }
 
     /**
@@ -249,11 +285,10 @@ open class MusicService : MediaBrowserServiceCompat() {
         extras: Bundle?,
         result: Result<List<MediaItem>>
     ) {
+        Toast.makeText(App.instance.applicationContext, "onSearch: $query", Toast.LENGTH_LONG).show()
+        Log.d("ahoha", "query: $query")
 //        serviceScope.launch {
-//            val children = browseTree.getItems(path).map { item ->
-//                MediaItem(item.description, item.flag)
-//            }
-//            result.sendResult(children)
+//            result.sendResult(MediaLibrary.getItems(query))
 //        }
 
         result.detach()
@@ -294,9 +329,9 @@ open class MusicService : MediaBrowserServiceCompat() {
         override fun getActionIndicesForCompactView(actionNames: MutableList<String>, player: Player): IntArray {
             val pauseActionIndex = actionNames.indexOf(ACTION_PAUSE)
             val playActionIndex = actionNames.indexOf(ACTION_PLAY)
-            val skipPreviousActionIndex = actionNames.indexOf(CUSTOM_ACTION_PREV)
+            val skipPreviousActionIndex = actionNames.indexOf(CustomActionsHelper.CUSTOM_ACTION_PREV)
             val nextActionName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                CUSTOM_ACTION_PREV
+                CustomActionsHelper.CUSTOM_ACTION_PREV
             } else {
                 ACTION_NEXT
             }
@@ -334,14 +369,14 @@ open class MusicService : MediaBrowserServiceCompat() {
 
             val currentTrack = CurrentPlaylist.tracks.getOrNull(player.currentWindowIndex)
             if (currentTrack != null) {
-                if (YandexUser.getLikedIds().contains(currentTrack.getTrackId())) {
-                    stringActions.add(CUSTOM_ACTION_UNLIKE)
+                if (YaApi.getLikedTracksIds().contains(currentTrack.uniqueId)) {
+                    stringActions.add(CustomActionsHelper.CUSTOM_ACTION_UNLIKE)
                 } else {
-                    stringActions.add(CUSTOM_ACTION_LIKE)
+                    stringActions.add(CustomActionsHelper.CUSTOM_ACTION_LIKE)
                 }
 
                 if (enablePrevious) {
-                    stringActions.add(CUSTOM_ACTION_PREV)
+                    stringActions.add(CustomActionsHelper.CUSTOM_ACTION_PREV)
                 }
 
                 if (isPlaying(player)) {
@@ -351,10 +386,10 @@ open class MusicService : MediaBrowserServiceCompat() {
                 }
 
                 if (enableNext) {
-                    stringActions.add(CUSTOM_ACTION_NEXT)
+                    stringActions.add(CustomActionsHelper.CUSTOM_ACTION_NEXT)
                 }
 
-                stringActions.add(CUSTOM_ACTION_DISLIKE)
+                stringActions.add(CustomActionsHelper.CUSTOM_ACTION_DISLIKE)
             }
 
             return stringActions
@@ -377,8 +412,20 @@ open class MusicService : MediaBrowserServiceCompat() {
         }
 
         override fun getCurrentLargeIcon(player: Player,
-                                         callback: PlayerNotificationManager.BitmapCallback): Bitmap? {
-            return getDescription(player.currentWindowIndex)?.iconBitmap
+                                         callback: PlayerNotificationManager.BitmapCallback?): Bitmap? {
+            GlideApp.with(baseContext)
+                    .asBitmap()
+                    .placeholder(R.drawable.default_album_art)
+                    .load(getDescription(player.currentWindowIndex)?.iconUri)
+                    .into(object : CustomTarget<Bitmap>(){
+                        override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                            callback?.onBitmap(resource)
+                        }
+                        override fun onLoadCleared(placeholder: Drawable?) {
+                            callback?.onBitmap((placeholder as BitmapDrawable).bitmap)
+                        }
+                    })
+            return null
         }
 
         override fun createCurrentContentIntent(player: Player): PendingIntent? {
@@ -386,7 +433,7 @@ open class MusicService : MediaBrowserServiceCompat() {
         }
 
         private fun getDescription(index: Int): MediaDescriptionCompat? {
-            return CurrentPlaylist.tracksMetadata.getOrNull(index)?.description
+            return CurrentPlaylist.tracks.getOrNull(index)?.fullDescription
         }
     }
 
@@ -424,34 +471,34 @@ open class MusicService : MediaBrowserServiceCompat() {
         private val likeAction = NotificationCompat.Action(
                 R.drawable.ic_favorite_border,
                 getString(R.string.playback_action_like),
-                buildPendingIntent(CUSTOM_ACTION_LIKE))
+                buildPendingIntent(CustomActionsHelper.CUSTOM_ACTION_LIKE))
         private val unlikeAction = NotificationCompat.Action(
                 R.drawable.ic_favorite,
                 getString(R.string.playback_action_unlike),
-                buildPendingIntent(CUSTOM_ACTION_UNLIKE))
+                buildPendingIntent(CustomActionsHelper.CUSTOM_ACTION_UNLIKE))
         private val dislikeAction = NotificationCompat.Action(
-                R.drawable.ic_do_not_disturb,
+                R.drawable.ic_dislike,
                 getString(R.string.playback_action_dislike),
-                buildPendingIntent(CUSTOM_ACTION_DISLIKE))
+                buildPendingIntent(CustomActionsHelper.CUSTOM_ACTION_DISLIKE))
 
         override fun getCustomActions(player: Player): MutableList<String> {
             val customActions = mutableListOf<String>()
-            customActions.add(CUSTOM_ACTION_PREV)
-            customActions.add(CUSTOM_ACTION_NEXT)
-            customActions.add(CUSTOM_ACTION_LIKE)
-            customActions.add(CUSTOM_ACTION_UNLIKE)
-            customActions.add(CUSTOM_ACTION_DISLIKE)
+            customActions.add(CustomActionsHelper.CUSTOM_ACTION_PREV)
+            customActions.add(CustomActionsHelper.CUSTOM_ACTION_NEXT)
+            customActions.add(CustomActionsHelper.CUSTOM_ACTION_LIKE)
+            customActions.add(CustomActionsHelper.CUSTOM_ACTION_UNLIKE)
+            customActions.add(CustomActionsHelper.CUSTOM_ACTION_DISLIKE)
             return customActions
         }
 
         override fun createCustomActions(context: Context, instanceId: Int)
                 : MutableMap<String, NotificationCompat.Action> {
             val actions = mutableMapOf<String, NotificationCompat.Action>()
-            actions[CUSTOM_ACTION_PREV] = skipToPreviousAction
-            actions[CUSTOM_ACTION_NEXT] = skipToNextAction
-            actions[CUSTOM_ACTION_LIKE] = likeAction
-            actions[CUSTOM_ACTION_UNLIKE] = unlikeAction
-            actions[CUSTOM_ACTION_DISLIKE] = dislikeAction
+            actions[CustomActionsHelper.CUSTOM_ACTION_PREV] = skipToPreviousAction
+            actions[CustomActionsHelper.CUSTOM_ACTION_NEXT] = skipToNextAction
+            actions[CustomActionsHelper.CUSTOM_ACTION_LIKE] = likeAction
+            actions[CustomActionsHelper.CUSTOM_ACTION_UNLIKE] = unlikeAction
+            actions[CustomActionsHelper.CUSTOM_ACTION_DISLIKE] = dislikeAction
             return actions
         }
 
@@ -459,15 +506,12 @@ open class MusicService : MediaBrowserServiceCompat() {
             val track = CurrentPlaylist.tracks.getOrNull(player.currentWindowIndex)
             if (track != null) {
                 when (action) {
-                    CUSTOM_ACTION_LIKE -> {
-                        CustomActionsHelper.like(playerNotificationManager, track.getTrackId())
-                    }
-                    CUSTOM_ACTION_UNLIKE -> {
-                        CustomActionsHelper.unlike(playerNotificationManager, track.getTrackId())
-                    }
-                    CUSTOM_ACTION_DISLIKE -> {
-                        CustomActionsHelper.dislike(player, track.getTrackId())
-                    }
+                    CustomActionsHelper.CUSTOM_ACTION_LIKE ->
+                        CustomActionsHelper.like(playerNotificationManager, track.uniqueId)
+                    CustomActionsHelper.CUSTOM_ACTION_UNLIKE ->
+                        CustomActionsHelper.unlike(playerNotificationManager, track.uniqueId)
+                    CustomActionsHelper.CUSTOM_ACTION_DISLIKE ->
+                        CustomActionsHelper.dislike(player, track.uniqueId)
                 }
             }
         }
@@ -519,18 +563,3 @@ private class BecomingNoisyReceiver(
  * (Media) Session events
  */
 const val NETWORK_FAILURE = "kg.delletenebre.yamus.media.session.NETWORK_FAILURE"
-
-/** Content styling constants */
-private const val CONTENT_STYLE_GROUP_TITLE_HINT = "android.media.browse.CONTENT_STYLE_GROUP_TITLE_HINT"
-private const val CONTENT_STYLE_BROWSABLE_HINT = "android.media.browse.CONTENT_STYLE_BROWSABLE_HINT"
-private const val CONTENT_STYLE_PLAYABLE_HINT = "android.media.browse.CONTENT_STYLE_PLAYABLE_HINT"
-private const val CONTENT_STYLE_SUPPORTED = "android.media.browse.CONTENT_STYLE_SUPPORTED"
-private const val CONTENT_STYLE_LIST = 1
-private const val CONTENT_STYLE_GRID = 2
-
-// CUSTOM ACTIONS
-private const val CUSTOM_ACTION_LIKE = "kg.delletenebre.yamus.CUSTOM_ACTION_LIKE"
-private const val CUSTOM_ACTION_UNLIKE = "kg.delletenebre.yamus.CUSTOM_ACTION_UNLIKE"
-private const val CUSTOM_ACTION_DISLIKE = "kg.delletenebre.yamus.CUSTOM_ACTION_DISLIKE"
-private const val CUSTOM_ACTION_NEXT = "kg.delletenebre.yamus.CUSTOM_ACTION_NEXT"
-private const val CUSTOM_ACTION_PREV = "kg.delletenebre.yamus.CUSTOM_ACTION_PREV"

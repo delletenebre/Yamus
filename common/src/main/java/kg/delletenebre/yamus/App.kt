@@ -9,9 +9,10 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.multidex.MultiDexApplication
 import androidx.preference.PreferenceManager
 import com.jakewharton.threetenabp.AndroidThreeTen
+import kg.delletenebre.yamus.api.YaApi
 import kg.delletenebre.yamus.api.YandexCache
 import kg.delletenebre.yamus.api.YandexUser
-import kg.delletenebre.yamus.media.library.AndroidAutoBrowser
+import kg.delletenebre.yamus.media.library.MediaLibrary
 import kg.delletenebre.yamus.utils.Utils
 import java.util.*
 
@@ -24,10 +25,13 @@ class App : MultiDexApplication() {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         instance = this
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+        YaApi.init(this)
+
         AndroidThreeTen.init(this)
         YandexUser.init(this)
         YandexCache.init(this)
-        AndroidAutoBrowser.init(this)
+        MediaLibrary.init(this)
     }
 
     fun getIntPreference(key: String, defaultValue: String? = null): Int {

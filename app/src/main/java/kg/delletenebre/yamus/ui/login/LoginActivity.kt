@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -12,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import kg.delletenebre.yamus.MainActivity
 import kg.delletenebre.yamus.R
+import kg.delletenebre.yamus.api.YaApi
 import kg.delletenebre.yamus.databinding.ActivityLoginBinding
 
 class LoginActivity : AppCompatActivity() {
@@ -23,7 +23,6 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_login)
-        setupToolbar(findViewById(R.id.toolbar))
 
         viewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
 
@@ -32,36 +31,25 @@ class LoginActivity : AppCompatActivity() {
         binding.viewModel = viewModel
 
         viewModel.loginResult.observe(this@LoginActivity, Observer {
-            if (it.isSuccess) {
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
+            if (it == 200) {
+                if (YaApi.isAuth()) {
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                }
             } else {
+                val message = if (it == 400) {
+                    getString(R.string.auth_error_wrong_username_or_password)
+                } else {
+                    getString(R.string.auth_error_server_error, it)
+                }
                 Snackbar.make(findViewById(R.id.container),
-                        it.message, Snackbar.LENGTH_LONG)
+                        message, Snackbar.LENGTH_LONG)
                         .withColor(ContextCompat.getColor(this, R.color.snackbarBackgroundError))
                         .show()
             }
         })
-//
-//        viewModel.loginResult.observe(this@LoginActivity, Observer { loginResult ->
-//            Log.d("ahoha", "response: ${loginResult.message}")
-//            if (loginResult.isSuccess) {
-//                setResult(Activity.RESULT_OK)
-//                finish()
-//            } else {
-//                Snackbar.make(findViewById(R.id.container),
-//                        loginResult.message, Snackbar.LENGTH_LONG)
-//                        .withColor(ContextCompat.getColor(this, R.color.snackbarBackgroundError))
-//                        .show()
-//            }
-//        })
-//
-//        loginButton.setOnClickListener {
-//            viewModel.login(username.text.toString(), password.text.toString())
-//        }
-    }
-
-    private fun setupToolbar(toolbar: Toolbar) {
     }
 
     fun Snackbar.withColor(@ColorInt colorInt: Int): Snackbar{

@@ -8,24 +8,18 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.*
 import kg.delletenebre.yamus.R
-import kg.delletenebre.yamus.api.response.Track
 import kg.delletenebre.yamus.common.EMPTY_PLAYBACK_STATE
 import kg.delletenebre.yamus.common.MediaSessionConnection
 import kg.delletenebre.yamus.common.NOTHING_PLAYING
 import kg.delletenebre.yamus.media.extensions.currentPlayBackPosition
-import kg.delletenebre.yamus.media.extensions.duration
 import kg.delletenebre.yamus.media.extensions.isPlaying
-import kg.delletenebre.yamus.media.extensions.trackId
-import kg.delletenebre.yamus.media.library.CurrentPlaylist
 
 class NowPlayingViewModel(
         app: Application,
         mediaSessionConnection: MediaSessionConnection
 ) : AndroidViewModel(app) {
 
-    val track = MutableLiveData<Track>().apply {
-        value = Track()
-    }
+    val track = MutableLiveData<MediaMetadataCompat?>()
     val position = MutableLiveData<Long>().apply {
         postValue(0L)
     }
@@ -34,9 +28,13 @@ class NowPlayingViewModel(
         postValue(R.drawable.ic_pause)
     }
 
+    val likeUnlikeDrawable = MutableLiveData<Int>().apply {
+        postValue(R.drawable.ic_favorite_border)
+    }
+
 
     var playbackState = MutableLiveData<PlaybackStateCompat>().apply {
-        value = EMPTY_PLAYBACK_STATE
+        postValue(EMPTY_PLAYBACK_STATE)
     }
 
     private var updatePosition = true
@@ -119,15 +117,12 @@ class NowPlayingViewModel(
     ) {
         this.playbackState.value = playbackState
         // Only update media item once we have duration available
-        if (mediaMetadata.duration != 0L) {
-            var track = CurrentPlaylist.tracks.find {
-                it.getTrackId() == mediaMetadata.trackId
-            }
-            if (track == null) {
-                track = Track()
-            }
-            this.track.postValue(track)
-        }
+//        if (mediaMetadata.duration != 0L) {
+//            val track = CurrentPlaylist.tracks.find {
+//                it.uniqueId == mediaMetadata.uniqueId
+//            }
+//            this.track.postValue(track)
+//        }
 
         // Update the media button resource ID
         playPauseDrawable.postValue(

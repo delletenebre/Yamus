@@ -487,7 +487,7 @@ data class Feed(
                 val title: String,
                 val trackCount: Int,
                 val tracks: List<Track>,
-                val uid: Int,
+                val uid: Long,
                 val visibility: String
             ) {
                 @Serializable
@@ -517,7 +517,7 @@ data class Feed(
                         val login: String,
                         val name: String,
                         val sex: String,
-                        val uid: Int,
+                        val uid: Long,
                         val verified: Boolean
                     )
                 }
@@ -527,7 +527,7 @@ data class Feed(
                     val login: String,
                     val name: String,
                     val sex: String,
-                    val uid: Int,
+                    val uid: Long,
                     val verified: Boolean
                 )
 

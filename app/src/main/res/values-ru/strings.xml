@@ -66,7 +66,7 @@
     <string name="title_profile">Профиль</string>
     <string name="profile_subscription_title">Подписка Яндекс Музыка</string>
     <string name="profile_subscription_not_available">Не активна</string>
-    <string name="profile_subscription_until">Активна до %1$s</string>
+    <string name="profile_subscription_until">активна до %1$s</string>
 
 
     <string name="title_playlists">Плейлисты</string>
@@ -135,4 +135,7 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+    <string name="auth_error_wrong_username_or_password">Неправильное имя пользователя или пароль</string>
+    <string name="auth_error_server_error">Ошибка сервера: %1$d</string>
 </resources>

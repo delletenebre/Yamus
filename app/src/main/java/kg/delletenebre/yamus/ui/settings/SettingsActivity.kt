@@ -54,7 +54,7 @@ class SettingsActivity : AppCompatActivity() {
                         GlobalScope.launch(Dispatchers.Main) {
                             clearCache.summary = context.getString(R.string.please_wait)
                             withContext(Dispatchers.IO) {
-                                YandexCache.clear()
+                                YandexCache.clear(context)
                             }
                             clearCache.summary = context.getString(R.string.pref_summary_cache_cleared)
                         }

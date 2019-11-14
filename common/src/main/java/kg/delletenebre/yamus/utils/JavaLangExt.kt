@@ -68,3 +68,14 @@ fun FormBody.stringify(): String {
     }
     return result.joinToString("|")
 }
+
+fun String.toCoverUrl(size: Int = 200): String {
+    return when {
+        this.startsWith("https://") || this.isEmpty() -> this
+        else -> "https://${this.replace("/%%", "/${size}x$size")}"
+    }
+}
+
+fun String.toCoverUri(size: Int = 200): Uri {
+    return this.toCoverUrl(size).toUri()
+}

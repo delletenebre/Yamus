@@ -13,7 +13,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <dimen name="text_margin">16dp</dimen>
 
     <dimen name="media_item_height">72dp</dimen>
@@ -45,4 +45,10 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <dimen name="app_bar_height">180dp</dimen>
+
+    <dimen name="design_bottom_navigation_text_size" tools:override="true">12sp</dimen>
+    <dimen name="design_bottom_navigation_active_text_size" tools:override="true">14sp</dimen>
+
+    <dimen name="list_icon_md">32dp</dimen>
+    <dimen name="list_icon_lg">48dp</dimen>
 </resources>

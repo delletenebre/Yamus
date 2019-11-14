@@ -25,7 +25,7 @@ import kg.delletenebre.yamus.viewmodels.MediaItemFragmentViewModel
 /**
  * Data class to encapsulate properties of a [MediaItem].
  *
- * If an item is [browsable] it means that it has a list of child media items that
+ * If an item is [browsable] it means that it has a list of child media personalStations that
  * can be retrieved by passing the mediaId to [MediaBrowserCompat.subscribe].
  *
  * Objects of this class are built from [MediaItem]s in
@@ -49,7 +49,7 @@ data class MediaItemData(
          * [DiffUtil.ItemCallback] for a [MediaItemData].
          *
          * Since all [MediaItemData]s have a unique ID, it's easiest to check if two
-         * items are the same by simply comparing that ID.
+         * personalStations are the same by simply comparing that ID.
          *
          * To check if the contents are the same, we use the same ID, but it may be the
          * case that it's only the play state itself which has changed (from playing to

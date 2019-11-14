@@ -5,7 +5,7 @@
         <variable name="viewModel" type="kg.delletenebre.yamus.ui.login.LoginViewModel" />
     </data>
 
-    <LinearLayout
+    <FrameLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -16,16 +16,17 @@
         android:fitsSystemWindows="true"
         tools:context=".ui.login.LoginActivity">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            app:title="@string/title_activity_login"
-            style="@style/AppToolbar" />
-
-        <androidx.core.widget.NestedScrollView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <FrameLayout
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                app:title="@string/title_activity_login"
+                style="@style/AppToolbar" />
+
+            <androidx.core.widget.NestedScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -81,38 +82,38 @@
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <Button
+                    <androidx.appcompat.widget.AppCompatButton
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="start"
                         android:layout_marginTop="16dp"
-                        android:backgroundTint="@color/buttonPrimary"
+                        app:backgroundTint="@color/buttonPrimary"
                         android:text="@string/action_sign_in"
                         android:enabled="@{!viewModel.isLoading}"
                         android:onClick="@{() -> viewModel.login(username.getText().toString(), password.getText().toString())}"/>
 
                 </LinearLayout>
 
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:alpha="0.4"
-                    android:animateLayoutChanges="true"
-                    android:visibility="@{viewModel.isLoading ? View.VISIBLE : View.GONE}"
-                    android:background="@android:color/black"
-                    android:clickable="true"
-                    android:focusable="true">
+            </androidx.core.widget.NestedScrollView>
 
-                    <ProgressBar
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center" />
+        </LinearLayout>
 
-                </FrameLayout>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0.4"
+            android:animateLayoutChanges="true"
+            android:visibility="@{viewModel.isLoading ? View.VISIBLE : View.GONE}"
+            android:background="@android:color/black"
+            android:clickable="true"
+            android:focusable="true">
 
-            </FrameLayout>
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
 
-        </androidx.core.widget.NestedScrollView>
+        </FrameLayout>
 
-    </LinearLayout>
+    </FrameLayout>
 </layout>

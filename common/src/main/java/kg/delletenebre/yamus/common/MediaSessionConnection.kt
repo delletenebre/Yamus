@@ -30,6 +30,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.media.MediaBrowserServiceCompat
 import kg.delletenebre.yamus.common.MediaSessionConnection.MediaBrowserConnectionCallback
 import kg.delletenebre.yamus.media.NETWORK_FAILURE
+import kg.delletenebre.yamus.media.extensions.id
+import kg.delletenebre.yamus.media.library.CurrentPlaylist
 
 /**
  * Class that manages a connection to a [MediaBrowserServiceCompat] instance.
@@ -131,10 +133,15 @@ class MediaSessionConnection(context: Context, serviceComponent: ComponentName) 
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             playbackState.postValue(state ?: EMPTY_PLAYBACK_STATE)
+            //CurrentPlaylist.playbackState.postValue(state?.stateName ?: "UNKNOWN_STATE")
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
             nowPlaying.postValue(metadata ?: NOTHING_PLAYING)
+            if (metadata != null) {
+                val track = CurrentPlaylist.tracks.find { metadata.description.mediaId == it.id }
+                CurrentPlaylist.currentTrack.postValue(track)
+            }
         }
 
         override fun onQueueChanged(queue: MutableList<MediaSessionCompat.QueueItem>?) {

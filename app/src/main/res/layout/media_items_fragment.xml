@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable name="title" type="String"/>
+        <variable name="viewModel" type="kg.delletenebre.yamus.ui.mediaitems.MediaItemsViewModel"/>
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            app:title="@{title}"
+            style="@style/AppToolbar" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:paddingLeft="16dp"
+            android:paddingStart="16dp"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:spanCount="2"
+            app:items="@{viewModel.items}"
+            app:itemBinding="@{viewModel.itemsBinding}"
+            tools:ignore="RtlSymmetry" />
+
+    </LinearLayout>
+</layout>

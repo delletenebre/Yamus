@@ -10,13 +10,11 @@ import kg.delletenebre.yamus.media.R
 
 class PrevActionProvider(val context: Context): MediaSessionConnector.CustomActionProvider {
     override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? {
-        return PlaybackStateCompat.CustomAction
-                    .Builder(
-                            "ACTION_SKIP_TO_PREV",
-                            context.getString(R.string.custom_action_skip_to_prev),
-                            R.drawable.ic_skip_previous
-                    )
-                    .build()
+        return PlaybackStateCompat.CustomAction.Builder(
+                "ACTION_SKIP_TO_PREV",
+                context.getString(R.string.custom_action_skip_to_prev),
+                R.drawable.ic_skip_previous
+        ).build()
     }
 
     override fun onCustomAction(player: Player, controlDispatcher: ControlDispatcher, action: String, extras: Bundle) {

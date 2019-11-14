@@ -18,11 +18,10 @@ package kg.delletenebre.yamus.viewmodels
 
 import android.support.v4.media.MediaBrowserCompat
 import android.util.Log
-import androidx.lifecycle.*
-import kg.delletenebre.yamus.MainActivity
-import kg.delletenebre.yamus.MediaItemData
-import kg.delletenebre.yamus.api.response.Station
-import kg.delletenebre.yamus.api.response.Track
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import kg.delletenebre.yamus.common.MediaSessionConnection
 import kg.delletenebre.yamus.media.extensions.id
 import kg.delletenebre.yamus.media.extensions.isPlayEnabled
@@ -31,7 +30,6 @@ import kg.delletenebre.yamus.media.extensions.isPrepared
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kg.delletenebre.yamus.utils.Event
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 /**
  * Small [ViewModel] that watches a [MediaSessionConnection] to become connected
@@ -58,99 +56,42 @@ class MainActivityViewModel(
 //    private val _navigateToFragment = MutableLiveData<Event<FragmentNavigationRequest>>()
 
     private var currentJob: Job? = null
-    fun trackClicked(clickedTrack: Track, tracks: List<Track>) {
-        currentJob?.cancel()
-        currentJob = viewModelScope.launch {
-            CurrentPlaylist.batchId = ""
-            CurrentPlaylist.updatePlaylist("playlist", tracks, CurrentPlaylist.TYPE_TRACKS)
-            playTracks(clickedTrack, pauseAllowed = true)
-            currentJob = null
-        }
-    }
-
-    fun trackClicked(clickedTrack: Track, tracks: List<Track>, playlistIdentifier: String) {
-        if (CurrentPlaylist.id == playlistIdentifier) {
-            playTracks(clickedTrack, pauseAllowed = true)
-        } else {
-            currentJob?.cancel()
-            currentJob = viewModelScope.launch {
-                CurrentPlaylist.batchId = ""
-                CurrentPlaylist.updatePlaylist(playlistIdentifier, tracks, CurrentPlaylist.TYPE_TRACKS)
-                playTracks(clickedTrack, pauseAllowed = true)
-                currentJob = null
-            }
-        }
-    }
-
-    fun stationClicked(station: Station) {
-        viewModelScope.launch {
-//            val stationId = station.getId()
-//            val stationTracks = YandexMusic.getStationTracks(stationId)
-//            val tracks = stationTracks.sequence.map { it.track }
-//            CurrentPlaylist.batchId = stationTracks.batchId
-//            CurrentPlaylist.updatePlaylist(stationId, tracks, CurrentPlaylist.TYPE_STATION)
-//            YandexMusic.getStationFeedback(stationId)
-            playStation(station.getId())
-        }
-    }
-
-
-    /**
-     * Convenience method used to swap the fragment shown in the main activity
-     *
-     * @param fragment the fragment to show
-     * @param backStack if true, add this transaction to the back stack
-     * @param tag the name to use for this fragment in the stack
-     */
-//    fun showFragment(fragment: Fragment, backStack: Boolean = true, tag: String? = null) {
-//        _navigateToFragment.value = Event(FragmentNavigationRequest(fragment, backStack, tag))
-//    }
-
-
-    /**
-     * This posts a browse [Event] that will be handled by the
-     * observer in [MainActivity].
-     */
-//    private fun browseToItem(mediaItem: MediaItemData) {
-//        _navigateToMediaItem.value = Event(mediaItem.mediaId)
-//    }
-
-    /**
-     * This method takes a [MediaItemData] and does one of the following:
-     * - If the item is *not* the active item, then play it directly.
-     * - If the item *is* the active item, check whether "pause" is a permitted command. If it is,
-     *   then pause playback, otherwise send "play" to resume playback.
-     */
-//    fun playMedia(mediaItem: MediaItemData, pauseAllowed: Boolean = true) {
-//        val nowPlayingInfo = mediaSessionConnection.nowPlayingInfo.value
-//        val transportControls = mediaSessionConnection.transportControls
-//
-//        val isPrepared = mediaSessionConnection.playbackState.value?.isPrepared ?: false
-//        if (isPrepared && mediaItem.mediaId == nowPlayingInfo?.id) {
-//            mediaSessionConnection.playbackState.value?.let { playbackState ->
-//                when {
-//                    playbackState.isPlaying ->
-//                        if (pauseAllowed) transportControls.pause() else Unit
-//                    playbackState.isPlayEnabled -> transportControls.play()
-//                    else -> {
-//                        Log.w(
-//                            TAG, "Playable item clicked but neither play nor pause are enabled!" +
-//                                    " (mediaId=${mediaItem.mediaId})"
-//                        )
-//                    }
-//                }
-//            }
-//        } else {
-//            transportControls.playFromMediaId(mediaItem.mediaId, null)
+//    fun trackClicked(clickedTrack: Track, tracks: List<Track>) {
+//        currentJob?.cancel()
+//        currentJob = viewModelScope.launch {
+//            CurrentPlaylist.batchId = ""
+//            CurrentPlaylist.updatePlaylist("playlist", tracks, CurrentPlaylist.TYPE_TRACKS)
+//            playTrack(clickedTrack, pauseAllowed = true)
+//            currentJob = null
 //        }
 //    }
 
-    fun playTracks(track: Track, pauseAllowed: Boolean = true) {
-        val nowPlaying = mediaSessionConnection.nowPlaying.value
+//    fun trackClicked(clickedTrack: Track, tracks: List<Track>, playlistIdentifier: String) {
+//        if (CurrentPlaylist.id == playlistIdentifier) {
+//            playTrack(clickedTrack, pauseAllowed = true)
+//        } else {
+//            currentJob?.cancel()
+//            currentJob = viewModelScope.launch {
+//                CurrentPlaylist.batchId = ""
+//                CurrentPlaylist.updatePlaylist(playlistIdentifier, tracks, CurrentPlaylist.TYPE_TRACKS)
+//                playTrack(clickedTrack, pauseAllowed = true)
+//                currentJob = null
+//            }
+//        }
+//    }
+//
+//    fun stationClicked(station: Station) {
+//        viewModelScope.launch {
+//            playStation(station.getId())
+//        }
+//    }
+
+    fun playTrack(trackId: String, pauseAllowed: Boolean = true) {
+        val currentTrack = CurrentPlaylist.currentTrack.value
         val transportControls = mediaSessionConnection.transportControls
 
         val isPrepared = mediaSessionConnection.playbackState.value?.isPrepared ?: false
-        if (isPrepared && track.id == nowPlaying?.id) {
+        if (isPrepared && trackId == currentTrack?.id) {
             mediaSessionConnection.playbackState.value?.let { playbackState ->
                 when {
                     playbackState.isPlaying -> {
@@ -166,47 +107,43 @@ class MainActivityViewModel(
                     else -> {
                         Log.w(
                                 TAG, "Playable item clicked but neither play nor pause are enabled!" +
-                                " (mediaId=${track.id})"
+                                " (mediaId=$trackId)"
                         )
                     }
                 }
             }
         } else {
-            transportControls.playFromMediaId(track.id, null)
+            transportControls.playFromMediaId(trackId, null)
         }
     }
 
-    fun playStation(stationId: String) {
+    fun playStation(mediaId: String) {
         val transportControls = mediaSessionConnection.transportControls
         val isPrepared = mediaSessionConnection.playbackState.value?.isPrepared ?: false
-        if (isPrepared && stationId == CurrentPlaylist.id) {
+        if (isPrepared && mediaId == CurrentPlaylist.id) {
             mediaSessionConnection.playbackState.value?.let { playbackState ->
                 when {
-                    playbackState.isPlaying -> {
-                        transportControls.pause()
-                    }
-                    playbackState.isPlayEnabled -> {
-                        transportControls.play()
-                    }
+                    playbackState.isPlaying -> transportControls.pause()
+                    playbackState.isPlayEnabled -> transportControls.play()
                     else -> {
                         Log.w(
                                 TAG, "Playable item clicked but neither play nor pause are enabled!" +
-                                " (Station: $stationId"
+                                " (Station: $mediaId"
                         )
                     }
                 }
             }
         } else {
-            transportControls.playFromMediaId("/station/$stationId", null)
+            transportControls.playFromMediaId(mediaId, null)
         }
     }
 
     fun playMediaId(mediaId: String) {
-        val nowPlaying = mediaSessionConnection.nowPlaying.value
+        val currentTrack = CurrentPlaylist.currentTrack.value
         val transportControls = mediaSessionConnection.transportControls
 
         val isPrepared = mediaSessionConnection.playbackState.value?.isPrepared ?: false
-        if (isPrepared && mediaId == nowPlaying?.id) {
+        if (isPrepared && mediaId == currentTrack?.id) {
             mediaSessionConnection.playbackState.value?.let { playbackState ->
                 when {
                     playbackState.isPlaying -> transportControls.pause()

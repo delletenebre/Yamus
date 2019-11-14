@@ -7,6 +7,7 @@ import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import kg.delletenebre.yamus.media.R
+import kg.delletenebre.yamus.media.extensions.uniqueId
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 
 class DislikeActionProvider(val context: Context): MediaSessionConnector.CustomActionProvider {
@@ -15,13 +16,12 @@ class DislikeActionProvider(val context: Context): MediaSessionConnector.CustomA
                 .Builder(
                         "ACTION_DISLIKE",
                         context.getString(R.string.custom_action_dislike),
-                        R.drawable.ic_do_not_disturb
-                )
-                .build()
+                        R.drawable.ic_dislike
+                ).build()
     }
 
     override fun onCustomAction(player: Player, controlDispatcher: ControlDispatcher, action: String, extras: Bundle) {
-        val trackId = CurrentPlaylist.tracks[player.currentWindowIndex].getTrackId()
+        val trackId = CurrentPlaylist.tracks[player.currentWindowIndex].uniqueId
         CustomActionsHelper.dislike(player, trackId)
     }
 }

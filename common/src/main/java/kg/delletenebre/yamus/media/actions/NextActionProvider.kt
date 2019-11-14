@@ -11,12 +11,11 @@ import kg.delletenebre.yamus.media.R
 class NextActionProvider(val context: Context): MediaSessionConnector.CustomActionProvider {
     override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction {
         return PlaybackStateCompat.CustomAction
-                    .Builder(
-                            "ACTION_SKIP_TO_NEXT",
-                            context.getString(R.string.custom_action_skip_to_next),
-                            R.drawable.ic_skip_next
-                    )
-                    .build()
+                .Builder(
+                    "ACTION_SKIP_TO_NEXT",
+                    context.getString(R.string.custom_action_skip_to_next),
+                    R.drawable.ic_skip_next
+                ).build()
     }
 
     override fun onCustomAction(player: Player, controlDispatcher: ControlDispatcher, action: String, extras: Bundle) {

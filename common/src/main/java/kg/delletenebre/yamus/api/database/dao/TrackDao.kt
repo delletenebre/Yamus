@@ -6,25 +6,28 @@ import kg.delletenebre.yamus.api.database.table.TrackEntity
 @Dao
 interface TrackDao {
     @Query("SELECT * FROM tracks")
-    fun getAll(): List<TrackEntity>
+    suspend fun getAll(): List<TrackEntity>
 
     @Query("SELECT * FROM tracks WHERE id=:id")
-    fun findById(id: String): TrackEntity?
+    suspend fun findById(id: String): TrackEntity?
 
     @Query("SELECT * FROM tracks WHERE id IN (:ids)")
-    fun findByIds(ids: List<String>): List<TrackEntity>
+    suspend fun findByIds(ids: List<String>): List<TrackEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(vararg track: TrackEntity)
+    suspend fun insert(track: TrackEntity)
+
+    @Query("DELETE FROM tracks")
+    suspend fun deleteAll()
 
     @Delete
-    fun delete(track: TrackEntity)
+    suspend fun delete(track: TrackEntity)
 
     @Update
-    fun update(vararg track: TrackEntity)
+    suspend fun update(track: TrackEntity)
 
     @Transaction
-    fun insert(tracks: List<TrackEntity>) {
+    suspend fun insert(tracks: List<TrackEntity>) {
         tracks.forEach {
             insert(it)
         }

@@ -1,13 +1,8 @@
 package kg.delletenebre.yamus.media.library
 
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.RequestOptions
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
@@ -15,14 +10,14 @@ import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DataSpec
 import com.google.android.exoplayer2.upstream.FileDataSource
 import com.google.android.exoplayer2.upstream.FileDataSource.FileDataSourceException
-import kg.delletenebre.yamus.App
-import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.api.YandexCache
-import kg.delletenebre.yamus.api.response.Track
-import kg.delletenebre.yamus.media.R
 import kg.delletenebre.yamus.media.datasource.YandexDataSourceFactory
-import kg.delletenebre.yamus.media.extensions.*
-import kotlinx.coroutines.*
+import kg.delletenebre.yamus.media.extensions.fullDescription
+import kg.delletenebre.yamus.media.extensions.id
+import kg.delletenebre.yamus.media.extensions.mediaUri
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlin.coroutines.CoroutineContext
 
 
@@ -40,18 +35,17 @@ object CurrentPlaylist: CoroutineScope {
     var id: String = ""
     var batchId: String = ""
     var type: String = TYPE_NONE
-    var isBuffering = false
-
+    var loading = false
     val player = MutableLiveData<ExoPlayer?>()
 
-//    private val tracks_ = MutableLiveData<MutableList<Track>>().apply {
-//        value = mutableListOf()
-//    }
-//    val tracks: LiveData<MutableList<Track>> = tracks_
-    var tracks: MutableList<Track> = mutableListOf()
-    var mediaSource = ConcatenatingMediaSource()
-    var tracksMetadata: MutableList<MediaMetadataCompat> = mutableListOf()
-    private var currentJob: Job? = null
+    val playbackState = MutableLiveData<String>().apply {
+        value = ""
+    }
+    val currentTrack = MutableLiveData<MediaMetadataCompat?>()
+    val track = MutableLiveData<Track>()
+
+    val mediaSource = ConcatenatingMediaSource()
+    var tracks: MutableList<MediaMetadataCompat> = mutableListOf()
 
     private val httpDataSourceFactory = YandexDataSourceFactory(YAMUS_USER_AGENT)
 
@@ -60,117 +54,41 @@ object CurrentPlaylist: CoroutineScope {
                 .set("X-Yandex-Music-Client", YAMUS_HEADER_X_YANDEX_MUSIC_CLIENT)
     }
 
-    suspend fun updatePlaylist(id: String, tracks: List<Track>, type: String = TYPE_NONE) {
-        isBuffering = true
-        withContext(Dispatchers.Default) {
-            this@CurrentPlaylist.id = id
-            this@CurrentPlaylist.type = type
-            this@CurrentPlaylist.tracks = tracks.toMutableList()
-            this@CurrentPlaylist.tracksMetadata = tracks.map {
-                MediaMetadataCompat.Builder()
-                    .from(it)
-                    .apply {
-                        withContext(Dispatchers.IO) {
-                            albumArt = loadAlbumArt(it.coverUri)
-                        }
-                    }
-                    .build()
-            }.toMutableList()
-            mediaSource.clear()
-            mediaSource.addMediaSources(tracksMetadata.toMediaSource())
-            currentJob = null
-            isBuffering = false
-        }
+    fun updatePlaylist(
+            id: String,
+            tracks: List<MediaMetadataCompat>,
+            type: String = TYPE_NONE,
+            batchId: String = ""
+    ) {
+        loading = true
+        this.id = id
+        this.type = type
+        this.tracks.clear()
+        this.tracks.addAll(tracks)
+        this.batchId = batchId
+        mediaSource.clear()
+        mediaSource.addMediaSources(this.tracks.toMediaSource())
+        loading = false
     }
 
-    suspend fun addTracksToPlaylist(tracks: List<Track>) {
+    fun addTracksToPlaylist(tracks: List<MediaMetadataCompat>) {
         this.tracks.addAll(tracks)
-
-        val newMetadata = tracks.map {
-            MediaMetadataCompat.Builder()
-                    .from(it)
-                    .apply {
-                        albumArt = loadAlbumArt(it.coverUri)
-                    }
-                    .build()
-        }
-        tracksMetadata.addAll(newMetadata)
-        mediaSource.addMediaSources(newMetadata.toMediaSource())
+        mediaSource.addMediaSources(tracks.toMediaSource())
     }
 
     fun removeTrack(index: Int) {
         tracks.removeAt(index)
-        tracksMetadata.removeAt(index)
         mediaSource.removeMediaSource(index)
     }
 
-    private suspend fun loadAlbumArt(url: String): Bitmap {
-        return withContext(Dispatchers.IO) {
-            try {
-                Glide.with(App.instance.applicationContext)
-                        .applyDefaultRequestOptions(RequestOptions()
-                                .fallback(R.drawable.default_album_art)
-                                .diskCacheStrategy(DiskCacheStrategy.RESOURCE))
-                        .asBitmap()
-                        .diskCacheStrategy(DiskCacheStrategy.DATA)
-                        .load(YandexApi.getImageUrl(url, AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE))
-                        .submit(AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE, AndroidAutoBrowser.NOTIFICATION_LARGE_ICON_SIZE)
-                        .get()
-            } catch (t: Throwable) {
-                (App.instance.applicationContext.getDrawable(R.drawable.default_album_art) as BitmapDrawable).bitmap
-            }
+    fun updateTrack(track: MediaMetadataCompat) {
+        val index = tracks.indexOfFirst { it.id == track.id }
+        if (index > -1) {
+            Log.d("ahoha", "updateTrack: ${track.mediaUri}")
+            tracks[index] = track
+            mediaSource.removeMediaSource(index)
+            mediaSource.addMediaSource(index, track.toMediaSource())
         }
-    }
-
-    fun MediaMetadataCompat.Builder.from(track: Track): MediaMetadataCompat.Builder {
-        var artistName = ""
-        if (track.artists.isNotEmpty()) {
-            artistName = track.artists[0].name
-        }
-
-        var albumTitle = ""
-        var albumGenre = ""
-        if (track.albums.isNotEmpty()) {
-            val trackAlbum = track.albums[0]
-            albumTitle = trackAlbum.title
-            albumGenre = trackAlbum.genre
-
-        }
-
-        trackId = track.getTrackId()
-        id = track.id
-        title = track.title
-        artist = artistName
-        album = albumTitle
-        duration = track.durationMs
-        genre = albumGenre
-
-        val trackMediaUri = YandexCache.getTrackPathOrNull(track) ?: track.id
-        mediaUri = trackMediaUri
-        albumArtUri = YandexApi.getImageUrl(track.coverUri, 400)
-//        flag = MediaItem.FLAG_PLAYABLE
-        explicit = if (track.contentWarning == "explicit") {
-            1
-        } else {
-            0
-        }
-
-        displayTitle = track.title
-        displaySubtitle = artistName
-        displayDescription = albumTitle
-        displayIconUri = YandexApi.getImageUrl(track.coverUri, 400)
-
-        // Add downloadStatus to force the creation of an "extras" bundle in the resulting
-        // MediaMetadataCompat object. This is needed to send accurate metadata to the
-        // media session during updates.
-        downloadStatus = if (trackMediaUri != track.id) {
-            MediaDescriptionCompat.STATUS_DOWNLOADED
-        } else {
-            MediaDescriptionCompat.STATUS_NOT_DOWNLOADED
-        }
-
-        // Allow it to be used in the typical builder style.
-        return this
     }
 
     private fun MediaMetadataCompat.toMediaSource(): ProgressiveMediaSource {
@@ -187,13 +105,27 @@ object CurrentPlaylist: CoroutineScope {
             httpDataSourceFactory
         }
         return ProgressiveMediaSource.Factory(dataSourceFactory)
-                .setTag(description)
+                .setTag(fullDescription)
                 .createMediaSource(mediaUri)
     }
 
     private fun List<MediaMetadataCompat>.toMediaSource(): List<ProgressiveMediaSource> {
         return map {
             it.toMediaSource()
+        }
+    }
+
+    class Track {
+        var mediaId: String = ""
+        var playState: String = ""
+        var downloadState: String = ""
+
+        companion object {
+            fun fromMetadata(metadata: MediaMetadataCompat?): Track {
+                val track = Track()
+                track.mediaId = metadata?.id ?: ""
+                return track
+            }
         }
     }
 }

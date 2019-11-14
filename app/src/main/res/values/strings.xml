@@ -66,7 +66,7 @@
     <string name="title_profile">Profile</string>
     <string name="profile_subscription_title">Yandex Music subscription</string>
     <string name="profile_subscription_not_available">Not active</string>
-    <string name="profile_subscription_until">Active until %1$s</string>
+    <string name="profile_subscription_until">active until %1$s</string>
 
 
     <string name="title_playlists">Playlists</string>
@@ -137,5 +137,9 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+
+    <string name="auth_error_wrong_username_or_password">Wrong username or password</string>
+    <string name="auth_error_server_error">Server error: %1$d</string>
 
 </resources>

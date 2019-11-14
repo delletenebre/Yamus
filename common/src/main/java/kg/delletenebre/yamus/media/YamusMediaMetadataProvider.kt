@@ -8,6 +8,6 @@ import kg.delletenebre.yamus.media.library.CurrentPlaylist
 
 class YamusMediaMetadataProvider(val context: Context) : MediaSessionConnector.MediaMetadataProvider {
     override fun getMetadata(player: Player): MediaMetadataCompat? {
-        return CurrentPlaylist.tracksMetadata.getOrNull(player.currentWindowIndex)
+        return CurrentPlaylist.tracks.getOrNull(player.currentWindowIndex)
     }
 }

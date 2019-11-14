@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -18,11 +19,19 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
+import com.billy.android.swipe.SmartSwipe
+import com.billy.android.swipe.SmartSwipeWrapper
+import com.billy.android.swipe.SwipeConsumer
+import com.billy.android.swipe.consumer.StayConsumer
+import com.billy.android.swipe.listener.SimpleSwipeListener
+import com.google.android.exoplayer2.ui.PlayerControlView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.analytics.FirebaseAnalytics
-import kg.delletenebre.yamus.api.YandexUser
+import kg.delletenebre.yamus.api.YaApi
 import kg.delletenebre.yamus.databinding.ActivityMainBinding
+import kg.delletenebre.yamus.media.actions.CustomActionsHelper
+import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kg.delletenebre.yamus.ui.login.LoginActivity
 import kg.delletenebre.yamus.ui.settings.SettingsActivity
 import kg.delletenebre.yamus.utils.InjectorUtils
@@ -47,13 +56,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         }
-
-        YandexUser.token.observe(this, Observer {
-            if (it.isEmpty()) {
-                startActivity(Intent(this, LoginActivity::class.java))
-                finish()
-            }
-        })
 
         firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
@@ -82,11 +84,34 @@ class MainActivity : AppCompatActivity() {
         sheetBehavior.peekHeight = sheetBehavior.peekHeight * 2
         sheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
 
-//        val playerControlView = findViewById<PlayerControlView>(R.id.player_control_view)
-//        CurrentPlaylist.player.observe(this, Observer {
-//            Log.d("ahoha", "player= ${it}")
-//            playerControlView.player = it
-//        })
+        SmartSwipe.wrap(findViewById<View>(R.id.nowPlayingTrackTitle))
+                .addConsumer(StayConsumer()) //contentView stay while swiping with StayConsumer
+                .enableHorizontal()
+                .addListener(object : SimpleSwipeListener() {
+                    override fun onSwipeOpened(wrapper: SmartSwipeWrapper?, consumer: SwipeConsumer?, direction: Int) {
+                        Log.d("ahoha", "direction: $direction")
+                        when (direction) {
+                            SwipeConsumer.DIRECTION_LEFT -> {
+                                val player = CurrentPlaylist.player.value
+                                if (player != null) {
+                                    CustomActionsHelper.next(player)
+                                }
+                            }
+                            SwipeConsumer.DIRECTION_RIGHT -> {
+                                val player = CurrentPlaylist.player.value
+                                if (player != null) {
+                                    CustomActionsHelper.previous(player)
+                                }
+                            }
+                        }
+                    }
+                })
+
+        val playerControlView = findViewById<PlayerControlView>(R.id.nowPlayingPlayerControl)
+        playerControlView.showTimeoutMs = -1
+        CurrentPlaylist.player.observe(this, Observer {
+            playerControlView.player = it
+        })
 
 
 //        sheetBehavior.setBottomSheetCallback(object: BottomSheetBehavior.BottomSheetCallback() {
@@ -126,7 +151,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        if (!YandexUser.isAuth()) {
+        if (!YaApi.isAuth()) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }

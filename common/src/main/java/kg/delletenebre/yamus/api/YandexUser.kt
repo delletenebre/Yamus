@@ -3,7 +3,6 @@ package kg.delletenebre.yamus.api
 import android.annotation.SuppressLint
 import android.content.Context
 import android.provider.Settings
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.andreacioccarelli.cryptoprefs.CryptoPrefs
@@ -62,18 +61,6 @@ object YandexUser {
         }
     }
 
-    fun logout() {
-        GlobalScope.launch {
-            token_.postValue("")
-            user_.postValue(User())
-            withContext(Dispatchers.IO) {
-                YandexApi.database.clearAllTables()
-                prefs.erase()
-            }
-        }
-    }
-
-
     fun getUid(): Long {
         return user.value!!.account.uid
     }
@@ -116,7 +103,6 @@ object YandexUser {
                         HttpResult(false, response.code(), App.instance.getString(R.string.unknown_response_format))
                     }
                 } else {
-                    Log.e("ahoha", "resp: ${response.body()?.string()}")
                     HttpResult(false, response.code(), App.instance.getString(R.string.user_not_found))
                 }
             }

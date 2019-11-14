@@ -9,8 +9,8 @@ import kg.delletenebre.yamus.api.database.table.UserTracksIdsEntity
 @Dao
 interface UserTracksIdsDao {
     @Query("SELECT * FROM user_tracks_ids WHERE type=:type")
-    fun get(type: String): UserTracksIdsEntity?
+    suspend fun get(type: String): UserTracksIdsEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(vararg userTrackIds: UserTracksIdsEntity)
+    suspend fun insert(userTrackIds: UserTracksIdsEntity)
 }

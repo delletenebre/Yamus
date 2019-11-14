@@ -21,17 +21,18 @@ import android.os.Bundle
 import android.os.ResultReceiver
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
+import android.widget.Toast
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import kg.delletenebre.yamus.App
-import kg.delletenebre.yamus.api.YandexMusic
+import kg.delletenebre.yamus.api.YaApi
+import kg.delletenebre.yamus.media.extensions.id
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kg.delletenebre.yamus.media.library.MediaLibrary
+import kotlinx.coroutines.runBlocking
 
 
 /**
@@ -44,7 +45,8 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
             PlaybackStateCompat.ACTION_PREPARE_FROM_MEDIA_ID or
                     PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
                     PlaybackStateCompat.ACTION_PREPARE_FROM_SEARCH or
-                    PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH
+                    PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH or
+                    PlaybackStateCompat.ACTION_PLAY_FROM_URI
 
     override fun onPrepare(playWhenReady: Boolean) {}
 
@@ -59,37 +61,67 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
      * [MediaSessionCompat.Callback.onPrepareFromMediaId].
      */
     override fun onPrepareFromMediaId(mediaId: String, playWhenReady: Boolean, extras: Bundle?) {
-        if (mediaId.startsWith("/station")) {
-            GlobalScope.launch {
-                val stationId = mediaId.split("/")[2]
-                val stationTracks = YandexMusic.getStationTracks(stationId)
-                val tracks = stationTracks.sequence.map { it.track }
-                CurrentPlaylist.batchId = stationTracks.batchId
-                CurrentPlaylist.updatePlaylist(stationId, tracks, CurrentPlaylist.TYPE_STATION)
-                YandexMusic.getStationFeedback(stationId)
+        runBlocking {
+            when {
+                mediaId.startsWith("/station") -> {
+                    YaApi.getStationFeedback(mediaId)
+                    val (batchId, tracks) = YaApi.getStationTracks(mediaId)
+                    CurrentPlaylist.updatePlaylist(mediaId, tracks, CurrentPlaylist.TYPE_STATION, batchId)
 
-                withContext(Dispatchers.Main) {
                     exoPlayer.shuffleModeEnabled = false
                     exoPlayer.repeatMode = Player.REPEAT_MODE_OFF
                     exoPlayer.prepare(CurrentPlaylist.mediaSource)
                     exoPlayer.playWhenReady = true
+                    CurrentPlaylist.player.postValue(exoPlayer)
+                }
+                mediaId.startsWith("/playlist/") -> {
+                    val data = mediaId.split("/")
+                    val uid = data[2]
+                    val kind = data[3]
+                    val tracks = YaApi.getPlaylistTracks(uid, kind)
+                    CurrentPlaylist.updatePlaylist(mediaId, tracks, CurrentPlaylist.TYPE_TRACKS)
+                    play()
+                }
+                mediaId.startsWith("/album/") -> {
+                    val data = mediaId.split("/")
+                    val id = data[2]
+                    val tracks = YaApi.getAlbumTracks(id)
+                    CurrentPlaylist.updatePlaylist(mediaId, tracks, CurrentPlaylist.TYPE_TRACKS)
+                    play()
+                }
+                mediaId == MediaLibrary.PATH_LIKED -> {
+                    val tracks = YaApi.getLikedTracks()
+                    CurrentPlaylist.updatePlaylist(mediaId, tracks, CurrentPlaylist.TYPE_TRACKS)
+                    play()
+                }
+                else -> {
+                    var position = CurrentPlaylist.tracks.indexOfFirst {
+                        it.id == mediaId
+                    }
+                    if (position == -1) {
+                        position = 0
+                    }
+
+                    exoPlayer.prepare(CurrentPlaylist.mediaSource, false, true)
+                    exoPlayer.seekTo(position, 0)
+                    play(false)
                 }
             }
-        } else {
-            val position = CurrentPlaylist.tracks.indexOfFirst {
-                it.id == mediaId
-            }
-            exoPlayer.prepare(CurrentPlaylist.mediaSource, false, true)
-            exoPlayer.shuffleModeEnabled = App.instance.getBooleanPreference("shuffle_mode")
-            exoPlayer.repeatMode = if (App.instance.getBooleanPreference("repeat_mode")) {
-                Player.REPEAT_MODE_ALL
-            } else {
-                Player.REPEAT_MODE_OFF
-            }
-            exoPlayer.seekTo(position, 0)
-            exoPlayer.playWhenReady = true
         }
-        CurrentPlaylist.player.value = exoPlayer
+    }
+
+    private fun play(defaultPrepare: Boolean = true) {
+        if (defaultPrepare) {
+            exoPlayer.prepare(CurrentPlaylist.mediaSource)
+        }
+        exoPlayer.shuffleModeEnabled = App.instance.getBooleanPreference("shuffle_mode")
+        exoPlayer.repeatMode = if (App.instance.getBooleanPreference("repeat_mode")) {
+            Player.REPEAT_MODE_ALL
+        } else {
+            Player.REPEAT_MODE_OFF
+        }
+        exoPlayer.playWhenReady = true
+        CurrentPlaylist.player.postValue(exoPlayer)
     }
 
     /**
@@ -105,6 +137,9 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
      * For details on how search is handled, see [AbstractMusicSource.search].
      */
     override fun onPrepareFromSearch(query: String?, playWhenReady: Boolean, extras: Bundle?) {
+        Log.d("ahoha", "onPrepareFromSearch: $query")
+        Toast.makeText(App.instance.applicationContext, "query: $query", Toast.LENGTH_LONG).show()
+
 //        musicSource.whenReady {
 //            val metadataList = musicSource.search(query ?: "", extras ?: Bundle.EMPTY)
 //            if (metadataList.isNotEmpty()) {
@@ -114,7 +149,9 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
 //        }
     }
 
-    override fun onPrepareFromUri(uri: Uri?, playWhenReady: Boolean, extras: Bundle?) {}
+    override fun onPrepareFromUri(uri: Uri?, playWhenReady: Boolean, extras: Bundle?) {
+        Log.d("ahoha", "onPrepareFromUri: $uri")
+    }
 
     override fun onCommand(
         player: Player?,

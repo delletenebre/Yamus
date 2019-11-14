@@ -30,6 +30,20 @@
     </string>
 
     <!-- Browse Tree -->
+    <string name="liked">Моя музыка</string>
+    <string name="playlists">Плейлисты</string>
+    <string name="albums">Альбомы</string>
+    <string name="artists">Артисты</string>
+    <string name="disliked_tracks">Непонравившиеся треки</string>
+    <string name="recommended">Рекомендации</string>
+    <string name="personal_playlists_group">Умные плейлисты для Вас</string>
+    <string name="my_playlists_group_title">Мои плейлисты</string>
+    <string name="liked_playlists_group_title">Понравившиеся плейлисты</string>
+    <string name="stations">Радио</string>
+    <string name="recommended_stations">Подобраны для Вас</string>
+    <string name="mixes">Подборки</string>
+    <string name="mixes_subtitle">Плейлисты, подобранные под настроение или по жанру</string>
+
     <string name="browse_title_favorite_tracks">Моя музыка</string>
     <string name="browse_title_playlists">Плейлисты</string>
     <string name="browse_title_recommended">Рекомендуемое</string>
@@ -54,4 +68,6 @@
     <string name="unknown_response_format">Неизвестный формат ответа</string>
     <string name="user_not_found">Пользователь не распознан</string>
     <string name="ym_service_not_available_for_account">Сервис \"Яндекс Музыка\" не доступен для указанного аккаунта</string>
+
+    <string name="updated_at">Обновлён %1$s</string>
 </resources>

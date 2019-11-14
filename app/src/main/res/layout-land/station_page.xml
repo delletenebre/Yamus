@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="item"
+            type="kg.delletenebre.yamus.ui.stations.StationsViewModel.StationPage" />
+    </data>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="16dp"
+        android:paddingLeft="16dp"
+        android:paddingStart="16dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="5"
+        app:items="@{item.items}"
+        app:itemBinding="@{item.itemsBinding}"
+        tools:ignore="RtlSymmetry" />
+
+</layout>

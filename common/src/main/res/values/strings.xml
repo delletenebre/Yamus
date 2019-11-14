@@ -30,6 +30,20 @@
     </string>
 
     <!-- Browse Tree -->
+    <string name="liked">My favorites</string>
+    <string name="playlists">Playlists</string>
+    <string name="albums">Albums</string>
+    <string name="artists">Artists</string>
+    <string name="disliked_tracks">Disliked tracks</string>
+    <string name="recommended">Recommended</string>
+    <string name="personal_playlists_group">Smart playlists for you</string>
+    <string name="my_playlists_group_title">My playlists</string>
+    <string name="liked_playlists_group_title">Liked playlists</string>
+    <string name="stations">Stations</string>
+    <string name="recommended_stations">Recommended</string>
+    <string name="mixes">Mixes</string>
+    <string name="mixes_subtitle">Playlists selected by genre or mood</string>
+
     <string name="browse_title_favorite_tracks">My favorites</string>
     <string name="browse_title_playlists">Playlists</string>
     <string name="browse_title_recommended">Recommended</string>
@@ -54,5 +68,7 @@
     <string name="unknown_response_format">Unknown response format</string>
     <string name="user_not_found">User not found</string>
     <string name="ym_service_not_available_for_account">Yandex Music service not available for this account</string>
+
+    <string name="updated_at">Updated %1$s</string>
 
 </resources>

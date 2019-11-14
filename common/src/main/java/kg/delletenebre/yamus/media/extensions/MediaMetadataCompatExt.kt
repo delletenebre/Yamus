@@ -1,30 +1,27 @@
-/*
- * Copyright 2017 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package kg.delletenebre.yamus.media.extensions
 
 import android.graphics.Bitmap
 import android.net.Uri
-import android.support.v4.media.MediaBrowserCompat.MediaItem
+import android.os.Bundle
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
+import kg.delletenebre.yamus.api.YandexCache
+import kg.delletenebre.yamus.api.responses.Album
+import kg.delletenebre.yamus.api.responses.Artist
+import kg.delletenebre.yamus.api.responses.Track
+import kg.delletenebre.yamus.utils.toCoverUrl
 import kg.delletenebre.yamus.utils.toUri
 
-/**
- * Useful extensions for [MediaMetadataCompat].
- */
+
+// Bundle extra indicating that a song contains explicit content.
+const val METADATA_KEY_DOWNLOAD_PROGRESS = "kg.delletenebre.yamus.METADATA_KEY_DOWNLOAD_PROGRESS"
+const val EXTRA_IS_EXPLICIT = "android.media.IS_EXPLICIT"
+const val EXTRA_IS_DOWNLOADED = "android.media.extra.DOWNLOAD_STATUS"
+// Bundle extra value indicating that an item should show the corresponding metadata.
+var EXTRA_METADATA_ENABLED_VALUE: Long = 1
+const val METADATA_KEY_UNIQUE_ID = "kg.delletenebre.yamus.METADATA_KEY_UNIQUE_ID"
+
+
 inline val MediaMetadataCompat.id: String
     get() = getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
 
@@ -55,8 +52,8 @@ inline val MediaMetadataCompat.compilation: String?
 inline val MediaMetadataCompat.date: String?
     get() = getString(MediaMetadataCompat.METADATA_KEY_DATE)
 
-inline val MediaMetadataCompat.year: String?
-    get() = getString(MediaMetadataCompat.METADATA_KEY_YEAR)
+inline val MediaMetadataCompat.year: Long
+    get() = getLong(MediaMetadataCompat.METADATA_KEY_YEAR)
 
 inline val MediaMetadataCompat.genre: String?
     get() = getString(MediaMetadataCompat.METADATA_KEY_GENRE)
@@ -112,23 +109,14 @@ inline val MediaMetadataCompat.mediaUri: Uri
 inline val MediaMetadataCompat.downloadStatus
     get() = getLong(MediaMetadataCompat.METADATA_KEY_DOWNLOAD_STATUS)
 
+inline val MediaMetadataCompat.downloadProgress
+    get() = getLong(METADATA_KEY_DOWNLOAD_PROGRESS)
+
 inline val MediaMetadataCompat.explicit
     get() = getLong(EXTRA_IS_EXPLICIT)
 
-inline val MediaMetadataCompat.trackId: String
-    get() = this.getString(METADATA_KEY_TRACK_ID)
-
-/**
- * Custom property for storing whether a [MediaMetadataCompat] item represents an
- * item that is [MediaItem.FLAG_BROWSABLE] or [MediaItem.FLAG_PLAYABLE].
- */
-//@MediaItem.Flags
-//inline val MediaMetadataCompat.flag
-//    get() = this.getLong(METADATA_KEY_UAMP_FLAGS).toInt()
-
-/**
- * Useful extensions for [MediaMetadataCompat.Builder].
- */
+inline val MediaMetadataCompat.uniqueId: String
+    get() = this.getString(METADATA_KEY_UNIQUE_ID)
 
 // These do not have getters, so create a message for the error.
 const val NO_GET = "Property does not have a 'get'"
@@ -161,6 +149,13 @@ inline var MediaMetadataCompat.Builder.album: String?
         putString(MediaMetadataCompat.METADATA_KEY_ALBUM, value)
     }
 
+inline var MediaMetadataCompat.Builder.year: Long
+    @Deprecated(NO_GET, level = DeprecationLevel.ERROR)
+    get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
+    set(value) {
+        putLong(MediaMetadataCompat.METADATA_KEY_YEAR, value)
+    }
+
 inline var MediaMetadataCompat.Builder.duration: Long
     @Deprecated(NO_GET, level = DeprecationLevel.ERROR)
     get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
@@ -187,6 +182,13 @@ inline var MediaMetadataCompat.Builder.albumArtUri: String?
     get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
     set(value) {
         putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, value)
+    }
+
+inline var MediaMetadataCompat.Builder.artUri: String?
+    @Deprecated(NO_GET, level = DeprecationLevel.ERROR)
+    get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
+    set(value) {
+        putString(MediaMetadataCompat.METADATA_KEY_ART_URI, value)
     }
 
 inline var MediaMetadataCompat.Builder.albumArt: Bitmap?
@@ -245,6 +247,13 @@ inline var MediaMetadataCompat.Builder.downloadStatus: Long
         putLong(MediaMetadataCompat.METADATA_KEY_DOWNLOAD_STATUS, value)
     }
 
+inline var MediaMetadataCompat.Builder.downloadProgress: Long
+    @Deprecated(NO_GET, level = DeprecationLevel.ERROR)
+    get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
+    set(value) {
+        putLong(METADATA_KEY_DOWNLOAD_PROGRESS, value)
+    }
+
 inline var MediaMetadataCompat.Builder.explicit: Long
     @Deprecated(NO_GET, level = DeprecationLevel.ERROR)
     get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
@@ -252,75 +261,83 @@ inline var MediaMetadataCompat.Builder.explicit: Long
         putLong(EXTRA_IS_EXPLICIT, value)
     }
 
-inline var MediaMetadataCompat.Builder.trackId: String
+inline var MediaMetadataCompat.Builder.uniqueId: String
     @Deprecated(NO_GET, level = DeprecationLevel.ERROR)
     get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
     set(value) {
-        putString(METADATA_KEY_TRACK_ID, value)
+        putString(METADATA_KEY_UNIQUE_ID, value)
     }
-/**
- * Custom property for storing whether a [MediaMetadataCompat] item represents an
- * item that is [MediaItem.FLAG_BROWSABLE] or [MediaItem.FLAG_PLAYABLE].
- */
-//@MediaItem.Flags
-//inline var MediaMetadataCompat.Builder.flag: Int
-//    @Deprecated(NO_GET, level = DeprecationLevel.ERROR)
-//    get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
-//    set(value) {
-//        putLong(METADATA_KEY_UAMP_FLAGS, value.toLong())
-//    }
 
-/**
- * Custom property for retrieving a [MediaDescriptionCompat] which also includes
- * all of the keys from the [MediaMetadataCompat] object in its extras.
- *
- * These keys are used by the ExoPlayer MediaSession extension when announcing metadata changes.
- */
-//inline val MediaMetadataCompat.fullDescription: MediaDescriptionCompat
-//    get() =
-//        description.also {
-//            it.extras?.putAll(bundle)
+inline val MediaMetadataCompat.fullDescription: MediaDescriptionCompat
+    get() {
+        val bundle = Bundle()
+        if (explicit == EXTRA_METADATA_ENABLED_VALUE) {
+            bundle.putLong(EXTRA_IS_EXPLICIT, EXTRA_METADATA_ENABLED_VALUE)
+        }
+        return description.also {
+            it.extras?.putAll(bundle)
+        }
+    }
+
+fun MediaMetadataCompat.Builder.from(track: Track): MediaMetadataCompat.Builder {
+    id = track.id
+    uniqueId = track.getUniqueId()
+    title = track.title
+    displayTitle = track.title
+    duration = track.durationMs
+
+    artUri = track.coverUri.toCoverUrl(400)
+    displayIconUri = track.coverUri.toCoverUrl(200)
+
+    if (track.contentWarning == "explicit") {
+        explicit = EXTRA_METADATA_ENABLED_VALUE
+    }
+
+    val artistName = track.getArtistName()
+    artist = artistName
+    displaySubtitle = artistName
+
+    val trackAlbum = track.albums.getOrElse(0) { Album() }
+    album = trackAlbum.title
+    year = trackAlbum.year
+//        if (trackAlbum.has("coverUri")) {
+//            albumArtUri = trackAlbum.getString("coverUri").toCoverUrl(200)
 //        }
 
-/**
- * Extension method for building an [ExtractorMediaSource] from a [MediaMetadataCompat] object.
- *
- * For convenience, place the [MediaDescriptionCompat] into the tag so it can be retrieved later.
- */
-//fun MediaMetadataCompat.toMediaSource(dataSourceFactory: DataSource.Factory): ProgressiveMediaSource =
-//        ProgressiveMediaSource.Factory(dataSourceFactory)
-//                .setTag(fullDescription)
-//                .createMediaSource(mediaUri)
-//
-///**
-// * Extension method for building a [MyMediaSource] given a [List]
-// * of [MediaMetadataCompat] objects.
-// */
-//fun List<MediaMetadataCompat>.toMediaSource(
-//        dataSourceFactory: DataSource.Factory
-//): MyMediaSource {
-//
-//    val concatenatingMediaSource = MyMediaSource()
-//    forEach {
-//        concatenatingMediaSource.addMediaSource(it.toMediaSource(dataSourceFactory))
-//    }
-//    return concatenatingMediaSource
-//}
+    val trackMediaUri = YandexCache.getTrackPathOrNull(track.id) ?: track.id
+    downloadStatus = if (trackMediaUri == track.id) {
+        MediaDescriptionCompat.STATUS_NOT_DOWNLOADED
+    } else {
+        MediaDescriptionCompat.STATUS_DOWNLOADED
+    }
+    mediaUri = trackMediaUri
 
-//fun List<MediaItem>.toMediaSource(
-//        dataSourceFactory: DataSource.Factory
-//): MyMediaSource {
-//
-//    val concatenatingMediaSource = MyMediaSource()
-//    forEach {
-//        concatenatingMediaSource.addMediaSource(it.toMediaSource(dataSourceFactory))
-//    }
-//    return concatenatingMediaSource
-//}
+    return this
+}
 
-/**
- * Custom property that holds whether an item is [MediaItem.FLAG_BROWSABLE] or
- * [MediaItem.FLAG_PLAYABLE].
- */
-const val EXTRA_IS_EXPLICIT = "android.media.IS_EXPLICIT"
-const val METADATA_KEY_TRACK_ID = "kg.delletenebre.yamus.METADATA_KEY_TRACK_ID"
+fun Track.Companion.from(data: MediaMetadataCompat): Track {
+    val contentWarning = if (data.explicit == EXTRA_METADATA_ENABLED_VALUE) {
+        "explicit"
+    } else {
+        ""
+    }
+    val coverUri = if (data.artUri.scheme == "https") {
+        data.artUri.host + "/" +
+                data.artUri.pathSegments
+                        .dropLast(1)
+                        .plus("%%")
+                        .joinToString("/")
+    } else {
+        ""
+    }
+    return Track(
+            id = data.id,
+            albums = listOf(Album(title = data.album ?: "", year = data.year)),
+            artists = listOf(Artist(name = data.artist ?: "")),
+            available = true,
+            contentWarning = contentWarning,
+            coverUri = coverUri,
+            durationMs = data.duration,
+            title = data.title ?: ""
+    )
+}
