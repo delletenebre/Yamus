@@ -4,7 +4,7 @@ import android.util.Log
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
-import kg.delletenebre.yamus.api.YandexMusic
+import kg.delletenebre.yamus.api.YaApi
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -21,7 +21,7 @@ object CustomActionsHelper {
 
     fun like(player: Player, trackId: String, controlDispatcher: ControlDispatcher? = null) {
         GlobalScope.launch(Dispatchers.Main) {
-            YandexMusic.addLike(trackId)
+            YaApi.addLike(trackId)
             controlDispatcher?.dispatchSeekTo(player, player.currentWindowIndex,
                     player.currentPosition)
         }
@@ -29,14 +29,14 @@ object CustomActionsHelper {
 
     fun like(playerNotificationManager: PlayerNotificationManager, trackId: String) {
         GlobalScope.launch(Dispatchers.Main) {
-            YandexMusic.addLike(trackId)
+            YaApi.addLike(trackId)
             playerNotificationManager.invalidate()
         }
     }
 
     fun unlike(player: Player, trackId: String, controlDispatcher: ControlDispatcher? = null) {
         GlobalScope.launch(Dispatchers.Main) {
-            YandexMusic.removeLike(trackId)
+            YaApi.removeLike(trackId)
             controlDispatcher?.dispatchSeekTo(player, player.currentWindowIndex,
                     player.currentPosition)
         }
@@ -44,14 +44,14 @@ object CustomActionsHelper {
 
     fun unlike(playerNotificationManager: PlayerNotificationManager, trackId: String) {
         GlobalScope.launch(Dispatchers.Main) {
-            YandexMusic.removeLike(trackId)
+            YaApi.removeLike(trackId)
             playerNotificationManager.invalidate()
         }
     }
 
     fun dislike(player: Player, trackId: String, controlDispatcher: ControlDispatcher? = null) {
         GlobalScope.launch(Dispatchers.Main) {
-            YandexMusic.addDislike(trackId)
+            YaApi.addDislike(trackId)
             next(player)
         }
     }
