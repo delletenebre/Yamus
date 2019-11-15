@@ -120,7 +120,7 @@
                     android:layout_marginEnd="5dp"
                     android:layout_gravity="top|end"
                     android:visibility="@{item.getLong(MediaMetadataCompat.METADATA_KEY_DOWNLOAD_STATUS) == MediaDescriptionCompat.STATUS_DOWNLOADING ? View.VISIBLE : View.GONE}"
-                    app:cpb_progress="@{Math.toIntExact(item.getLong(MediaMetadataCompatExtKt.METADATA_KEY_DOWNLOAD_PROGRESS))}"
+                    app:cpb_progress="@{item.getLong(MediaMetadataCompatExtKt.METADATA_KEY_DOWNLOAD_PROGRESS)}"
                     app:cpb_indeterminate_mode='@{item.getLong(MediaMetadataCompatExtKt.METADATA_KEY_DOWNLOAD_PROGRESS) == 0L}'
                     app:cpb_background_progressbar_color="#22888888"
                     app:cpb_background_progressbar_width="2dp"

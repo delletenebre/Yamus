@@ -116,4 +116,9 @@ object BindingAdapters {
         layoutParams.height = dimen.toInt()
         this.layoutParams = layoutParams
     }
+
+    @JvmStatic @BindingAdapter("cpb_progress")
+    fun com.mikhaellopez.circularprogressbar.CircularProgressBar.cpb_progress(progress: Long) {
+        this.cpb_progress(progress.toInt())
+    }
 }

@@ -10,7 +10,7 @@ android {
     defaultConfig {
         multiDexEnabled true
         applicationId "kg.delletenebre.yamus"
-        versionCode 23
+        versionCode 24
         versionName "19.11.15"
 
         minSdkVersion rootProject.minSdkVersion
