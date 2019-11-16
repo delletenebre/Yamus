@@ -13,17 +13,9 @@ import com.bumptech.glide.request.RequestOptions
 import com.mikhaellopez.circularprogressbar.CircularProgressBar
 import kg.delletenebre.yamus.GlideApp
 import kg.delletenebre.yamus.R
-import kg.delletenebre.yamus.api.YandexApi
 
 
 object BindingAdapters {
-    @JvmStatic @BindingAdapter("glideImgSrc")
-    fun ImageView.glideImgSrc(imageUrl: String) {
-        Glide.with(this.context)
-                .load(YandexApi.getImageUrl(imageUrl, 200))
-                .into(this)
-    }
-
     @JvmStatic @BindingAdapter("loadImgUri")
     fun ImageView.loadImgUri(imageUri: Uri) {
         when {
@@ -47,21 +39,9 @@ object BindingAdapters {
     @JvmStatic @BindingAdapter("glideCircle")
     fun ImageView.glideCircle(imageUrl: String) {
         Glide.with(this.context)
-                .load(YandexApi.getImageUrl(imageUrl, 200))
+                .load(imageUrl.toCoverUrl(200))
                 .apply(RequestOptions.circleCropTransform())
                 .into(this)
-    }
-
-    @JvmStatic @BindingAdapter("glideImgSrc", "glideImgSize")
-    fun ImageView.glideImgSrc(imageUrl: String, size: Int) {
-        Glide.with(this.context)
-                .load(YandexApi.getImageUrl(imageUrl, size))
-                .into(this)
-    }
-
-    @JvmStatic @BindingAdapter("backgroundColor")
-    fun ImageView.backgroundColor(color: String) {
-        this.setBackgroundColor(Color.parseColor(color))
     }
 
     @JvmStatic @BindingAdapter("backgroundColor")
@@ -95,20 +75,6 @@ object BindingAdapters {
         }
     }
 
-    @JvmStatic @BindingAdapter("drawableId")
-    fun ImageView.drawableId(id: Int?) {
-        if (id != null) {
-            this.setImageDrawable(ContextCompat.getDrawable(this.context, id))
-        }
-    }
-
-//    @JvmStatic @BindingAdapter("layoutWidth")
-//    fun setLayoutWidth(layout: ViewGroup, dimen: Float) {
-//        val layoutParams = layout.layoutParams
-//        layoutParams.width = dimen.toInt()
-//        layout.layoutParams = layoutParams
-//    }
-//
     @JvmStatic @BindingAdapter("imageSize")
     fun ImageView.imageSize(dimen: Float) {
         val layoutParams = this.layoutParams
@@ -117,8 +83,8 @@ object BindingAdapters {
         this.layoutParams = layoutParams
     }
 
-    @JvmStatic @BindingAdapter("cpb_progress")
-    fun com.mikhaellopez.circularprogressbar.CircularProgressBar.cpb_progress(progress: Long) {
+    @JvmStatic @BindingAdapter("cpbProgress")
+    fun CircularProgressBar.cpbProgress(progress: Long) {
         this.cpb_progress(progress.toInt())
     }
 }

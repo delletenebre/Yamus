@@ -5,18 +5,15 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.database.dao.HttpCacheDao
-import kg.delletenebre.yamus.api.database.dao.TrackDao
 import kg.delletenebre.yamus.api.database.dao.UserTracksIdsDao
 import kg.delletenebre.yamus.api.database.table.HttpCacheEntity
-import kg.delletenebre.yamus.api.database.table.TrackEntity
 import kg.delletenebre.yamus.api.database.table.UserTracksIdsEntity
 
 @Database(
-    entities = [TrackEntity::class, UserTracksIdsEntity::class, HttpCacheEntity::class],
-    version = 9
+    entities = [UserTracksIdsEntity::class, HttpCacheEntity::class],
+    version = 10
 )
 abstract class YandexDatabase : RoomDatabase(){
-    abstract fun trackDao(): TrackDao
     abstract fun userTracksIds(): UserTracksIdsDao
     abstract fun httpCache(): HttpCacheDao
 

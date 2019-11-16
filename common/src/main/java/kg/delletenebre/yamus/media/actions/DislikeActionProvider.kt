@@ -16,7 +16,7 @@ class DislikeActionProvider(val context: Context): MediaSessionConnector.CustomA
                 .Builder(
                         "ACTION_DISLIKE",
                         context.getString(R.string.custom_action_dislike),
-                        R.drawable.ic_dislike
+                        R.drawable.ic_thumb_down
                 ).build()
     }
 

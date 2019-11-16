@@ -77,12 +77,16 @@
     <string name="stations_catalog">Station catalog</string>
     <string name="title_playlist">Playlist</string>
     <string name="content_description_explicit">Explicit Content</string>
-    <string name="track_menu_action_dislike">Dislike</string>
+    <string name="track_menu_action_like_add">Add to liked</string>
+    <string name="track_menu_action_like_remove">Remove from liked</string>
+    <string name="track_menu_action_dislike_add">Dislike</string>
+    <string name="track_menu_action_dislike_remove">Remove from disliked</string>
     <string name="track_menu_action_download">Download</string>
 
     <!-- Menu -->
     <!-- Menu Main -->
     <string name="menu_main_profile">Profile</string>
+    <string name="menu_main_close">Close app</string>
 
     <!-- PERMISSIONS -->
     <string name="permission_write_external_storage_title">Write External Storage permission necessary</string>

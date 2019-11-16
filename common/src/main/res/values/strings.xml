@@ -30,6 +30,7 @@
     </string>
 
     <!-- Browse Tree -->
+    <string name="authorization_required">Authorization required</string>
     <string name="liked">My favorites</string>
     <string name="playlists">Playlists</string>
     <string name="albums">Albums</string>

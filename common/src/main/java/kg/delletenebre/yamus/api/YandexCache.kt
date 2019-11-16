@@ -7,14 +7,12 @@ import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.github.kittinunf.fuel.httpDownload
 import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.media.extensions.*
-import org.apache.commons.io.FileUtils
 import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.tag.FieldKey
 import org.jaudiotagger.tag.images.ArtworkFactory
 import java.io.File
 import kotlin.math.ln
 import kotlin.math.pow
-
 
 object YandexCache {
     const val MUSIC_FILE_CONTAINER = ".mp3"
@@ -27,10 +25,6 @@ object YandexCache {
         CACHE_DIR = context.externalCacheDir!!
     }
 
-    fun getTrackFile(trackId: String): File {
-        return File(TRACKS_DIR, trackId + MUSIC_FILE_CONTAINER)
-    }
-
     fun getTrackPathOrNull(trackId: String): String? {
         val file = getTrackFile(trackId)
         if (file.exists()) {
@@ -38,12 +32,6 @@ object YandexCache {
         }
 
         return null
-    }
-
-    suspend fun downloadTracks(tracks: List<MediaMetadataCompat>, downloadProgressListener: DownloadProgressListener? = null) {
-        tracks.forEach {
-            downloadTrack(it, downloadProgressListener)
-        }
     }
 
     suspend fun downloadTrack(track: MediaMetadataCompat, downloadProgressListener: DownloadProgressListener? = null) {
@@ -84,7 +72,7 @@ object YandexCache {
     fun downloadedTracksSize(): String {
         val tracksFolder = File(TRACKS_DIR.toURI())
         if (tracksFolder.exists()) {
-            return humanReadableFileSize(FileUtils.sizeOfDirectory(tracksFolder))
+            return humanReadableFileSize(getFileSize(tracksFolder))
         }
         return "0 B"
     }
@@ -92,6 +80,39 @@ object YandexCache {
     fun clear(context: Context) {
         File(TRACKS_DIR.toURI()).deleteRecursively()
         TRACKS_DIR = context.getExternalFilesDir("tracks")!!
+    }
+
+    private fun getTrackFile(trackId: String): File {
+        return File(TRACKS_DIR, trackId + MUSIC_FILE_CONTAINER)
+    }
+
+    private fun getFileSize(file: File?): Long {
+        if (file == null || !file.exists()) {
+            return 0
+        }
+        if (!file.isDirectory) {
+            return file.length()
+        }
+        val dirs: MutableList<File> = mutableListOf()
+        dirs.add(file)
+        var result: Long = 0
+        while (dirs.isNotEmpty()) {
+            val dir = dirs.removeAt(0)
+            if (!dir.exists()) {
+                continue
+            }
+            val listFiles = dir.listFiles()
+            if (listFiles == null || listFiles.isEmpty()) {
+                continue
+            }
+            for (child in listFiles) {
+                result += child.length()
+                if (child.isDirectory) {
+                    dirs.add(child)
+                }
+            }
+        }
+        return result
     }
 
     private fun addID3Tags(track: MediaMetadataCompat) {

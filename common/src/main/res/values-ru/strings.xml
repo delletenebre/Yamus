@@ -30,6 +30,7 @@
     </string>
 
     <!-- Browse Tree -->
+    <string name="authorization_required">Войдите в аккаунт</string>
     <string name="liked">Моя музыка</string>
     <string name="playlists">Плейлисты</string>
     <string name="albums">Альбомы</string>

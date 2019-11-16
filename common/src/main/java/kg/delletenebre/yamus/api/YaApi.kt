@@ -60,8 +60,8 @@ object YaApi {
     private lateinit var prefs: CryptoPrefs
     private val database: YandexDatabase = YandexDatabase.invoke()
 
-    private lateinit var likedTracks: Pair<Int, MutableList<String>>
-    private lateinit var dislikedTracks: Pair<Int, MutableList<String>>
+    private var likedTracks: Pair<Int, MutableList<String>> = (0 to mutableListOf())
+    private var dislikedTracks: Pair<Int, MutableList<String>> = (0 to mutableListOf())
 
     private val HEADERS = mapOf(
         "X-Yandex-Music-Client" to "WindowsPhone/3.27",

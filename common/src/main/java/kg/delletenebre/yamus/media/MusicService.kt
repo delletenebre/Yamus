@@ -477,7 +477,7 @@ open class MusicService : MediaBrowserServiceCompat() {
                 getString(R.string.playback_action_unlike),
                 buildPendingIntent(CustomActionsHelper.CUSTOM_ACTION_UNLIKE))
         private val dislikeAction = NotificationCompat.Action(
-                R.drawable.ic_dislike,
+                R.drawable.ic_thumb_down,
                 getString(R.string.playback_action_dislike),
                 buildPendingIntent(CustomActionsHelper.CUSTOM_ACTION_DISLIKE))
 

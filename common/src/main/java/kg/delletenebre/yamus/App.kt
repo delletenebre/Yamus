@@ -11,7 +11,6 @@ import androidx.preference.PreferenceManager
 import com.jakewharton.threetenabp.AndroidThreeTen
 import kg.delletenebre.yamus.api.YaApi
 import kg.delletenebre.yamus.api.YandexCache
-import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.media.library.MediaLibrary
 import kg.delletenebre.yamus.utils.Utils
 import java.util.*
@@ -29,7 +28,6 @@ class App : MultiDexApplication() {
         YaApi.init(this)
 
         AndroidThreeTen.init(this)
-        YandexUser.init(this)
         YandexCache.init(this)
         MediaLibrary.init(this)
     }

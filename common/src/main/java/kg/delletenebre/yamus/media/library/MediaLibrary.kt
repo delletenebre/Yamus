@@ -59,28 +59,32 @@ object MediaLibrary {
     }
 
     private fun getRootItems(): MutableList<MediaItem> {
-        return mutableListOf(
-            createPlaylistMediaItem(
-                id = PATH_LIKED,
-                title = resources.getString(R.string.liked),
-                icon = getIconUri(R.drawable.ic_favorite)
-            ),
-            createBrowsableMediaItem(
-                id = PATH_PLAYLISTS,
-                title = resources.getString(R.string.playlists),
-                icon = getIconUri(R.drawable.ic_playlist_music)
-            ),
-            createBrowsableMediaItem(
-                id = PATH_RECOMMENDED,
-                title = resources.getString(R.string.recommended),
-                icon = getIconUri(R.drawable.ic_library_music)
-            ),
-            createBrowsableMediaItem(
-                id = PATH_STATIONS,
-                title = resources.getString(R.string.stations),
-                icon = getIconUri(R.drawable.ic_radio_tower)
+        return if (YaApi.isAuth()) {
+            mutableListOf(
+                    createPlaylistMediaItem(
+                            id = PATH_LIKED,
+                            title = resources.getString(R.string.liked),
+                            icon = getIconUri(R.drawable.ic_favorite)
+                    ),
+                    createBrowsableMediaItem(
+                            id = PATH_PLAYLISTS,
+                            title = resources.getString(R.string.playlists),
+                            icon = getIconUri(R.drawable.ic_playlist_music)
+                    ),
+                    createBrowsableMediaItem(
+                            id = PATH_RECOMMENDED,
+                            title = resources.getString(R.string.recommended),
+                            icon = getIconUri(R.drawable.ic_library_music)
+                    ),
+                    createBrowsableMediaItem(
+                            id = PATH_STATIONS,
+                            title = resources.getString(R.string.stations),
+                            icon = getIconUri(R.drawable.ic_radio_tower)
+                    )
             )
-        )
+        } else {
+            mutableListOf()
+        }
     }
 
     fun getMyMusicItems(): List<MediaItem> {
@@ -285,7 +289,7 @@ object MediaLibrary {
             id: String,
             title: String,
             subtitle: String = "",
-            icon: Uri = Uri.EMPTY
+            icon: Uri? = null
     ): MediaItem {
         val mediaDescriptionBuilder = MediaDescriptionCompat.Builder()
         mediaDescriptionBuilder.setMediaId(id)
@@ -293,7 +297,9 @@ object MediaLibrary {
         if (subtitle.isNotEmpty()) {
             mediaDescriptionBuilder.setSubtitle(subtitle)
         }
-        mediaDescriptionBuilder.setIconUri(icon)
+        if (icon != null) {
+            mediaDescriptionBuilder.setIconUri(icon)
+        }
         return MediaItem(mediaDescriptionBuilder.build(), MediaItem.FLAG_BROWSABLE)
     }
 

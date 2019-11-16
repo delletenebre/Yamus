@@ -15,4 +15,10 @@
         android:title="@string/menu_main_profile"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/action_close_app"
+        android:icon="@drawable/ic_close"
+        android:title="@string/menu_main_close"
+        app:showAsAction="ifRoom" />
+
 </menu>

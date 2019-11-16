@@ -77,12 +77,16 @@
     <string name="stations_catalog">Каталог станций</string>
     <string name="title_playlist">Плейлист</string>
     <string name="content_description_explicit">Ненормативная лексика</string>
-    <string name="track_menu_action_dislike">Дизлайк</string>
+    <string name="track_menu_action_like_add">Добавить в избранное</string>
+    <string name="track_menu_action_like_remove">Убрать из избранного</string>
+    <string name="track_menu_action_dislike_add">Не нравится</string>
+    <string name="track_menu_action_dislike_remove">Убрать из нелюбимого</string>
     <string name="track_menu_action_download">Скачать</string>
 
     <!-- Menu -->
     <!-- Menu Main -->
     <string name="menu_main_profile">Профиль</string>
+    <string name="menu_main_close">Закрыть</string>
 
     <!-- PERMISSIONS -->
     <string name="permission_write_external_storage_title">Разрешение на запись файлов на устройство</string>

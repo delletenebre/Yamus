@@ -10,8 +10,6 @@ import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
@@ -27,9 +25,9 @@ import kg.delletenebre.yamus.media.extensions.downloadStatus
 import kg.delletenebre.yamus.media.extensions.id
 import kg.delletenebre.yamus.media.extensions.uniqueId
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
-import kg.delletenebre.yamus.media.library.MediaLibrary
 import kg.delletenebre.yamus.ui.OnTrackClickListener
 import kg.delletenebre.yamus.utils.InjectorUtils
+import kg.delletenebre.yamus.utils.UI
 import kg.delletenebre.yamus.viewmodels.MainActivityViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -89,23 +87,20 @@ class PlaylistFragment : Fragment() {
                 popup.inflate(R.menu.playlist_item_menu)
                 popup.setOnMenuItemClickListener {
                     when (it.itemId) {
-                        R.id.dislike -> {
-                            if (YaApi.getDislikedTracksIds().contains(trackId)) {
-                                val result = YaApi.removeDislike(trackId)
-                                result.fold(
-                                        {
-                                            if (playlistName == MediaLibrary.PATH_DISLIKED) {
-                                                val currentItems = viewModel.items.value
-                                                // TODO добавить удаление трека из плейлиста
-                                            }
-                                        },
-                                        {
-
-                                        }
-                                )
-                            } else {
-                                val result = YaApi.addDislike(trackId)
-                            }
+                        R.id.like_add -> {
+                            YaApi.addLike(trackId)
+                            true
+                        }
+                        R.id.like_remove -> {
+                            YaApi.removeLike(trackId)
+                            true
+                        }
+                        R.id.dislike_add -> {
+                            YaApi.addDislike(trackId)
+                            true
+                        }
+                        R.id.dislike_remove -> {
+                            YaApi.removeDislike(trackId)
                             true
                         }
                         R.id.download -> {
@@ -133,14 +128,18 @@ class PlaylistFragment : Fragment() {
                     }
                 }
 
-                val icon = DrawableCompat.wrap(popup.menu.findItem(R.id.dislike).icon)
-                if (YaApi.getDislikedTracksIds().contains(trackId)) {
-                    DrawableCompat.setTint(icon.mutate(), ContextCompat.getColor(context, R.color.colorAccent))
-                } else {
-                    DrawableCompat.setTint(icon.mutate(), ContextCompat.getColor(context, R.color.textSecondary))
-                }
+                UI.setMenuIconsColor(context, popup.menu)
 
-                val menuHelper = MenuPopupHelper(context, popup.menu as MenuBuilder, view)
+                val isTrackLiked = YaApi.getLikedTracksIds().contains(trackId)
+                popup.menu.findItem(R.id.like_add).isVisible = !isTrackLiked
+                popup.menu.findItem(R.id.like_remove).isVisible = isTrackLiked
+
+                val isTrackDisliked = YaApi.getDislikedTracksIds().contains(trackId)
+                popup.menu.findItem(R.id.dislike_add).isVisible = !isTrackDisliked
+                popup.menu.findItem(R.id.dislike_remove).isVisible = isTrackDisliked
+
+                val menuBuilder = popup.menu as MenuBuilder
+                val menuHelper = MenuPopupHelper(context, menuBuilder, view)
                 menuHelper.setForceShowIcon(true)
                 menuHelper.show()
             }
