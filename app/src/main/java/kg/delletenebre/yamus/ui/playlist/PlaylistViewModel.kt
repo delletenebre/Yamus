@@ -54,8 +54,14 @@ class PlaylistViewModel(path: String) : ViewModel(), OnTrackClickListener {
             loading.postValue(true)
             val data = path.split("/")
             when {
-                path == MediaLibrary.PATH_LIKED -> items.postValue(YaApi.getLikedTracks())
-                path == MediaLibrary.PATH_DISLIKED ->  items.postValue(YaApi.getDislikedTracks())
+                path == MediaLibrary.PATH_LIKED -> {
+                    items.postValue(YaApi.getLikedTracks())
+                    YaApi.refreshUserTracksIds()
+                }
+                path == MediaLibrary.PATH_DISLIKED -> {
+                    items.postValue(YaApi.getDislikedTracks())
+                    YaApi.refreshUserTracksIds()
+                }
                 path.startsWith("/playlist/") -> {
                     val uid = data[2]
                     val kind = data[3]

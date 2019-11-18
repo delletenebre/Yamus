@@ -28,6 +28,14 @@
 
     <PreferenceCategory app:title="@string/pref_header_cache">
 
+<!--        <Preference-->
+<!--            app:key="cached_tracks_path"-->
+<!--            app:title="@string/pref_title_cached_tracks_path" />-->
+
+        <ListPreference
+            app:key="cached_tracks_path"
+            app:title="@string/pref_title_cached_tracks_path" />
+
         <Preference
             app:key="clear_cache"
             app:title="@string/pref_title_clear_cache" />

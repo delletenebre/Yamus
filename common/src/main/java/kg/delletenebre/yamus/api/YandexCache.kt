@@ -16,12 +16,13 @@ import kotlin.math.pow
 
 object YandexCache {
     const val MUSIC_FILE_CONTAINER = ".mp3"
+    const val PREFERENCE_KEY_TRACKS_DIR = "cached_tracks_path"
 
-    private lateinit var TRACKS_DIR: File
     private lateinit var CACHE_DIR: File
+    lateinit var defaultTracksDir: File
 
     fun init(context: Context) {
-        TRACKS_DIR = context.getExternalFilesDir("tracks")!!
+        defaultTracksDir = context.getExternalFilesDir("tracks")!!
         CACHE_DIR = context.externalCacheDir!!
     }
 
@@ -62,7 +63,7 @@ object YandexCache {
 
     fun downloadedTracksCount(): Int {
         var filesCount = 0
-        val tracksFolder = File(TRACKS_DIR.toURI())
+        val tracksFolder = getTracksDirectory()
         if (tracksFolder.exists()) {
             filesCount = tracksFolder.listFiles()?.size ?: 0
         }
@@ -70,7 +71,7 @@ object YandexCache {
     }
 
     fun downloadedTracksSize(): String {
-        val tracksFolder = File(TRACKS_DIR.toURI())
+        val tracksFolder = getTracksDirectory()
         if (tracksFolder.exists()) {
             return humanReadableFileSize(getFileSize(tracksFolder))
         }
@@ -78,12 +79,26 @@ object YandexCache {
     }
 
     fun clear(context: Context) {
-        File(TRACKS_DIR.toURI()).deleteRecursively()
-        TRACKS_DIR = context.getExternalFilesDir("tracks")!!
+        getTracksDirectory().deleteRecursively()
+        //tracksDirectoryPath = context.getExternalFilesDir("tracks")!!
+    }
+
+    fun getTracksDirectory(): File {
+        val folder = File(
+                App.instance.getStringPreference(
+                        PREFERENCE_KEY_TRACKS_DIR,
+                        defaultTracksDir.absolutePath
+                )
+        )
+        if (!folder.exists()) {
+            folder.mkdirs()
+        }
+
+        return folder
     }
 
     private fun getTrackFile(trackId: String): File {
-        return File(TRACKS_DIR, trackId + MUSIC_FILE_CONTAINER)
+        return File(getTracksDirectory(), trackId + MUSIC_FILE_CONTAINER)
     }
 
     private fun getFileSize(file: File?): Long {

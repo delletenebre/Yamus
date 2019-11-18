@@ -23,6 +23,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import android.widget.Toast
+import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
@@ -61,6 +62,7 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
      * [MediaSessionCompat.Callback.onPrepareFromMediaId].
      */
     override fun onPrepareFromMediaId(mediaId: String, playWhenReady: Boolean, extras: Bundle?) {
+        exoPlayer.playWhenReady = false
         runBlocking {
             when {
                 mediaId.startsWith("/station") -> {
@@ -95,16 +97,18 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
                     play()
                 }
                 else -> {
-                    var position = CurrentPlaylist.tracks.indexOfFirst {
-                        it.id == mediaId
-                    }
-                    if (position == -1) {
-                        position = 0
-                    }
+                    if (CurrentPlaylist.tracks.isNotEmpty()) {
+                        var position = CurrentPlaylist.tracks.indexOfFirst {
+                            it.id == mediaId
+                        }
+                        if (position == -1) {
+                            position = 0
+                        }
 
-                    exoPlayer.prepare(CurrentPlaylist.mediaSource, false, true)
-                    exoPlayer.seekTo(position, 0)
-                    play(false)
+                        exoPlayer.prepare(CurrentPlaylist.mediaSource, false, true)
+                        exoPlayer.seekTo(position, C.TIME_UNSET)
+                        play(false)
+                    }
                 }
             }
         }

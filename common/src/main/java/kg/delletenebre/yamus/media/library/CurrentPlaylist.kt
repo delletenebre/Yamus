@@ -15,17 +15,9 @@ import kg.delletenebre.yamus.media.datasource.YandexDataSourceFactory
 import kg.delletenebre.yamus.media.extensions.fullDescription
 import kg.delletenebre.yamus.media.extensions.id
 import kg.delletenebre.yamus.media.extensions.mediaUri
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlin.coroutines.CoroutineContext
 
 
-object CurrentPlaylist: CoroutineScope {
-    private val job = SupervisorJob()
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
-
+object CurrentPlaylist {
     const val TYPE_NONE = "none"
     const val TYPE_TRACKS = "tracks"
     const val TYPE_STATION = "station"

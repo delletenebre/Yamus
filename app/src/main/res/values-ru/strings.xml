@@ -109,6 +109,7 @@
 
     <!-- Preference Cache -->
     <string name="pref_header_cache">Оффлайн режим</string>
+    <string name="pref_title_cached_tracks_path">Путь к скаченным трекам</string>
     <string name="pref_title_clear_cache">Удалить скаченные треки</string>
     <string name="pref_summary_clear_cache">Скачанных треков: %1$d\nЗанято: %2$s</string>
     <string name="pref_summary_cache_cleared">Файлы успешно удалены</string>

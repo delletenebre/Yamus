@@ -47,7 +47,7 @@
     <dimen name="app_bar_height">180dp</dimen>
 
     <dimen name="design_bottom_navigation_text_size" tools:override="true">12sp</dimen>
-    <dimen name="design_bottom_navigation_active_text_size" tools:override="true">14sp</dimen>
+    <dimen name="design_bottom_navigation_active_text_size" tools:override="true">12sp</dimen>
 
     <dimen name="list_icon_md">32dp</dimen>
     <dimen name="list_icon_lg">48dp</dimen>

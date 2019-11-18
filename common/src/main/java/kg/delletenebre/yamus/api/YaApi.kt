@@ -108,7 +108,7 @@ object YaApi {
         return accessToken.isNotEmpty()
     }
 
-    private fun refreshUserTracksIds(type: String = "") {
+    fun refreshUserTracksIds(type: String = "") {
         runBlocking {
             when (type) {
                 USER_TRACKS_TYPE_LIKE -> {

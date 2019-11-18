@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import kg.delletenebre.yamus.R
@@ -42,7 +44,6 @@ class SettingsActivity : AppCompatActivity() {
 
             val context = context!!
 
-
             val clearCache = findPreference<Preference>("clear_cache")
             clearCache?.summary = context.getString(R.string.pref_summary_clear_cache, YandexCache.downloadedTracksCount(), YandexCache.downloadedTracksSize())
             clearCache?.setOnPreferenceClickListener {
@@ -52,11 +53,11 @@ class SettingsActivity : AppCompatActivity() {
                     setMessage(context.getString(R.string.pref_summary_dialog_clear_cache))
                     setPositiveButton(android.R.string.yes) { _, _ ->
                         GlobalScope.launch(Dispatchers.Main) {
-                            clearCache.summary = context.getString(R.string.please_wait)
+                            it.summary = context.getString(R.string.please_wait)
                             withContext(Dispatchers.IO) {
                                 YandexCache.clear(context)
                             }
-                            clearCache.summary = context.getString(R.string.pref_summary_cache_cleared)
+                            it.summary = context.getString(R.string.pref_summary_cache_cleared)
                         }
                     }
                     setNegativeButton(android.R.string.cancel) { dialog, _ ->
@@ -64,6 +65,21 @@ class SettingsActivity : AppCompatActivity() {
                     }
                     create().show()
                 }
+                true
+            }
+
+            val cachePath = findPreference<ListPreference>(YandexCache.PREFERENCE_KEY_TRACKS_DIR)
+            cachePath?.summary = YandexCache.getTracksDirectory().absolutePath
+            val files: Array<CharSequence> = ContextCompat.getExternalFilesDirs(context, "tracks").map {
+                it.absolutePath
+            }.toTypedArray()
+            cachePath?.entries = files
+            cachePath?.entryValues = files
+            cachePath?.setOnPreferenceChangeListener { preference, newValue ->
+                val value = newValue as String
+                preference.sharedPreferences.edit().putString(preference.key, value).apply()
+                preference.summary = value
+                clearCache?.summary = context.getString(R.string.pref_summary_clear_cache, YandexCache.downloadedTracksCount(), YandexCache.downloadedTracksSize())
                 true
             }
         }
