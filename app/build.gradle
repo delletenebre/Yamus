@@ -10,8 +10,8 @@ android {
     defaultConfig {
         multiDexEnabled true
         applicationId "kg.delletenebre.yamus"
-        versionCode 28
-        versionName "19.11.18"
+        versionCode 29
+        versionName "19.11.20"
 
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion

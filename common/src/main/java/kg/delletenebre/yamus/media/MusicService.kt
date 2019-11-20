@@ -208,16 +208,50 @@ open class MusicService : MediaBrowserServiceCompat() {
             connector.setMediaButtonEventHandler(YamusMediaButtonEventHandler())
             connector.setPlaybackPreparer(YamusPlaybackPreparer(exoPlayer))
             connector.setQueueNavigator(YamusQueueNavigator(mediaSession))
-//            connector.setMediaMetadataProvider(YamusMediaMetadataProvider(this)) // Получаем и отображаем сведения о текущем треке
-            connector.setCustomActionProviders(
-//                PrevActionProvider(this),
-//                NextActionProvider(this),
-                FavoriteActionProvider(this),
-                DislikeActionProvider(this),
-                RepeatModeActionProvider(this),
-                ShuffleModeActionProvider(this)
-            )
-
+            val alterPositionLike = App.instance.getBooleanPreference("like_alter_position")
+            val alterPositionDislike = App.instance.getBooleanPreference("dislike_alter_position")
+            when {
+                alterPositionLike and alterPositionDislike -> {
+                    connector.setCustomActionProviders(
+                            FavoriteActionProvider(this),
+                            DislikeActionProvider(this),
+                            PrevActionProvider(this),
+                            NextActionProvider(this),
+                            RepeatModeActionProvider(this),
+                            ShuffleModeActionProvider(this)
+                    )
+                }
+                alterPositionLike -> {
+                    connector.setCustomActionProviders(
+                            FavoriteActionProvider(this),
+                            NextActionProvider(this),
+                            PrevActionProvider(this),
+                            DislikeActionProvider(this),
+                            RepeatModeActionProvider(this),
+                            ShuffleModeActionProvider(this)
+                    )
+                }
+                alterPositionDislike -> {
+                    connector.setCustomActionProviders(
+                            PrevActionProvider(this),
+                            DislikeActionProvider(this),
+                            FavoriteActionProvider(this),
+                            NextActionProvider(this),
+                            RepeatModeActionProvider(this),
+                            ShuffleModeActionProvider(this)
+                    )
+                }
+                else -> {
+                    connector.setCustomActionProviders(
+                            PrevActionProvider(this),
+                            NextActionProvider(this),
+                            FavoriteActionProvider(this),
+                            DislikeActionProvider(this),
+                            RepeatModeActionProvider(this),
+                            ShuffleModeActionProvider(this)
+                    )
+                }
+            }
         }
 
         packageValidator = PackageValidator(this, R.xml.allowed_media_browser_callers)
@@ -331,7 +365,7 @@ open class MusicService : MediaBrowserServiceCompat() {
             val playActionIndex = actionNames.indexOf(ACTION_PLAY)
             val skipPreviousActionIndex = actionNames.indexOf(CustomActionsHelper.CUSTOM_ACTION_PREV)
             val nextActionName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                CustomActionsHelper.CUSTOM_ACTION_PREV
+                CustomActionsHelper.CUSTOM_ACTION_NEXT
             } else {
                 ACTION_NEXT
             }
@@ -457,6 +491,13 @@ open class MusicService : MediaBrowserServiceCompat() {
                 }
             }
         }
+
+        override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
+            super.onNotificationCancelled(notificationId, dismissedByUser)
+            becomingNoisyReceiver.unregister()
+            stopForeground(true)
+            isForegroundService = false
+        }
     }
 
     private inner class NotificationCustomActionReceiver : PlayerNotificationManager.CustomActionReceiver {
@@ -503,6 +544,7 @@ open class MusicService : MediaBrowserServiceCompat() {
         }
 
         override fun onCustomAction(player: Player, action: String, intent: Intent) {
+            Log.d("ahoha", "customAction: $action")
             val track = CurrentPlaylist.tracks.getOrNull(player.currentWindowIndex)
             if (track != null) {
                 when (action) {

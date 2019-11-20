@@ -53,6 +53,20 @@
     <PreferenceCategory app:title="@string/pref_header_aa_interface">
 
         <SwitchPreferenceCompat
+            app:key="like_alter_position"
+            app:defaultValue="@bool/pref_default_like_alter_position"
+            app:title="@string/pref_title_like_alter_position"
+            app:summaryOn="@string/pref_summary_on_like_alter_position"
+            app:summaryOff="@string/pref_summary_off_like_alter_position" />
+
+        <SwitchPreferenceCompat
+            app:key="dislike_alter_position"
+            app:defaultValue="@bool/pref_default_dislike_alter_position"
+            app:title="@string/pref_title_dislike_alter_position"
+            app:summaryOn="@string/pref_summary_on_dislike_alter_position"
+            app:summaryOff="@string/pref_summary_off_dislike_alter_position" />
+
+        <SwitchPreferenceCompat
             app:key="show_shuffle"
             app:defaultValue="@bool/pref_default_show_shuffle"
             app:title="@string/pref_title_show_shuffle"

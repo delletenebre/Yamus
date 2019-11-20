@@ -119,6 +119,12 @@
 
     <!-- Preference Android Auto Interface -->
     <string name="pref_header_aa_interface">Интерфейс Android Auto</string>
+    <string name="pref_title_like_alter_position">Отображать &quot;Нравится&quot; на главном экране</string>
+    <string name="pref_summary_on_like_alter_position">Кнопка &quot;Нравится&quot; будет расположена вместо вместо &quot;Предыдущий трек&quot;</string>
+    <string name="pref_summary_off_like_alter_position">Кнопка &quot;Нравится&quot; будет расположена по умолчанию</string>
+    <string name="pref_title_dislike_alter_position">Отображать &quot;Не нравится&quot; на главном экране</string>
+    <string name="pref_summary_on_dislike_alter_position">Кнопка &quot;Не нравится&quot; будет расположена вместо вместо &quot;Следующий трек&quot;</string>
+    <string name="pref_summary_off_dislike_alter_position">Кнопка &quot;Не нравится&quot; будет расположена по умолчанию</string>
     <string name="pref_title_show_shuffle">Отображать &quot;Перемешивание&quot;</string>
     <string name="pref_summary_on_show_shuffle">Кнопка управления режимом случайного воспроизведения будет отображаться</string>
     <string name="pref_summary_off_show_shuffle">Кнопка управления режимом случайного воспроизведения скрыта</string>

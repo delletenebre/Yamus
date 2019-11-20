@@ -175,6 +175,35 @@ object YaApi {
         return getTracks(getDislikedTracksIds())
     }
 
+    suspend fun search(text: String, page: Int = 0): List<SearchResult> {
+        val response = makeRequest("/search?text=$text&nocorrect=false&type=all&page=$page&playlist-in-best=true")
+        return try {
+            val json = JSONObject(response).getJSONObject("result")
+            val searchResults = mutableListOf<SearchResult>()
+            var type = "albums"
+            if (json.has(type)) {
+                searchResults.add(getSearchResult(type, json.getJSONObject(type)))
+            }
+            type = "artists"
+            if (json.has(type)) {
+                searchResults.add(getSearchResult(type, json.getJSONObject(type)))
+            }
+            type = "playlists"
+            if (json.has(type)) {
+                searchResults.add(getSearchResult(type, json.getJSONObject(type)))
+            }
+            type = "tracks"
+            if (json.has(type)) {
+                searchResults.add(getSearchResult(type, json.getJSONObject(type)))
+            }
+
+            searchResults
+        } catch (e: Exception) {
+            Log.e(TAG, "search() exception: ${e.message}")
+            listOf()
+        }
+    }
+
     suspend fun getPersonalPlaylists(): List<Playlist> {
         //https://api.music.yandex.net/landing3?blocks=personalplaylists,promotions,new-releases,new-playlists,mixes,chart,charts,artists,albums,playlists,play_contexts
         val response = makeRequest("/landing3?blocks=personalplaylists")
@@ -781,5 +810,26 @@ object YaApi {
                 return makeRequest(url, body,true)
             }
         }
+    }
+
+    private fun getSearchResult(type: String, json: JSONObject): SearchResult {
+        val item = json.getJSONObject(type)
+        val results = item.getJSONArray("results").toString()
+
+        val serializer = when (type) {
+            "albums" -> Json.nonstrict.parse(ArrayListSerializer(Album.serializer()), results)
+            "artists" -> Json.nonstrict.parse(ArrayListSerializer(Artist.serializer()), results)
+            "playlists" -> Json.nonstrict.parse(ArrayListSerializer(Playlist.serializer()), results)
+            "tracks" -> Json.nonstrict.parse(ArrayListSerializer(Track.serializer()), results)
+            else -> null
+        }
+
+        return SearchResult(
+            type,
+            item.getInt("order"),
+            item.getInt("perPage"),
+            item.getInt("total"),
+            serializer
+        )
     }
 }

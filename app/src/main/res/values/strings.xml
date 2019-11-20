@@ -121,6 +121,12 @@
 
     <!-- Preference Android Auto Interface -->
     <string name="pref_header_aa_interface">Android Auto interface</string>
+    <string name="pref_title_like_alter_position">Show &quot;Like&quot; on main screen</string>
+    <string name="pref_summary_on_like_alter_position">&quot;Like&quot; button will be located instead of &quot;Previous track&quot;</string>
+    <string name="pref_summary_off_like_alter_position">&quot;Like&quot; button will be located by default</string>
+    <string name="pref_title_dislike_alter_position">Show &quot;Dislike&quot; on main screen</string>
+    <string name="pref_summary_on_dislike_alter_position">&quot;Dislike&quot; button will be located instead of &quot;Next track&quot;</string>
+    <string name="pref_summary_off_dislike_alter_position">&quot;Dislike&quot; button will be located by default</string>
     <string name="pref_title_show_shuffle">Display &quot;Shuffle mode&quot;</string>
     <string name="pref_summary_on_show_shuffle">Shuffle mode button is displayed</string>
     <string name="pref_summary_off_show_shuffle">Shuffle mode button is hidden</string>

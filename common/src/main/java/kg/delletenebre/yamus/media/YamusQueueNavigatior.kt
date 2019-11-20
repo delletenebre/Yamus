@@ -24,8 +24,8 @@ class YamusQueueNavigator(mediaSession: MediaSessionCompat
 
     override fun getSupportedQueueNavigatorActions(player: Player): Long {
         val enableSkipTo = CurrentPlaylist.type != CurrentPlaylist.TYPE_STATION
-        val enablePrevious = true //CurrentPlaylist.type != CurrentPlaylist.TYPE_STATION
-        val enableNext = player.hasNext()
+        val enablePrevious = false // CurrentPlaylist.type != CurrentPlaylist.TYPE_STATION
+        val enableNext = false // player.hasNext()
 
         var actions: Long = 0
         if (enableSkipTo) {

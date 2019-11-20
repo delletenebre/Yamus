@@ -4,4 +4,6 @@
     <bool name="pref_default_repeat_mode">true</bool>
     <bool name="pref_default_show_shuffle">true</bool>
     <bool name="pref_default_show_repeat">true</bool>
+    <bool name="pref_default_like_alter_position">false</bool>
+    <bool name="pref_default_dislike_alter_position">false</bool>
 </resources>
