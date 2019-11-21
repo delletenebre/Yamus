@@ -27,7 +27,7 @@
         android:id="@+id/fragmentSearch"
         android:name="kg.delletenebre.yamus.ui.search.SearchFragment"
         android:label="@string/title_search"
-        tools:layout="@layout/fragment_search" />
+        tools:layout="@layout/search_fragment" />
 
     <fragment
         android:id="@+id/fragmentProfile"

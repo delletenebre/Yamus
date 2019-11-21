@@ -35,6 +35,11 @@ Yamus
 - Плеер основан на проекте [Universal Android Music Player](https://github.com/googlesamples/android-UniversalMusicPlayer)
 - [Неофициальная Python библиотека для API Yandex Music](https://github.com/MarshalX/yandex-music-api)
 
+Поддержка
+----------
+
+:coffee: [Угостить кофе](https://money.yandex.ru/to/410015829927510)
+
 Лицензия
 -------
 
