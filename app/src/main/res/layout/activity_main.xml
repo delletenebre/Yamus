@@ -7,7 +7,7 @@
         <import type="android.support.v4.media.MediaMetadataCompat" />
         <import type="android.support.v4.media.session.PlaybackStateCompat" />
         <variable name="viewModel" type="kg.delletenebre.yamus.viewmodels.MainActivityViewModel"/>
-        <variable name="nowPlayingModel" type="kg.delletenebre.yamus.viewmodels.NowPlayingViewModel"/>
+        <variable name="currentPlaylist" type="kg.delletenebre.yamus.media.library.CurrentPlaylist"/>
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -29,30 +29,22 @@
         <LinearLayout
             android:id="@+id/bottomSheet"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="320dp"
             android:background="@android:color/background_dark"
             android:orientation="vertical"
             android:layout_marginBottom="?attr/actionBarSize"
             app:behavior_hideable="false"
             app:behavior_peekHeight="?attr/actionBarSize"
-            app:behavior_fitToContents="false"
+
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
             android:clickable="true"
             android:focusable="true"
-            android:visibility='@{nowPlayingModel.track == null ? View.GONE : View.VISIBLE}'>
+            android:visibility='@{currentPlaylist.currentTrack == null ? View.GONE : View.VISIBLE}'>
 
             <androidx.appcompat.widget.Toolbar
-                android:id="@+id/npToolbar"
                 app:title="Now playing"
                 android:visibility="gone"
                 style="@style/AppToolbar" />
-
-
-
-    <!--        <com.google.android.exoplayer2.ui.PlayerControlView-->
-    <!--            android:id="@+id/player_control_view"-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="wrap_content" />-->
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -90,17 +82,16 @@
                     android:gravity="center">
 
                     <TextView
-                        android:id="@+id/trackTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="12sp"
-                        android:text="@{nowPlayingModel.track.getString(MediaMetadataCompat.METADATA_KEY_TITLE)}" />
+                        android:text="@{currentPlaylist.currentTrack.getString(MediaMetadataCompat.METADATA_KEY_TITLE)}" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="12sp"
-                        android:text="@{nowPlayingModel.track.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)}" />
+                        android:text="@{currentPlaylist.currentTrack.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)}" />
 
                 </LinearLayout>
 
@@ -114,7 +105,7 @@
                     android:layout_gravity="center_vertical"
                     android:background="?attr/selectableItemBackground"
                     android:onClick="@{() -> viewModel.playerViewPlayPauseClick()}"
-                    app:animateDrawable="@{nowPlayingModel.playPauseDrawable}" />
+                    app:animateDrawable='@{currentPlaylist.playbackState == "STATE_PLAYING" || currentPlaylist.playbackState == "STATE_BUFFERING" ? @drawable/avd_play_pause : @drawable/avd_pause_play}' />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -144,7 +135,7 @@
                 android:layout_height="wrap_content"
                 android:background="?android:attr/windowBackground"
                 app:labelVisibilityMode="labeled"
-                app:menu="@menu/menu_bottom_navigation" />
+                app:menu="@menu/bottom_navigation_menu" />
 
         </FrameLayout>
 

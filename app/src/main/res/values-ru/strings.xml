@@ -7,6 +7,7 @@
     </plurals>
 
     <string name="app_name">Ямуз</string>
+    <string name="search_hint">Песня, альбом, исполнитель</string>
     <string name="skip_back_10s">Skip back 10s</string>
     <string name="skip_forward_10s">Skip forward 10s</string>
 
@@ -85,7 +86,9 @@
 
     <!-- Menu -->
     <!-- Menu Main -->
+    <string name="menu_main_search">Поиск музыки</string>
     <string name="menu_main_profile">Профиль</string>
+    <string name="menu_main_settings">Настройки</string>
     <string name="menu_main_close">Закрыть</string>
 
     <!-- PERMISSIONS -->
@@ -94,7 +97,6 @@
 
     <!-- SETTINGS -->
     <string name="title_activity_settings">Настройки</string>
-    <string name="menu_main_settings">Настройки</string>
     <string name="please_wait">Пожалуйста, подождите…</string>
 
     <!-- Preference Playback -->

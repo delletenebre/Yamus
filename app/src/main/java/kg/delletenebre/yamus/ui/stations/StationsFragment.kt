@@ -9,6 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
 import com.google.android.material.tabs.TabLayout
+import kg.delletenebre.yamus.MainActivity
+import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.databinding.StationsFragmentBinding
 import kg.delletenebre.yamus.ui.OnMediaItemClickListener
 import kg.delletenebre.yamus.utils.InjectorUtils
@@ -45,6 +47,8 @@ class StationsFragment : Fragment() {
                 mainViewModel.playStation(item.mediaId!!)
             }
         }
+
+        (activity as MainActivity).setupMainToolbar(root.findViewById(R.id.toolbar))
 
         return root
     }

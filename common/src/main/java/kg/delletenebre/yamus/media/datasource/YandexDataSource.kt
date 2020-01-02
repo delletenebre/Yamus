@@ -47,6 +47,7 @@ class YandexDataSource(
     private var connection: HttpURLConnection? = null
     private var inputStream: InputStream? = null
     private var opened: Boolean = false
+    private var responseCode: Int = -1
 
     private var bytesToSkip: Long = 0
     private var bytesToRead: Long = 0
@@ -81,6 +82,14 @@ class YandexDataSource(
         requestProperties.remove(name)
     }
 
+    override fun getResponseCode(): Int {
+        return if (connection == null || this.responseCode <= 0) {
+            -1
+        } else {
+            responseCode
+        }
+    }
+
     override fun clearAllRequestProperties() {
         requestProperties.clear()
     }
@@ -98,7 +107,6 @@ class YandexDataSource(
                     dataSpec, HttpDataSource.HttpDataSourceException.TYPE_OPEN)
         }
 
-        val responseCode: Int
         val responseMessage: String
         try {
             responseCode = connection!!.responseCode

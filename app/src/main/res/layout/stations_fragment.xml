@@ -16,7 +16,7 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             app:title="@string/title_stations"
-            app:menu="@menu/menu_main"
+            app:menu="@menu/main_menu"
             style="@style/AppToolbar" />
 
         <androidx.viewpager.widget.ViewPager

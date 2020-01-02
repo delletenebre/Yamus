@@ -23,6 +23,7 @@ import kg.delletenebre.yamus.media.extensions.from
 import kg.delletenebre.yamus.utils.HashUtils
 import kg.delletenebre.yamus.utils.md5
 import kotlinx.coroutines.*
+import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.internal.ArrayListSerializer
 import kotlinx.serialization.json.Json
 import org.json.JSONArray
@@ -31,6 +32,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
+@UnstableDefault
 object YaApi {
     private const val TAG = "ahoha"
     private const val CLIENT_ID = "23cabbbdc6cd418abb4b39c32c41195d"
@@ -50,9 +52,6 @@ object YaApi {
     const val USER_TRACKS_TYPE_DISLIKE = "dislike"
     const val USER_TRACKS_ACTION_ADD = "add-multiple"
     const val USER_TRACKS_ACTION_REMOVE = "remove"
-
-    const val RESULT_OK = "ok"
-    const val RESULT_ERROR = "error"
 
     private var accessToken: String = ""
     private var uid: Long = 0L
@@ -182,22 +181,35 @@ object YaApi {
             val searchResults = mutableListOf<SearchResult>()
             var type = "albums"
             if (json.has(type)) {
-                searchResults.add(getSearchResult(type, json.getJSONObject(type)))
+                searchResults.add(getSearchResult(type, json))
             }
             type = "artists"
             if (json.has(type)) {
-                searchResults.add(getSearchResult(type, json.getJSONObject(type)))
+                searchResults.add(getSearchResult(type, json))
             }
             type = "playlists"
             if (json.has(type)) {
-                searchResults.add(getSearchResult(type, json.getJSONObject(type)))
+                searchResults.add(getSearchResult(type, json))
             }
             type = "tracks"
             if (json.has(type)) {
-                searchResults.add(getSearchResult(type, json.getJSONObject(type)))
+                searchResults.add(getSearchResult(type, json))
             }
 
             searchResults
+        } catch (e: Exception) {
+            Log.e(TAG, "search() exception: ${e.message}")
+            listOf()
+        }
+    }
+
+    suspend fun searchSuggest(text: String): List<String> {
+        val response = makeRequest("/search/suggest?part=$text")
+        return try {
+            val json = JSONObject(response).getJSONObject("result").getJSONArray("suggestions")
+            return Array(json.length()) { i ->
+                json.optString(i)
+            }.toList()
         } catch (e: Exception) {
             Log.e(TAG, "search() exception: ${e.message}")
             listOf()
@@ -393,7 +405,7 @@ object YaApi {
         "/play-audio".httpPost(postData).awaitStringResponseResult()
     }
 
-    suspend fun getUserTracksIds(type: String): Pair<Int, MutableList<String>> {
+    private suspend fun getUserTracksIds(type: String): Pair<Int, MutableList<String>> {
         val cachedTracksIds = database.userTracksIds().get(type)
         return if (cachedTracksIds != null) {
             (cachedTracksIds.revision to cachedTracksIds.tracksIds.split(",").toMutableList())
@@ -402,7 +414,7 @@ object YaApi {
         }
     }
 
-    suspend fun updateUserTracksIds(type: String, revision: Int): Pair<Int, MutableList<String>> {
+    private suspend fun updateUserTracksIds(type: String, revision: Int): Pair<Int, MutableList<String>> {
         val empty = (0 to mutableListOf<String>())
         val response = makeRequest(
                 url = "/users/$uid/${type}s/tracks?if-modified-since-revision=$revision",
@@ -445,11 +457,11 @@ object YaApi {
             USER_TRACKS_ACTION_ADD -> {
                 when (type) {
                     USER_TRACKS_TYPE_LIKE -> {
-                        removeDislike(trackId)
+                        dislikedTracks.second.remove(trackId)
                         likedTracks.second.add(0, trackId)
                     }
                     USER_TRACKS_TYPE_DISLIKE -> {
-                        removeLike(trackId)
+                        likedTracks.second.remove(trackId)
                         dislikedTracks.second.add(0, trackId)
                     }
                 }
@@ -702,11 +714,13 @@ object YaApi {
         return "https://$host/get-mp3/$sign/${downloadInfo.ts}${downloadInfo.path}"
     }
 
-    fun updateUserTrack(action: String, type: String, trackId: String): Result<String, FuelError> {
+    private fun updateUserTrack(action: String, type: String, trackId: String): Result<String, FuelError> {
         return runBlocking {
             val url = "/users/$uid/${type}s/tracks/$action"
             val postData = listOf("track-ids" to trackId)
-            val (_, _, result) = url.httpPost(postData).awaitStringResponseResult()
+            val (request, response, result) = url.httpPost(postData).awaitStringResponseResult()
+            Log.d("ahoha", "request: $request")
+            Log.d("ahoha", "response: $response")
             result.fold(
                 { updateUserTracksIds(action, type, trackId) },
                 { error -> error.printStackTrace() }
@@ -758,7 +772,7 @@ object YaApi {
         }
     }
 
-    fun getCacheHeaders(forceOnline: Boolean = false): Map<String, String> {
+    private fun getCacheHeaders(forceOnline: Boolean = false): Map<String, String> {
         return if (forceOnline) {
             mapOf("pragma" to "no-cache", "cache-control" to "no-cache")
         } else {
@@ -787,7 +801,6 @@ object YaApi {
             }
             val (_, _, result) = request.header(getCacheHeaders(forceOnline))
                     .awaitStringResponseResult()
-
             result.fold(
                     { data ->
                         database.httpCache().insert(

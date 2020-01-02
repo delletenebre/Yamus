@@ -16,7 +16,7 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             app:title="@string/title_profile"
-            app:menu="@menu/menu_profile"
+            app:menu="@menu/profile_menu"
             app:navigationIcon="@drawable/ic_arrow_back"
             style="@style/AppToolbar" />
 

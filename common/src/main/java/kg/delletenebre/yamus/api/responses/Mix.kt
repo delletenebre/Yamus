@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 data class Mix(
     val backgroundImageUri: String,
     val title: String,
-    val url: String
+    val url: String,
+    val urlScheme: String
 )

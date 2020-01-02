@@ -16,8 +16,9 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             app:title="@string/title_home"
-            app:menu="@menu/menu_main"
+            app:menu="@menu/main_menu"
             style="@style/AppToolbar" />
+
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"

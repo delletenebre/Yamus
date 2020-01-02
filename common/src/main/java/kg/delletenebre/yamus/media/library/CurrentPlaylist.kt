@@ -1,7 +1,6 @@
 package kg.delletenebre.yamus.media.library
 
 import android.support.v4.media.MediaMetadataCompat
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
@@ -42,8 +41,6 @@ object CurrentPlaylist {
     private val httpDataSourceFactory = YandexDataSourceFactory(YAMUS_USER_AGENT)
 
     init {
-        httpDataSourceFactory.defaultRequestProperties
-                .set("X-Yandex-Music-Client", YAMUS_HEADER_X_YANDEX_MUSIC_CLIENT)
     }
 
     fun updatePlaylist(
@@ -76,7 +73,6 @@ object CurrentPlaylist {
     fun updateTrack(track: MediaMetadataCompat) {
         val index = tracks.indexOfFirst { it.id == track.id }
         if (index > -1) {
-            Log.d("ahoha", "updateTrack: ${track.mediaUri}")
             tracks[index] = track
             mediaSource.removeMediaSource(index)
             mediaSource.addMediaSource(index, track.toMediaSource())

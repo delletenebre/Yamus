@@ -156,8 +156,9 @@ object MediaLibrary {
     suspend fun getMixes(path: String = ""): List<MediaItem> {
         return if (path.isEmpty() || path == PATH_RECOMMENDED_MIXES) {
             YaApi.getMixes().map {
+                val scheme = it.urlScheme.toUri()
                 createBrowsableMediaItem(
-                        id = "${PATH_RECOMMENDED_MIXES}${it.url}",
+                        id = "${PATH_RECOMMENDED_MIXES}/${scheme.host}${scheme.path}",
                         title = it.title,
                         icon = it.backgroundImageUri.toCoverUri(200)
                 )

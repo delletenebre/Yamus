@@ -20,7 +20,7 @@
             android:id="@+id/toolbar"
             app:title="@{title}"
             style="@style/AppToolbar"
-            app:menu="@menu/menu_playlist" />
+            app:menu="@menu/playlist_menu" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"

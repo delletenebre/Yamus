@@ -4,21 +4,28 @@
     tools:context=".MainActivity">
 
     <item
-        android:id="@+id/action_settings"
-        android:icon="@drawable/ic_settings"
-        android:title="@string/menu_main_settings"
-        app:showAsAction="ifRoom" />
+        android:id="@+id/action_search"
+        android:title="@string/menu_main_search"
+        android:icon="@drawable/ic_search"
+        app:showAsAction="ifRoom|collapseActionView"
+        app:actionViewClass="androidx.appcompat.widget.SearchView" />
 
     <item
         android:id="@+id/action_profile"
         android:icon="@drawable/ic_person"
         android:title="@string/menu_main_profile"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/menu_main_settings"
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/action_close_app"
         android:icon="@drawable/ic_close"
         android:title="@string/menu_main_close"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
 </menu>
