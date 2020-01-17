@@ -1,6 +1,5 @@
 package kg.delletenebre.yamus.media.actions
 
-import android.util.Log
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
@@ -44,7 +43,6 @@ object CustomActionsHelper {
     }
 
     fun next(player: Player) {
-        Log.d("ahoha", "next")
         if (!CurrentPlaylist.loading) {
             if (player.hasNext()) {
                 player.next()
@@ -57,7 +55,6 @@ object CustomActionsHelper {
     }
 
     fun previous(player: Player) {
-        Log.d("ahoha", "previous")
         if (CurrentPlaylist.type != CurrentPlaylist.TYPE_STATION
                 && player.hasPrevious()
                 && (player.currentPosition <= MAX_POSITION_FOR_SEEK_TO_PREVIOUS)) {

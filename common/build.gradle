@@ -82,5 +82,4 @@ dependencies {
     def result_version = '2.2.0'
     api "com.github.kittinunf.result:result:$result_version"
     api "com.github.kittinunf.result:result-coroutines:$result_version"
-    implementation 'com.google.firebase:firebase-core:17.2.2'
 }
