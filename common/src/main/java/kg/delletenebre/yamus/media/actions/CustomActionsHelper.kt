@@ -44,6 +44,7 @@ object CustomActionsHelper {
     }
 
     fun next(player: Player) {
+        Log.d("ahoha", "next")
         if (!CurrentPlaylist.loading) {
             if (player.hasNext()) {
                 player.next()

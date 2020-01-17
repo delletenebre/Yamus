@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         multiDexEnabled true
-        versionCode 6
+        versionCode 7
         versionName "1.0"
 
         minSdkVersion rootProject.minSdkVersion
@@ -82,4 +82,5 @@ dependencies {
     def result_version = '2.2.0'
     api "com.github.kittinunf.result:result:$result_version"
     api "com.github.kittinunf.result:result-coroutines:$result_version"
+    implementation 'com.google.firebase:firebase-core:17.2.2'
 }

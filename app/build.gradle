@@ -10,8 +10,8 @@ android {
     defaultConfig {
         multiDexEnabled true
         applicationId "kg.delletenebre.yamus"
-        versionCode 30
-        versionName "20.01.02"
+        versionCode 32
+        versionName "20.01.17"
 
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
@@ -61,7 +61,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui-ktx:2.1.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'androidx.preference:preference:1.1.0'
-    implementation 'androidx.fragment:fragment-ktx:1.2.0-rc04'
+    implementation 'androidx.fragment:fragment-ktx:1.2.0-rc05'
 
     // Lifecycle
     def lifecycle_version = '2.2.0-rc03'
@@ -75,7 +75,7 @@ dependencies {
 
     implementation 'com.billy.android:smart-swipe:1.0.8'
 
-    implementation 'com.google.firebase:firebase-analytics:17.2.1' // REMOVE IF NOT USE FIREBASE
+    implementation 'com.google.firebase:firebase-analytics:17.2.2' // REMOVE IF NOT USE FIREBASE
     implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1' // Crashlytics plugin
 
     implementation 'me.tatarka.bindingcollectionadapter2:bindingcollectionadapter:3.1.1'

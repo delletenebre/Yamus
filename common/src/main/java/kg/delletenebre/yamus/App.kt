@@ -5,9 +5,11 @@ import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.os.Bundle
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.multidex.MultiDexApplication
 import androidx.preference.PreferenceManager
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.jakewharton.threetenabp.AndroidThreeTen
 import kg.delletenebre.yamus.api.YaApi
 import kg.delletenebre.yamus.api.YandexCache
@@ -18,9 +20,13 @@ import java.util.*
 
 class App : MultiDexApplication() {
     private lateinit var prefs: SharedPreferences
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     override fun onCreate() {
         super.onCreate()
+
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         instance = this
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
@@ -30,6 +36,8 @@ class App : MultiDexApplication() {
         AndroidThreeTen.init(this)
         YandexCache.init(this)
         MediaLibrary.init(this)
+
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.APP_OPEN, Bundle())
     }
 
     fun getIntPreference(key: String, defaultValue: String? = null): Int {
