@@ -28,8 +28,8 @@ class HomeViewModel : ViewModel(), OnMediaItemClickListener {
 
     init {
         viewModelScope.launch {
-            blockPersonalPlaylists.postValue(MediaLibrary.getPersonalPlaylists())
-            blockMixes.postValue(MediaLibrary.getMixes())
+            blockPersonalPlaylists.value = MediaLibrary.getPersonalPlaylists()
+            blockMixes.value = MediaLibrary.getMixes()
         }
     }
 }

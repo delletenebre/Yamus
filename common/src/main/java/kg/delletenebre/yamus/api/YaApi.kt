@@ -321,6 +321,7 @@ object YaApi {
         }
     }
 
+    var getStationTracksRepeats = 0
     suspend fun getStationTracks(stationId: String, queue: String = ""): Pair<String, List<MediaMetadataCompat>> {
         val params: MutableList<Pair<String, String>> = mutableListOf("settings2" to "true")
         if (queue.isNotEmpty()) {
@@ -330,6 +331,7 @@ object YaApi {
         val (_, _, result) = "/rotor$stationId/tracks".httpGet(params).awaitStringResponseResult()
         result.fold(
             { data ->
+                getStationTracksRepeats = 0
                 return try {
                     val json = JSONObject(data).getJSONObject("result")
                     val sequence = json.getJSONArray("sequence")
@@ -345,12 +347,20 @@ object YaApi {
                     (batchId to tracks)
                 } catch (e: Exception) {
                     Log.e(TAG, "getStationTracks() exception: ${e.message}")
-                    return ("" to listOf())
+                    ("" to listOf())
                 }
             },
             { error ->
-                Log.w(TAG, "getStationTracks() server error: ${error.response}")
-                return ("" to listOf())
+                return if (getStationTracksRepeats < 3) {
+                    Log.e(TAG, "getStationTracks() repeat count: $getStationTracksRepeats")
+                    getStationTracksRepeats++
+                    getStationTracks(stationId, queue)
+                } else {
+                    Log.e(TAG, "getStationTracks() error: ${error.message}")
+                    getStationTracksRepeats = 0
+                    error.printStackTrace()
+                    ("" to listOf())
+                }
             }
         )
     }
@@ -784,6 +794,7 @@ object YaApi {
         return "$url+${body.hashCode()}"
     }
 
+    var makeRequestRepeats = 0
     private suspend fun makeRequest(
             url: String,
             body: List<Pair<String, String>> = listOf(),
@@ -803,15 +814,23 @@ object YaApi {
                     .awaitStringResponseResult()
             result.fold(
                     { data ->
+                        makeRequestRepeats = 0
                         database.httpCache().insert(
                                 HttpCacheEntity(urlHash, data, System.currentTimeMillis())
                         )
                         data
                     },
                     { error ->
-                        Log.w(TAG, "makeRequest() server error: $url")
-                        error.printStackTrace()
-                        ""
+                        if (makeRequestRepeats < 3) {
+                            Log.w(TAG, "makeRequest() server error repeating: $makeRequestRepeats")
+                            makeRequestRepeats++
+                            makeRequest(url, body, forceOnline)
+                        } else {
+                            Log.w(TAG, "makeRequest() server error: $url")
+                            makeRequestRepeats = 0
+                            error.printStackTrace()
+                            ""
+                        }
                     }
             )
         } else {

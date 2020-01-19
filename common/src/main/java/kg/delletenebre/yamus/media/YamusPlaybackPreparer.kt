@@ -62,6 +62,7 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
      * [MediaSessionCompat.Callback.onPrepareFromMediaId].
      */
     override fun onPrepareFromMediaId(mediaId: String, playWhenReady: Boolean, extras: Bundle?) {
+        Log.d("ahoha", "mediaId: $mediaId")
         exoPlayer.playWhenReady = false
         runBlocking {
             when {

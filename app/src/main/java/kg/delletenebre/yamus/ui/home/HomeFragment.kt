@@ -2,7 +2,6 @@ package kg.delletenebre.yamus.ui.home
 
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,12 +37,11 @@ class HomeFragment : Fragment() {
 
         viewModel.itemClickListenerOfFragment = object : OnMediaItemClickListener {
             override fun onClick(item: MediaBrowserCompat.MediaItem) {
-                Log.d("ahohas", "clicked item id: ${item.description.mediaId}")
                 val path = item.mediaId
                 if (path != null) {
                     val bundle = bundleOf(
-                            "title" to item.description.title,
-                            "path" to item.mediaId
+                        "title" to item.description.title,
+                        "path" to item.mediaId
                     )
                     when {
                         path.startsWith(MediaLibrary.PATH_PLAYLIST) ->

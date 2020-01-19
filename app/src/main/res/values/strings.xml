@@ -123,6 +123,9 @@
 
     <!-- Preference Android Auto Interface -->
     <string name="pref_header_aa_interface">Android Auto interface</string>
+    <string name="pref_title_show_playlist_items">Display playlist tracks</string>
+    <string name="pref_summary_on_show_playlist_items">Selecting a playlist will show the tracks</string>
+    <string name="pref_summary_off_show_playlist_items">When you select a playlist, playback will start automatically</string>
     <string name="pref_title_like_alter_position">Show &quot;Like&quot; on main screen</string>
     <string name="pref_summary_on_like_alter_position">&quot;Like&quot; button will be located instead of &quot;Previous track&quot;</string>
     <string name="pref_summary_off_like_alter_position">&quot;Like&quot; button will be located by default</string>

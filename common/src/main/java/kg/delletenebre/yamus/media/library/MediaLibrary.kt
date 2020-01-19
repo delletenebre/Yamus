@@ -25,6 +25,7 @@ import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.text.format.DateUtils
+import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.YaApi
 import kg.delletenebre.yamus.api.responses.Album
 import kg.delletenebre.yamus.api.responses.Playlist
@@ -50,8 +51,11 @@ object MediaLibrary {
     suspend fun getFolder(path: String): List<MediaItem> {
         return when {
             path == PATH_ROOT -> getRootItems()
+            path == PATH_LIKED -> getLikedTracks()
             path == PATH_PLAYLISTS -> getPlaylistsOfUser()
             path == PATH_RECOMMENDED -> getRecommendations()
+            path.startsWith("/playlist/") -> getPlaylistTracks(path)
+            path.startsWith("/album/") -> getAlbumTracks(path)
             path.startsWith(PATH_RECOMMENDED_MIXES) -> getMixes(path)
             path.startsWith(PATH_STATIONS) -> getStations(path)
             else -> mutableListOf()
@@ -59,28 +63,37 @@ object MediaLibrary {
     }
 
     private fun getRootItems(): MutableList<MediaItem> {
+        val likedTracks = if (App.instance.getBooleanPreference("show_playlist_items")) {
+            createBrowsableMediaItem(
+                    id = PATH_LIKED,
+                    title = resources.getString(R.string.liked),
+                    icon = getIconUri(R.drawable.ic_favorite)
+            )
+        } else {
+            createPlaylistMediaItem(
+                    id = PATH_LIKED,
+                    title = resources.getString(R.string.liked),
+                    icon = getIconUri(R.drawable.ic_favorite)
+            )
+        }
         return if (YaApi.isAuth()) {
             mutableListOf(
-                    createPlaylistMediaItem(
-                            id = PATH_LIKED,
-                            title = resources.getString(R.string.liked),
-                            icon = getIconUri(R.drawable.ic_favorite)
-                    ),
-                    createBrowsableMediaItem(
-                            id = PATH_PLAYLISTS,
-                            title = resources.getString(R.string.playlists),
-                            icon = getIconUri(R.drawable.ic_playlist_music)
-                    ),
-                    createBrowsableMediaItem(
-                            id = PATH_RECOMMENDED,
-                            title = resources.getString(R.string.recommended),
-                            icon = getIconUri(R.drawable.ic_library_music)
-                    ),
-                    createBrowsableMediaItem(
-                            id = PATH_STATIONS,
-                            title = resources.getString(R.string.stations),
-                            icon = getIconUri(R.drawable.ic_radio_tower)
-                    )
+                likedTracks,
+                createBrowsableMediaItem(
+                        id = PATH_PLAYLISTS,
+                        title = resources.getString(R.string.playlists),
+                        icon = getIconUri(R.drawable.ic_playlist_music)
+                ),
+                createBrowsableMediaItem(
+                        id = PATH_RECOMMENDED,
+                        title = resources.getString(R.string.recommended),
+                        icon = getIconUri(R.drawable.ic_library_music)
+                ),
+                createBrowsableMediaItem(
+                        id = PATH_STATIONS,
+                        title = resources.getString(R.string.stations),
+                        icon = getIconUri(R.drawable.ic_radio_tower)
+                )
             )
         } else {
             mutableListOf()
@@ -102,16 +115,6 @@ object MediaLibrary {
                         title = resources.getString(R.string.playlists),
                         icon = getIconUri(R.drawable.ic_playlist_music)
                 ),
-//                createBrowsableMediaItem(
-//                        id = PATH_PLAYLISTS,
-//                        title = resources.getString(R.string.albums),
-//                        icon = getIconUri(R.drawable.ic_album)
-//                ),
-//                createBrowsableMediaItem(
-//                        id = PATH_PLAYLISTS,
-//                        title = resources.getString(R.string.artists),
-//                        icon = getIconUri(R.drawable.ic_artist)
-//                ),
                 createBrowsableMediaItem(
                         id = PATH_DISLIKED,
                         title = resources.getString(R.string.disliked_tracks),
@@ -133,6 +136,30 @@ object MediaLibrary {
         return result
     }
 
+    private suspend fun getLikedTracks(): List<MediaItem> {
+        val tracks = YaApi.getLikedTracks()
+        CurrentPlaylist.updatePlaylist(PATH_LIKED, tracks, CurrentPlaylist.TYPE_TRACKS)
+        return tracks.map { createPlayableMediaItem(it) }
+    }
+
+    private suspend fun getPlaylistTracks(path: String): List<MediaItem> {
+        val data = path.split('/')
+        val uid = data[2]
+        val kind = data[3]
+        val tracks = YaApi.getPlaylistTracks(uid, kind)
+        CurrentPlaylist.updatePlaylist(path, tracks, CurrentPlaylist.TYPE_TRACKS)
+        return tracks.map { createPlayableMediaItem(it) }
+    }
+
+    private suspend fun getAlbumTracks(path: String): List<MediaItem> {
+        val data = path.split('/')
+        val id = data[2]
+        val tracks = YaApi.getAlbumTracks(id)
+        CurrentPlaylist.updatePlaylist(path, tracks, CurrentPlaylist.TYPE_TRACKS)
+        return tracks.map { createPlayableMediaItem(it) }
+    }
+
+
     suspend fun getPersonalPlaylists(): List<MediaItem> {
         return YaApi.getPersonalPlaylists()
                 .filter { it.available }
@@ -148,7 +175,8 @@ object MediaLibrary {
                             title = it.title,
                             subtitle = resources.getString(R.string.updated_at, updatedAt),
                             icon = it.ogImage.toCoverUri(200),
-                            groupTitle = resources.getString(R.string.personal_playlists_group)
+                            groupTitle = resources.getString(R.string.personal_playlists_group),
+                            isPlayable = !App.instance.getBooleanPreference("show_playlist_items")
                     )
                 }
     }
@@ -187,14 +215,16 @@ object MediaLibrary {
                                 id = "/album/${it.id}",
                                 title = it.title,
                                 subtitle = subtitle.joinToString(" | "),
-                                icon = it.coverUri.toCoverUri(200)
+                                icon = it.coverUri.toCoverUri(200),
+                                isPlayable = !App.instance.getBooleanPreference("show_playlist_items")
                         )
                     }
             val playlists = promotions.filterIsInstance<Playlist>()
                     //.filter { it.available }
                     .map {
-                        createPlaylistMediaItem(
-                                it, resources.getString(R.string.my_playlists_group_title))
+                        createPlaylistMediaItem(it,
+                                groupTitle = "",
+                                isPlayable = !App.instance.getBooleanPreference("show_playlist_items"))
                     }
 
             if (albums.isNotEmpty()) {
@@ -217,7 +247,9 @@ object MediaLibrary {
                 //.filter { it.available } // TODO STRANGE
                 .map {
                     createPlaylistMediaItem(
-                            it, resources.getString(R.string.my_playlists_group_title))
+                            it,
+                            groupTitle = resources.getString(R.string.my_playlists_group_title),
+                            isPlayable = !App.instance.getBooleanPreference("show_playlist_items"))
                 }
     }
 
@@ -226,7 +258,9 @@ object MediaLibrary {
                 //.filter { it.available }
                 .map {
                     createPlaylistMediaItem(
-                            it, resources.getString(R.string.liked_playlists_group_title))
+                            it,
+                            groupTitle = resources.getString(R.string.liked_playlists_group_title),
+                            isPlayable = !App.instance.getBooleanPreference("show_playlist_items"))
                 }
     }
 
@@ -285,7 +319,6 @@ object MediaLibrary {
                 }
     }
 
-
     fun createBrowsableMediaItem(
             id: String,
             title: String,
@@ -304,23 +337,25 @@ object MediaLibrary {
         return MediaItem(mediaDescriptionBuilder.build(), MediaItem.FLAG_BROWSABLE)
     }
 
-    fun createPlaylistMediaItem(playlist: Playlist, groupTitle: String = ""): MediaItem {
+    fun createPlaylistMediaItem(playlist: Playlist, groupTitle: String = "", isPlayable: Boolean = true): MediaItem {
         return createPlaylistMediaItem(
-            id = "/playlist/${playlist.uid}/${playlist.kind}",
-            title = playlist.title,
-            subtitle = resources.getQuantityString(R.plurals.tracks_count, playlist.trackCount, playlist.trackCount),
-            icon = playlist.ogImage.toCoverUri(200),
-            groupTitle = groupTitle
+                id = "/playlist/${playlist.uid}/${playlist.kind}",
+                title = playlist.title,
+                subtitle = resources.getQuantityString(R.plurals.tracks_count, playlist.trackCount, playlist.trackCount),
+                icon = playlist.ogImage.toCoverUri(200),
+                groupTitle = groupTitle,
+                isPlayable = isPlayable
         )
     }
 
-    fun createPlaylistMediaItem(station: Station, groupTitle: String = ""): MediaItem {
+    fun createPlaylistMediaItem(station: Station, groupTitle: String = "", isPlayable: Boolean = true): MediaItem {
         return createPlaylistMediaItem(
-            id = "/station/${station.getId()}",
-            title = station.name,
-            icon = station.icon.imageUrl.toCoverUri(200),
-            groupTitle = groupTitle,
-            backgroundColor = station.icon.backgroundColor
+                id = "/station/${station.getId()}",
+                title = station.name,
+                icon = station.icon.imageUrl.toCoverUri(200),
+                groupTitle = groupTitle,
+                backgroundColor = station.icon.backgroundColor,
+                isPlayable = isPlayable
         )
     }
 
@@ -330,7 +365,8 @@ object MediaLibrary {
             subtitle: String = "",
             icon: Uri = Uri.EMPTY,
             groupTitle: String = "",
-            backgroundColor: String = ""
+            backgroundColor: String = "",
+            isPlayable: Boolean = true
     ): MediaItem {
         val extras = Bundle()
         val mediaDescriptionBuilder = MediaDescriptionCompat.Builder()
@@ -349,7 +385,8 @@ object MediaLibrary {
         if (!extras.isEmpty) {
             mediaDescriptionBuilder.setExtras(extras)
         }
-        return MediaItem(mediaDescriptionBuilder.build(), MediaItem.FLAG_PLAYABLE)
+        val flag = if (isPlayable) { MediaItem.FLAG_PLAYABLE } else { MediaItem.FLAG_BROWSABLE }
+        return MediaItem(mediaDescriptionBuilder.build(), flag)
     }
 
     fun createPlaylistMediaItem(

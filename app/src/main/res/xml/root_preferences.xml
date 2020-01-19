@@ -53,6 +53,13 @@
     <PreferenceCategory app:title="@string/pref_header_aa_interface">
 
         <SwitchPreferenceCompat
+            app:key="show_playlist_items"
+            app:defaultValue="@bool/pref_default_show_playlist_items"
+            app:title="@string/pref_title_show_playlist_items"
+            app:summaryOn="@string/pref_summary_on_show_playlist_items"
+            app:summaryOff="@string/pref_summary_off_show_playlist_items" />
+
+        <SwitchPreferenceCompat
             app:key="like_alter_position"
             app:defaultValue="@bool/pref_default_like_alter_position"
             app:title="@string/pref_title_like_alter_position"

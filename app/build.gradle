@@ -10,8 +10,8 @@ android {
     defaultConfig {
         multiDexEnabled true
         applicationId "kg.delletenebre.yamus"
-        versionCode 32
-        versionName "20.01.17"
+        versionCode 33
+        versionName "20.01.19"
 
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
@@ -61,7 +61,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui-ktx:2.1.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'androidx.preference:preference:1.1.0'
-    implementation 'androidx.fragment:fragment-ktx:1.2.0-rc05'
+    implementation 'androidx.fragment:fragment-ktx:1.2.0-rc04'
 
     // Lifecycle
     def lifecycle_version = '2.2.0-rc03'

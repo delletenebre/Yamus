@@ -6,4 +6,5 @@
     <bool name="pref_default_show_repeat">true</bool>
     <bool name="pref_default_like_alter_position">false</bool>
     <bool name="pref_default_dislike_alter_position">false</bool>
+    <bool name="pref_default_show_playlist_items">false</bool>
 </resources>
