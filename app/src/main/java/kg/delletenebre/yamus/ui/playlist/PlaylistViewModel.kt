@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DiffUtil
 import kg.delletenebre.yamus.R
-import kg.delletenebre.yamus.api.YaApi
+import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.api.YandexCache
 import kg.delletenebre.yamus.media.extensions.downloadProgress
 import kg.delletenebre.yamus.media.extensions.downloadStatus
@@ -55,22 +55,22 @@ class PlaylistViewModel(path: String) : ViewModel(), OnTrackClickListener {
             val data = path.split("/")
             when {
                 path == MediaLibrary.PATH_LIKED -> {
-                    items.postValue(YaApi.getLikedTracks())
-                    YaApi.refreshUserTracksIds()
+                    items.postValue(YandexApi.getLikedTracks())
+                    YandexApi.refreshUserTracksIds()
                 }
                 path == MediaLibrary.PATH_DISLIKED -> {
-                    items.postValue(YaApi.getDislikedTracks())
-                    YaApi.refreshUserTracksIds()
+                    items.postValue(YandexApi.getDislikedTracks())
+                    YandexApi.refreshUserTracksIds()
                 }
                 path.startsWith("/playlist/") -> {
                     val uid = data[2]
                     val kind = data[3]
-                    val tracks = YaApi.getPlaylistTracks(uid, kind)
+                    val tracks = YandexApi.getPlaylistTracks(uid, kind)
                     items.postValue(tracks)
                 }
                 path.startsWith("/album/") -> {
                     val id = data[2]
-                    val tracks = YaApi.getAlbumTracks(id)
+                    val tracks = YandexApi.getAlbumTracks(id)
                     items.postValue(tracks)
                 }
             }

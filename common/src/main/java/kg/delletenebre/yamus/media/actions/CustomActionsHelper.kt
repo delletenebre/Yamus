@@ -3,7 +3,7 @@ package kg.delletenebre.yamus.media.actions
 import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
-import kg.delletenebre.yamus.api.YaApi
+import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 
 object CustomActionsHelper {
@@ -16,29 +16,29 @@ object CustomActionsHelper {
     const val CUSTOM_ACTION_PREV = "kg.delletenebre.yamus.CUSTOM_ACTION_PREV"
 
     fun like(player: Player, trackId: String, controlDispatcher: ControlDispatcher? = null) {
-        YaApi.addLike(trackId)
+        YandexApi.addLike(trackId)
         controlDispatcher?.dispatchSeekTo(player, player.currentWindowIndex,
                 player.currentPosition)
     }
 
     fun like(playerNotificationManager: PlayerNotificationManager, trackId: String) {
-        YaApi.addLike(trackId)
+        YandexApi.addLike(trackId)
         playerNotificationManager.invalidate()
     }
 
     fun unlike(player: Player, trackId: String, controlDispatcher: ControlDispatcher? = null) {
-        YaApi.removeLike(trackId)
+        YandexApi.removeLike(trackId)
         controlDispatcher?.dispatchSeekTo(player, player.currentWindowIndex,
                 player.currentPosition)
     }
 
     fun unlike(playerNotificationManager: PlayerNotificationManager, trackId: String) {
-        YaApi.removeLike(trackId)
+        YandexApi.removeLike(trackId)
         playerNotificationManager.invalidate()
     }
 
     fun dislike(player: Player, trackId: String, controlDispatcher: ControlDispatcher? = null) {
-        YaApi.addDislike(trackId)
+        YandexApi.addDislike(trackId)
         next(player)
     }
 

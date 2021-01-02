@@ -12,7 +12,7 @@ import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.util.Assertions
 import com.google.android.exoplayer2.util.Log
 import com.google.android.exoplayer2.util.Predicate
-import kg.delletenebre.yamus.api.YaApi
+import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.media.extensions.duration
 import kg.delletenebre.yamus.media.extensions.mediaUri
 import kg.delletenebre.yamus.media.extensions.uniqueId
@@ -206,7 +206,7 @@ class YandexDataSource(
 
     @Throws(IOException::class)
     private fun makeConnection(dataSpec: DataSpec): HttpURLConnection {
-        var url = URL(YaApi.getDirectUrl(dataSpec.uri.toString()))//URL(dataSpec.uri.toString())
+        var url = URL(YandexApi.getDirectUrl(dataSpec.uri.toString()))//URL(dataSpec.uri.toString())
 
         GlobalScope.launch {
             val track = CurrentPlaylist.tracks.find {
@@ -215,7 +215,7 @@ class YandexDataSource(
             if (track != null) {
                 val uniqueId = track.uniqueId.split(":")
                 if (uniqueId.size == 2) {
-                    YaApi.playAudio(uniqueId[0], uniqueId[1], (track.duration / 1000.0).roundToInt())
+                    YandexApi.playAudio(uniqueId[0], uniqueId[1], (track.duration / 1000.0).roundToInt())
                 }
             }
         }

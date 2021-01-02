@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DiffUtil
 import kg.delletenebre.yamus.R
-import kg.delletenebre.yamus.api.YaApi
+import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.api.responses.Playlist
 import kg.delletenebre.yamus.media.extensions.id
 import kg.delletenebre.yamus.media.library.MediaLibrary.createPlaylistMediaItem
@@ -50,14 +50,14 @@ class SearchViewModel : ViewModel(), OnMediaItemClickListener {
 
     fun search(query: String) {
         viewModelScope.launch {
-            YaApi.search(query).forEach {
+            YandexApi.search(query).forEach {
                 if (it.type == "playlists") {
                     val items = (it.result as List<Playlist>).map { playlist ->
                         createPlaylistMediaItem(
-                                id = "/playlist/${playlist.uid}/${playlist.kind}",
-                                title = playlist.title,
+                            id = "/playlist/${playlist.uid}/${playlist.kind}",
+                            title = playlist.title,
 //                                subtitle = getString(R.string.updated_at, updatedAt),
-                                icon = playlist.ogImage.toCoverUri(200)
+                            icon = playlist.ogImage.toCoverUri(200)
 //                                groupTitle = resources.getString(R.string.personal_playlists_group)
                         )
                     }

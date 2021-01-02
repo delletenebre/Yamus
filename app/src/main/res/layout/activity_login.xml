@@ -2,10 +2,6 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
-    <data>
-        <import type="android.view.View" />
-        <variable name="viewModel" type="kg.delletenebre.yamus.ui.login.LoginViewModel" />
-    </data>
 
     <FrameLayout
         android:id="@+id/container"
@@ -46,72 +42,21 @@
                         android:layout_height="wrap_content"
                         android:textSize="16sp"
                         android:text="@string/login_activity_subheader" />
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/prompt_email"
-                        android:layout_marginTop="48dp"
-                        app:errorEnabled="true">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/username"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textEmailAddress"
-                            android:selectAllOnFocus="true" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/prompt_password"
-                        android:imeActionLabel="@string/action_sign_in_short"
-                        android:imeOptions="actionDone"
-                        android:layout_marginTop="8dp"
-                        app:errorEnabled="true">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/password"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textPassword"
-                            android:selectAllOnFocus="true" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
 
                     <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/loginButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="start"
                         android:layout_marginTop="16dp"
                         app:backgroundTint="@color/buttonPrimary"
-                        android:text="@string/action_sign_in"
-                        android:enabled="@{!viewModel.isLoading}"
-                        android:onClick="@{() -> viewModel.login(username.getText().toString(), password.getText().toString())}"/>
+                        android:text="@string/action_sign_in"/>
 
                 </LinearLayout>
 
             </androidx.core.widget.NestedScrollView>
 
         </LinearLayout>
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:alpha="0.4"
-            android:animateLayoutChanges="true"
-            android:visibility="@{viewModel.isLoading ? View.VISIBLE : View.GONE}"
-            android:background="@android:color/black"
-            android:clickable="true"
-            android:focusable="true">
-
-            <ProgressBar
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center" />
-
-        </FrameLayout>
 
     </FrameLayout>
 </layout>

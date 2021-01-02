@@ -18,20 +18,7 @@
         android:targetSandboxVersion="2"
         android:requestLegacyExternalStorage="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name=".ui.settings.SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:launchMode="singleTop"
-            android:configChanges="orientation|screenSize"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="kg.delletenebre.yamus.MainActivity" />
-        </activity>
-        <activity
-            android:name=".ui.login.LoginActivity"
-            android:label="@string/title_activity_login"
-            android:launchMode="singleTop" />
+
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop">
@@ -47,32 +34,36 @@
             <meta-data android:name="android.app.searchable"
                 android:resource="@xml/searchable"/>
 
-            <!-- App links for http -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
                 <data
-                    android:host="example.android.com"
-                    android:pathPattern="/uamp"
-                    android:scheme="http" />
-            </intent-filter>
-
-            <!-- App links for https -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="example.android.com"
-                    android:pathPattern="/uamp"
+                    android:host="music.yandex.ru"
                     android:scheme="https" />
             </intent-filter>
-        </activity> <!-- Declare that UAMP supports Android Auto. -->
+        </activity>
+
+        <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="kg.delletenebre.yamus.MainActivity" />
+        </activity>
+
+        <activity
+            android:name=".ui.login.LoginActivity"
+            android:label="@string/title_activity_login"
+            android:launchMode="singleTop">
+
+        </activity>
+
+
+        <!-- Declare that UAMP supports Android Auto. -->
         <meta-data
             android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc" />

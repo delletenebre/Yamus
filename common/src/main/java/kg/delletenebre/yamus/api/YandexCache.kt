@@ -40,7 +40,7 @@ object YandexCache {
         if (file.exists()) {
             file.delete()
         }
-        val url = YaApi.getDirectUrl(track.id, false)
+        val url = YandexApi.getDirectUrl(track.id, false)
         val (_, _, result) = url.httpDownload()
                 .fileDestination { _, _ -> file }
                 .progress { readBytes, totalBytes ->

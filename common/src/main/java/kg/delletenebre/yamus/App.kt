@@ -4,14 +4,16 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.NetworkInfo
 import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.multidex.MultiDexApplication
 import androidx.preference.PreferenceManager
 import com.jakewharton.threetenabp.AndroidThreeTen
-import kg.delletenebre.yamus.api.YaApi
 import kg.delletenebre.yamus.api.YandexCache
+import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.media.library.MediaLibrary
+import kg.delletenebre.yamus.utils.Store
 import kg.delletenebre.yamus.utils.Utils
 import java.util.*
 
@@ -19,13 +21,15 @@ import java.util.*
 class App : MultiDexApplication() {
     private lateinit var prefs: SharedPreferences
 
+    val locale get() = getLocale().toString().take(2)
+
     override fun onCreate() {
         super.onCreate()
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         instance = this
+        Store.init(applicationContext)
+        YandexUser.status // TODO FIX THIS SHIT
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
-
-        YaApi.init(this)
 
         AndroidThreeTen.init(this)
         YandexCache.init(this)
@@ -49,21 +53,20 @@ class App : MultiDexApplication() {
     }
 
     fun isNetworkAvailable(): Boolean {
-        val cm = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val n = cm.activeNetwork
-
-            if (n != null) {
-                val nc = cm.getNetworkCapabilities(n)
-                return nc!!.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+            val activeNetwork = connectivityManager.activeNetwork
+            if (activeNetwork != null) {
+                val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+                if (networkCapabilities != null) {
+                    return networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+                            || networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                }
             }
         } else {
-            val ni = cm.activeNetworkInfo
-
-            if (ni != null) {
-                return ni.isConnected && (ni.type == ConnectivityManager.TYPE_WIFI || ni.type == ConnectivityManager.TYPE_MOBILE)
-            }
+            val activeNetwork = connectivityManager.activeNetworkInfo
+            return (activeNetwork != null && activeNetwork.isConnected)
         }
 
         return false
@@ -76,6 +79,8 @@ class App : MultiDexApplication() {
             resources.configuration.locale
         }
     }
+
+
 
 
 

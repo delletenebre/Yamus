@@ -29,7 +29,7 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import kg.delletenebre.yamus.App
-import kg.delletenebre.yamus.api.YaApi
+import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.media.extensions.id
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
 import kg.delletenebre.yamus.media.library.MediaLibrary
@@ -67,8 +67,8 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
         runBlocking {
             when {
                 mediaId.startsWith("/station") -> {
-                    YaApi.getStationFeedback(mediaId)
-                    val (batchId, tracks) = YaApi.getStationTracks(mediaId)
+                    YandexApi.getStationFeedback(mediaId)
+                    val (batchId, tracks) = YandexApi.getStationTracks(mediaId)
                     CurrentPlaylist.updatePlaylist(mediaId, tracks, CurrentPlaylist.TYPE_STATION, batchId)
 
                     exoPlayer.shuffleModeEnabled = false
@@ -81,19 +81,19 @@ class YamusPlaybackPreparer(private val exoPlayer: ExoPlayer)
                     val data = mediaId.split("/")
                     val uid = data[2]
                     val kind = data[3]
-                    val tracks = YaApi.getPlaylistTracks(uid, kind)
+                    val tracks = YandexApi.getPlaylistTracks(uid, kind)
                     CurrentPlaylist.updatePlaylist(mediaId, tracks, CurrentPlaylist.TYPE_TRACKS)
                     play()
                 }
                 mediaId.startsWith("/album/") -> {
                     val data = mediaId.split("/")
                     val id = data[2]
-                    val tracks = YaApi.getAlbumTracks(id)
+                    val tracks = YandexApi.getAlbumTracks(id)
                     CurrentPlaylist.updatePlaylist(mediaId, tracks, CurrentPlaylist.TYPE_TRACKS)
                     play()
                 }
                 mediaId == MediaLibrary.PATH_LIKED -> {
-                    val tracks = YaApi.getLikedTracks()
+                    val tracks = YandexApi.getLikedTracks()
                     CurrentPlaylist.updatePlaylist(mediaId, tracks, CurrentPlaylist.TYPE_TRACKS)
                     play()
                 }

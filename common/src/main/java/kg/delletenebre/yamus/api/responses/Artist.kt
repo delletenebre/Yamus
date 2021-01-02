@@ -1,21 +1,23 @@
 package kg.delletenebre.yamus.api.responses
 
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
-@Serializable
+
+@JsonClass(generateAdapter = true)
 data class Artist(
-        val id: String = "",
-        val name: String = "",
-        val various: Boolean = false,
-        val cover: Cover = Cover(),
-        val ogImage: String = "",
-        val genres: List<String> = listOf(),
-        val available: Boolean = true
+    @Json(name = "available") val available: Boolean = true,
+    @Json(name = "cover") val cover: Cover = Cover(),
+    @Json(name = "genres") val genres: List<String> = listOf(),
+    @Json(name = "id") val id: String = "",
+    @Json(name = "name") val name: String = "",
+    @Json(name = "ogImage") val ogImage: String = "",
+    @Json(name = "various") val various: Boolean = false
 ) {
-    @Serializable
+    @JsonClass(generateAdapter = true)
     data class Cover(
-            val prefix: String = "",
-            val type: String = "",
-            val uri: String = ""
+        @Json(name = "prefix") val prefix: String = "",
+        @Json(name = "type") val type: String = "",
+        @Json(name = "uri") val uri: String = ""
     )
 }

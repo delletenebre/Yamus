@@ -47,10 +47,9 @@ class MediaItemsFragment : Fragment() {
 
         viewModel.itemClickListenerOfFragment = object : OnMediaItemClickListener {
             override fun onClick(item: MediaBrowserCompat.MediaItem) {
-                Log.d("ahohas", "clicked item id: ${item.description.mediaId}")
                 val bundle = bundleOf(
-                        "title" to item.description.title,
-                        "path" to item.mediaId
+                    "title" to item.description.title,
+                    "path" to item.mediaId
                 )
                 findNavController().navigate(R.id.fragmentPlaylist, bundle)
             }

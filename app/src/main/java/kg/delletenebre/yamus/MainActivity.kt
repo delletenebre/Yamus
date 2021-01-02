@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.media.AudioManager
+import android.net.Uri
 import android.os.Bundle
 import android.provider.BaseColumns
 import android.util.Log
@@ -41,7 +42,10 @@ import com.google.android.exoplayer2.ui.PlayerControlView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.analytics.FirebaseAnalytics
-import kg.delletenebre.yamus.api.YaApi
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
+import kg.delletenebre.yamus.api.YandexApi
+import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.databinding.ActivityMainBinding
 import kg.delletenebre.yamus.media.actions.CustomActionsHelper
 import kg.delletenebre.yamus.media.library.CurrentPlaylist
@@ -73,7 +77,7 @@ class MainActivity : ScopedAppActivity() {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         }
 
-        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        firebaseAnalytics = Firebase.analytics
 
         viewModel = ViewModelProvider(this, InjectorUtils.provideMainActivityViewModel(this)).get()
 
@@ -107,7 +111,6 @@ class MainActivity : ScopedAppActivity() {
                 .enableHorizontal()
                 .addListener(object : SimpleSwipeListener() {
                     override fun onSwipeOpened(wrapper: SmartSwipeWrapper?, consumer: SwipeConsumer?, direction: Int) {
-                        Log.d("ahoha", "direction: $direction")
                         when (direction) {
                             SwipeConsumer.DIRECTION_LEFT -> {
                                 val player = CurrentPlaylist.player.value
@@ -170,11 +173,20 @@ class MainActivity : ScopedAppActivity() {
     override fun onResume() {
         super.onResume()
 
-        if (!YaApi.isAuth()) {
+        val uri: Uri? = intent.data
+        if (uri != null && uri.toString().startsWith(YandexApi.AUTH_REDIRECT_URL)) {
+            val oauthUri = Uri.parse(uri.toString().replace("#", "?"))
+            val accessToken = oauthUri.getQueryParameter("access_token")
+            if (accessToken != null) {
+                YandexUser.accessToken = accessToken
+            }
+        }
+
+        if (!YandexUser.isLoggedIn) {
             val intent = Intent(this, LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY
             startActivity(intent)
-            finish()
         }
     }
 
@@ -272,7 +284,7 @@ class MainActivity : ScopedAppActivity() {
                     val cursor = MatrixCursor(arrayOf(BaseColumns._ID, SearchManager.SUGGEST_COLUMN_TEXT_1))
                     query?.let {
                         if (query.length > 2) {
-                            YaApi.searchSuggest(it).forEachIndexed { index, suggestion ->
+                            YandexApi.searchSuggest(it).forEachIndexed { index, suggestion ->
                                 cursor.addRow(arrayOf(index, suggestion))
                             }
                         }

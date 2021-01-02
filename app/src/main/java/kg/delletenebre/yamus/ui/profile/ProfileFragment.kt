@@ -11,7 +11,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
 import androidx.navigation.fragment.findNavController
 import kg.delletenebre.yamus.R
-import kg.delletenebre.yamus.api.YaApi
+import kg.delletenebre.yamus.api.YandexApi
+import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.databinding.ProfileFragmentBinding
 import kg.delletenebre.yamus.ui.login.LoginActivity
 
@@ -48,9 +49,11 @@ class ProfileFragment : Fragment() {
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_logout -> {
-                    YaApi.logout()
-                    startActivity(Intent(activity, LoginActivity::class.java))
-                    activity?.finish()
+                    YandexUser.logout()
+                    val intent = Intent(activity, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY
+                    startActivity(intent)
                 }
             }
             super.onOptionsItemSelected(it)

@@ -50,7 +50,7 @@ import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.google.android.exoplayer2.util.NotificationUtil
 import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.GlideApp
-import kg.delletenebre.yamus.api.YaApi
+import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.media.actions.*
 import kg.delletenebre.yamus.media.extensions.fullDescription
 import kg.delletenebre.yamus.media.extensions.id
@@ -144,9 +144,9 @@ open class MusicService : MediaBrowserServiceCompat() {
                             serviceScope.launch {
                                 if (reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
                                     val trackId = CurrentPlaylist.tracks[0].uniqueId
-                                    YaApi.getStationFeedback(
+                                    YandexApi.getStationFeedback(
                                             stationId,
-                                            YaApi.STATION_FEEDBACK_TYPE_SKIP,
+                                            YandexApi.STATION_FEEDBACK_TYPE_SKIP,
                                             CurrentPlaylist.batchId,
                                             trackId,
                                             60
@@ -154,9 +154,9 @@ open class MusicService : MediaBrowserServiceCompat() {
                                 }
 
                                 val trackId = CurrentPlaylist.tracks[1].uniqueId
-                                YaApi.getStationFeedback(
+                                YandexApi.getStationFeedback(
                                         stationId,
-                                        YaApi.STATION_FEEDBACK_TYPE_TRACK_STARTED,
+                                        YandexApi.STATION_FEEDBACK_TYPE_TRACK_STARTED,
                                         CurrentPlaylist.batchId,
                                         trackId
                                 )
@@ -164,7 +164,7 @@ open class MusicService : MediaBrowserServiceCompat() {
 
                                 if (CurrentPlaylist.tracks.size <= 3) {
                                     val queue = CurrentPlaylist.tracks[1].id
-                                    val (_, tracks) = YaApi.getStationTracks(stationId, queue)
+                                    val (_, tracks) = YandexApi.getStationTracks(stationId, queue)
                                     CurrentPlaylist.addTracksToPlaylist(tracks)
                                 }
                                 CurrentPlaylist.loading = false
@@ -403,7 +403,7 @@ open class MusicService : MediaBrowserServiceCompat() {
 
             val currentTrack = CurrentPlaylist.tracks.getOrNull(player.currentWindowIndex)
             if (currentTrack != null) {
-                if (YaApi.getLikedTracksIds().contains(currentTrack.uniqueId)) {
+                if (YandexApi.getLikedTracksIds().contains(currentTrack.uniqueId)) {
                     stringActions.add(CustomActionsHelper.CUSTOM_ACTION_UNLIKE)
                 } else {
                     stringActions.add(CustomActionsHelper.CUSTOM_ACTION_LIKE)

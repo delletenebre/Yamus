@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import kg.delletenebre.yamus.R
 import kg.delletenebre.yamus.api.DownloadProgressListener
-import kg.delletenebre.yamus.api.YaApi
+import kg.delletenebre.yamus.api.YandexApi
 import kg.delletenebre.yamus.api.YandexCache
 import kg.delletenebre.yamus.databinding.PlaylistFragmentBinding
 import kg.delletenebre.yamus.media.extensions.downloadStatus
@@ -88,19 +88,19 @@ class PlaylistFragment : Fragment() {
                 popup.setOnMenuItemClickListener {
                     when (it.itemId) {
                         R.id.like_add -> {
-                            YaApi.addLike(trackId)
+                            YandexApi.addLike(trackId)
                             true
                         }
                         R.id.like_remove -> {
-                            YaApi.removeLike(trackId)
+                            YandexApi.removeLike(trackId)
                             true
                         }
                         R.id.dislike_add -> {
-                            YaApi.addDislike(trackId)
+                            YandexApi.addDislike(trackId)
                             true
                         }
                         R.id.dislike_remove -> {
-                            YaApi.removeDislike(trackId)
+                            YandexApi.removeDislike(trackId)
                             true
                         }
                         R.id.download -> {
@@ -130,11 +130,11 @@ class PlaylistFragment : Fragment() {
 
                 UI.setMenuIconsColor(context, popup.menu)
 
-                val isTrackLiked = YaApi.getLikedTracksIds().contains(trackId)
+                val isTrackLiked = YandexApi.getLikedTracksIds().contains(trackId)
                 popup.menu.findItem(R.id.like_add).isVisible = !isTrackLiked
                 popup.menu.findItem(R.id.like_remove).isVisible = isTrackLiked
 
-                val isTrackDisliked = YaApi.getDislikedTracksIds().contains(trackId)
+                val isTrackDisliked = YandexApi.getDislikedTracksIds().contains(trackId)
                 popup.menu.findItem(R.id.dislike_add).isVisible = !isTrackDisliked
                 popup.menu.findItem(R.id.dislike_remove).isVisible = isTrackDisliked
 
@@ -323,7 +323,6 @@ class PlaylistFragment : Fragment() {
 ////                        playlistAdapter.notifyItemChanged(trackIndex)
 ////                    }
 ////                }
-////                Log.d("ahoha", "playbackState.stateName: ${playbackState.stateName}, index: ${trackIndex}")
 //            }
 //        }
 //    }

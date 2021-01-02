@@ -27,16 +27,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kg.delletenebre.yamus.MediaItemAdapter
 import kg.delletenebre.yamus.MediaItemData
-import kg.delletenebre.yamus.R
+import kg.delletenebre.yamus.databinding.FragmentMediaitemListBinding
 import kg.delletenebre.yamus.utils.InjectorUtils
 import kg.delletenebre.yamus.viewmodels.MainActivityViewModel
 import kg.delletenebre.yamus.viewmodels.MediaItemFragmentViewModel
-import kotlinx.android.synthetic.main.fragment_mediaitem_list.*
 
 /**
  * A fragment representing a list of MediaItems.
  */
 class MediaItemFragment : Fragment() {
+    private var _binding: FragmentMediaitemListBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var mediaId: String
     private lateinit var mainActivityViewModel: MainActivityViewModel
     private lateinit var mediaItemFragmentViewModel: MediaItemFragmentViewModel
@@ -47,7 +49,6 @@ class MediaItemFragment : Fragment() {
 
     companion object {
         fun newInstance(mediaId: String): MediaItemFragment {
-
             return MediaItemFragment().apply {
                 arguments = Bundle().apply {
                     putString(MEDIA_ID_ARG, mediaId)
@@ -60,7 +61,13 @@ class MediaItemFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_mediaitem_list, container, false)
+        _binding = FragmentMediaitemListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -75,21 +82,21 @@ class MediaItemFragment : Fragment() {
 
         mediaItemFragmentViewModel = ViewModelProvider(this, InjectorUtils.provideMediaItemFragmentViewModel(context, mediaId))
             .get(MediaItemFragmentViewModel::class.java)
-        mediaItemFragmentViewModel.mediaItems.observe(this,
+        mediaItemFragmentViewModel.mediaItems.observe(viewLifecycleOwner,
             Observer<List<MediaItemData>> { list ->
-                loadingSpinner.visibility =
+                binding.loadingSpinner.visibility =
                     if (list?.isNotEmpty() == true) View.GONE else View.VISIBLE
                 listAdapter.submitList(list)
             })
-        mediaItemFragmentViewModel.networkError.observe(this,
+        mediaItemFragmentViewModel.networkError.observe(viewLifecycleOwner,
             Observer<Boolean> { error ->
-                networkError.visibility = if (error) View.VISIBLE else View.GONE
+                binding.networkError.visibility = if (error) View.VISIBLE else View.GONE
             })
 
         // Set the adapter
-        if (list is RecyclerView) {
-            list.layoutManager = LinearLayoutManager(list.context)
-            list.adapter = listAdapter
+        if (binding.list is RecyclerView) {
+            binding.list.layoutManager = LinearLayoutManager(binding.list.context)
+            binding.list.adapter = listAdapter
         }
     }
 }

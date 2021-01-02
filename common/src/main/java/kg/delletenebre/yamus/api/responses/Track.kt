@@ -1,20 +1,23 @@
 package kg.delletenebre.yamus.api.responses
 
-import kotlinx.serialization.Serializable
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
-@Serializable
+
+@JsonClass(generateAdapter = true)
 data class Track(
-        val id: String = "null",
-        val albums: List<Album> = listOf(),
-        val artists: List<Artist> = listOf(),
-        val available: Boolean = false,
-        val contentWarning: String = "",
-        var coverUri: String = "",
-        val durationMs: Long = 0,
-        val fileSize: Int = 0,
-        val ogImage: String = "",
-        val title: String = "",
-        val error: String = ""
+    @Json(name = "albums") val albums: List<Album> = listOf(),
+    @Json(name = "artists") val artists: List<Artist> = listOf(),
+    @Json(name = "available") val available: Boolean = false,
+    @Json(name = "contentWarning") val contentWarning: String = "",
+    @Json(name = "coverUri") var coverUri: String = "",
+    @Json(name = "durationMs") val durationMs: Long = 0,
+    @Json(name = "error") val error: String = "",
+    @Json(name = "fileSize") val fileSize: Int = 0,
+    @Json(name = "id") val id: String = "null",
+    @Json(name = "ogImage") val ogImage: String = "",
+    @Json(name = "title") val title: String = ""
+
 ) {
     companion object {
         const val DOWNLOAD_STATUS_PROGRESS = "progress"
@@ -26,7 +29,7 @@ data class Track(
     var playingState: String = ""
 
 
-    fun getUniqueId(): String {
+    val uniqueId: String get() {
         var result = id
         if (albums.isNotEmpty()) {
             result += ":${albums[0].id}"
@@ -34,10 +37,8 @@ data class Track(
         return result
     }
 
-    fun getArtistName(): String {
-        val names = artists.map {
-            it.name
-        }
+    val artistName: String get() {
+        val names = artists.map { it.name }
         return names.joinToString(", ")
     }
 }

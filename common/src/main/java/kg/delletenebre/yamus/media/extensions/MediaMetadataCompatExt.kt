@@ -6,9 +6,7 @@ import android.os.Bundle
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import kg.delletenebre.yamus.api.YandexCache
-import kg.delletenebre.yamus.api.responses.Album
-import kg.delletenebre.yamus.api.responses.Artist
-import kg.delletenebre.yamus.api.responses.Track
+import kg.delletenebre.yamus.api.responses.*
 import kg.delletenebre.yamus.utils.toCoverUrl
 import kg.delletenebre.yamus.utils.toUri
 
@@ -281,7 +279,7 @@ inline val MediaMetadataCompat.fullDescription: MediaDescriptionCompat
 
 fun MediaMetadataCompat.Builder.from(track: Track): MediaMetadataCompat.Builder {
     id = track.id
-    uniqueId = track.getUniqueId()
+    uniqueId = track.uniqueId
     title = track.title
     displayTitle = track.title
     duration = track.durationMs
@@ -293,7 +291,7 @@ fun MediaMetadataCompat.Builder.from(track: Track): MediaMetadataCompat.Builder 
         explicit = EXTRA_METADATA_ENABLED_VALUE
     }
 
-    val artistName = track.getArtistName()
+    val artistName = track.artistName
     artist = artistName
     displaySubtitle = artistName
 

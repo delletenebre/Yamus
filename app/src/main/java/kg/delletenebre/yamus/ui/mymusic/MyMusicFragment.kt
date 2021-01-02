@@ -38,7 +38,6 @@ class MyMusicFragment : Fragment() {
 
         viewModel.itemClickListenerOfFragment = object : OnMediaItemClickListener {
             override fun onClick(item: MediaBrowserCompat.MediaItem) {
-                Log.d("ahohas", "clicked item id: ${item.description.mediaId}")
                 val path = item.mediaId
                 if (path != null) {
                     val bundle = bundleOf(
@@ -90,7 +89,6 @@ class MyMusicFragment : Fragment() {
 //                GlobalScope.launch {
 //                    val albums = YandexMusic.getLikedAlbums()
 //                    albums.forEach {
-//                        Log.d("ahoha", "album: ${it.title}")
 //                    }
 //                }
 //            }
@@ -98,7 +96,6 @@ class MyMusicFragment : Fragment() {
 //                GlobalScope.launch {
 //                    val artists = YandexMusic.getLikedArtists()
 //                    artists.forEach {
-//                        Log.d("ahoha", "artist: ${it.name}")
 //                    }
 //                }
 //            }

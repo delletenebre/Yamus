@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kg.delletenebre.yamus.api.YaApi
+import kg.delletenebre.yamus.api.YandexApi
 import kotlinx.coroutines.launch
 
 
@@ -17,10 +17,10 @@ class LoginViewModel : ViewModel() {
     val loginResult: LiveData<Int> = _loginResult
 
     fun login(username: String, password: String) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _loginResult.postValue(YaApi.login(username, password))
-            _isLoading.value = false
-        }
+//        viewModelScope.launch {
+//            _isLoading.value = true
+//            _loginResult.postValue(YandexApi.login(username, password))
+//            _isLoading.value = false
+//        }
     }
 }

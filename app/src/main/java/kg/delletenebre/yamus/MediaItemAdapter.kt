@@ -25,7 +25,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import kg.delletenebre.yamus.MediaItemData.Companion.PLAYBACK_RES_CHANGED
-import kotlinx.android.synthetic.main.fragment_mediaitem.view.*
 
 /**
  * [RecyclerView.Adapter] of [MediaItemData]s used by the [MediaItemFragment].
@@ -82,10 +81,10 @@ class MediaViewHolder(view: View,
                       itemClickedListener: (MediaItemData) -> Unit
 ) : RecyclerView.ViewHolder(view) {
 
-    val titleView: TextView = view.title
-    val subtitleView: TextView = view.subtitle
-    val albumArt: ImageView = view.albumArt
-    val playbackState: ImageView = view.item_state
+    val titleView: TextView by lazy { view.findViewById<TextView>(R.id.title) }
+    val subtitleView: TextView by lazy { view.findViewById<TextView>(R.id.subtitle) }
+    val albumArt: ImageView by lazy { view.findViewById<ImageView>(R.id.albumArt) }
+    val playbackState: ImageView by lazy { view.findViewById<ImageView>(R.id.item_state) }
 
     var item: MediaItemData? = null
 

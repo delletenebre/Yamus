@@ -26,14 +26,14 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.text.format.DateUtils
 import kg.delletenebre.yamus.App
-import kg.delletenebre.yamus.api.YaApi
-import kg.delletenebre.yamus.api.responses.Album
-import kg.delletenebre.yamus.api.responses.Playlist
-import kg.delletenebre.yamus.api.responses.Station
+import kg.delletenebre.yamus.api.YandexApi
+import kg.delletenebre.yamus.api.YandexUser
+import kg.delletenebre.yamus.api.responses.*
 import kg.delletenebre.yamus.media.R
 import kg.delletenebre.yamus.media.extensions.fullDescription
 import kg.delletenebre.yamus.utils.toCoverUri
 import kg.delletenebre.yamus.utils.toUri
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -76,7 +76,7 @@ object MediaLibrary {
                     icon = getIconUri(R.drawable.ic_favorite)
             )
         }
-        return if (YaApi.isAuth()) {
+        return if (YandexUser.isLoggedIn) {
             mutableListOf(
                 likedTracks,
                 createBrowsableMediaItem(
@@ -101,7 +101,7 @@ object MediaLibrary {
     }
 
     fun getMyMusicItems(): List<MediaItem> {
-        val likedTracksCount = YaApi.getLikedTracksIds().size
+        val likedTracksCount = YandexApi.getLikedTracksIds().size
         return listOf(
                 createBrowsableMediaItem(
                         id = PATH_LIKED,
@@ -128,16 +128,16 @@ object MediaLibrary {
         result.addAll(getPersonalPlaylists())
         result.addAll(listOf(
                 createBrowsableMediaItem(
-                        id = PATH_RECOMMENDED_MIXES,
-                        title = resources.getString(R.string.mixes),
-                        subtitle = resources.getString(R.string.mixes_subtitle)
+                    id = PATH_RECOMMENDED_MIXES,
+                    title = resources.getString(R.string.mixes),
+                    subtitle = resources.getString(R.string.mixes_subtitle)
                 )
         ))
         return result
     }
 
     private suspend fun getLikedTracks(): List<MediaItem> {
-        val tracks = YaApi.getLikedTracks()
+        val tracks = YandexApi.getLikedTracks()
         CurrentPlaylist.updatePlaylist(PATH_LIKED, tracks, CurrentPlaylist.TYPE_TRACKS)
         return tracks.map { createPlayableMediaItem(it) }
     }
@@ -146,7 +146,7 @@ object MediaLibrary {
         val data = path.split('/')
         val uid = data[2]
         val kind = data[3]
-        val tracks = YaApi.getPlaylistTracks(uid, kind)
+        val tracks = YandexApi.getPlaylistTracks(uid, kind)
         CurrentPlaylist.updatePlaylist(path, tracks, CurrentPlaylist.TYPE_TRACKS)
         return tracks.map { createPlayableMediaItem(it) }
     }
@@ -154,50 +154,58 @@ object MediaLibrary {
     private suspend fun getAlbumTracks(path: String): List<MediaItem> {
         val data = path.split('/')
         val id = data[2]
-        val tracks = YaApi.getAlbumTracks(id)
+        val tracks = YandexApi.getAlbumTracks(id)
         CurrentPlaylist.updatePlaylist(path, tracks, CurrentPlaylist.TYPE_TRACKS)
         return tracks.map { createPlayableMediaItem(it) }
     }
 
-
     suspend fun getPersonalPlaylists(): List<MediaItem> {
-        return YaApi.getPersonalPlaylists()
-                .filter { it.available }
-                .map {
-                    val now = System.currentTimeMillis()
-                    val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.getDefault())
-                    val updatedAt = DateUtils.getRelativeTimeSpanString(
-                            format.parse(it.modified)?.time ?: 0, now,
-                            DateUtils.DAY_IN_MILLIS).toString().toLowerCase(Locale.getDefault())
+        return try {
+            val data = YandexApi.service.blockPersonalPlaylists()
+            data.entities.map {
+                val playlist = it.data.playlist
 
-                    createPlaylistMediaItem(
-                            id = "/playlist/${it.uid}/${it.kind}",
-                            title = it.title,
-                            subtitle = resources.getString(R.string.updated_at, updatedAt),
-                            icon = it.ogImage.toCoverUri(200),
-                            groupTitle = resources.getString(R.string.personal_playlists_group),
-                            isPlayable = !App.instance.getBooleanPreference("show_playlist_items")
-                    )
-                }
+                val now = System.currentTimeMillis()
+                val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.getDefault())
+                val updatedAt = DateUtils.getRelativeTimeSpanString(
+                        format.parse(playlist.modified)?.time ?: 0, now,
+                        DateUtils.DAY_IN_MILLIS).toString().toLowerCase(Locale.getDefault())
+
+                createPlaylistMediaItem(
+                        id = "/playlist/${playlist.uid}/${playlist.kind}",
+                        title = playlist.title,
+                        subtitle = resources.getString(R.string.updated_at, updatedAt),
+                        icon = playlist.ogImage.toCoverUri(200),
+                        groupTitle = resources.getString(R.string.personal_playlists_group),
+                        isPlayable = !App.instance.getBooleanPreference("show_playlist_items")
+                )
+            }
+        } catch (exception: Exception) {
+            listOf()
+        }
     }
 
     suspend fun getMixes(path: String = ""): List<MediaItem> {
         return if (path.isEmpty() || path == PATH_RECOMMENDED_MIXES) {
-            YaApi.getMixes().map {
-                val scheme = it.urlScheme.toUri()
-                createBrowsableMediaItem(
+            return try {
+                YandexApi.service.blockMixes().entities.map {
+                    val scheme = it.data.urlScheme.toUri()
+                    createBrowsableMediaItem(
                         id = "${PATH_RECOMMENDED_MIXES}/${scheme.host}${scheme.path}",
-                        title = it.title,
-                        icon = it.backgroundImageUri.toCoverUri(200)
-                )
+                        title = it.data.title,
+                        icon = it.data.backgroundImageUri.toCoverUri(200)
+                    )
+                }
+            } catch (exception: Exception) {
+                listOf()
             }
         } else {
             val pathData = path.split('/')
             val type = pathData[3]
             val id = pathData[4]
-            val promotions = YaApi.getPlaylists(type, id)
+            val promotions = YandexApi.getPlaylists(type, id)
             val albums = promotions.filterIsInstance<Album>()
-                    //.filter { it.available }
+                    .filter { it.available }
                     .map {
                         val subtitle = mutableListOf<String>()
                         if (it.artists.isNotEmpty()) {
@@ -212,19 +220,20 @@ object MediaLibrary {
                             }
                         }
                         createPlaylistMediaItem(
-                                id = "/album/${it.id}",
-                                title = it.title,
-                                subtitle = subtitle.joinToString(" | "),
-                                icon = it.coverUri.toCoverUri(200),
-                                isPlayable = !App.instance.getBooleanPreference("show_playlist_items")
+                            id = "/album/${it.id}",
+                            title = it.title,
+                            subtitle = subtitle.joinToString(" | "),
+                            icon = it.coverUri.toCoverUri(200),
+                            isPlayable = !App.instance.getBooleanPreference("show_playlist_items")
                         )
                     }
             val playlists = promotions.filterIsInstance<Playlist>()
-                    //.filter { it.available }
+                    .filter { it.available }
                     .map {
                         createPlaylistMediaItem(it,
-                                groupTitle = "",
-                                isPlayable = !App.instance.getBooleanPreference("show_playlist_items"))
+                            groupTitle = "",
+                            isPlayable = !App.instance.getBooleanPreference("show_playlist_items")
+                        )
                     }
 
             if (albums.isNotEmpty()) {
@@ -236,32 +245,19 @@ object MediaLibrary {
     }
 
     private suspend fun getPlaylistsOfUser(): List<MediaItem> {
-        val result = mutableListOf<MediaItem>()
-        result.addAll(getMyPlaylists())
-        result.addAll(getLikedPlaylists())
-        return result
-    }
-
-    suspend fun getMyPlaylists(): List<MediaItem> {
-        return YaApi.getMyPlaylists()
-                //.filter { it.available } // TODO STRANGE
-                .map {
-                    createPlaylistMediaItem(
-                            it,
-                            groupTitle = resources.getString(R.string.my_playlists_group_title),
-                            isPlayable = !App.instance.getBooleanPreference("show_playlist_items"))
-                }
-    }
-
-    suspend fun getLikedPlaylists(): List<MediaItem> {
-        return YaApi.getLikedPlaylists()
-                //.filter { it.available }
-                .map {
-                    createPlaylistMediaItem(
-                            it,
-                            groupTitle = resources.getString(R.string.liked_playlists_group_title),
-                            isPlayable = !App.instance.getBooleanPreference("show_playlist_items"))
-                }
+        return try {
+            val myPlaylists = YandexApi.service.myPlaylists().filter { it.available }
+            val likedPlaylists = YandexApi.service.likedPlaylists()
+                    .map { it.playlist }.filter { it.available }
+            (myPlaylists + likedPlaylists).map {
+                createPlaylistMediaItem(it,
+                    groupTitle = resources.getString(R.string.my_playlists_group_title),
+                    isPlayable = !App.instance.getBooleanPreference("show_playlist_items")
+                )
+            }
+        } catch (exception: Exception) {
+            listOf()
+        }
     }
 
     private suspend fun getStations(path: String): List<MediaItem> {
@@ -298,25 +294,28 @@ object MediaLibrary {
     }
 
     suspend fun getPersonalStations(): List<MediaItem> {
-        return YaApi.getPersonalStations().map {
-            createPlaylistMediaItem(it, resources.getString(R.string.recommended_stations))
-        }
-    }
-
-    suspend fun getAllStations(): List<MediaItem> {
-        return YaApi.getStations().map {
-            createPlaylistMediaItem(it, resources.getString(R.string.recommended_stations))
+        return try {
+            YandexApi.service.personalStations().map { it.station }.map {
+                createPlaylistMediaItem(it, resources.getString(R.string.recommended_stations))
+            }
+        } catch (exception: Exception) {
+            listOf()
         }
     }
 
     suspend fun getStationsByCategory(category: String): List<MediaItem> {
-        return YaApi.getStations()
+        return try {
+            YandexApi.service.stations(language = App.instance.locale)
+                .map { it.station }
                 .filter {
                     category == it.id.type || category.contains(it.id.type)
                 }
                 .map {
-                    createPlaylistMediaItem(it, resources.getString(R.string.recommended_stations))
+                    createPlaylistMediaItem(it, category)
                 }
+        } catch (exception: Exception) {
+            listOf()
+        }
     }
 
     fun createBrowsableMediaItem(
@@ -348,7 +347,8 @@ object MediaLibrary {
         )
     }
 
-    fun createPlaylistMediaItem(station: Station, groupTitle: String = "", isPlayable: Boolean = true): MediaItem {
+    fun createPlaylistMediaItem(
+            station: Station.StationData, groupTitle: String = "", isPlayable: Boolean = true): MediaItem {
         return createPlaylistMediaItem(
                 id = "/station/${station.getId()}",
                 title = station.name,
