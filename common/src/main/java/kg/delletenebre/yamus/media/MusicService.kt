@@ -128,25 +128,12 @@ open class MusicService : MediaBrowserServiceCompat() {
                         if (CurrentPlaylist.type == CurrentPlaylist.TYPE_STATION) {
                             CurrentPlaylist.loading = true
                             val stationId = CurrentPlaylist.id
-
-//                            Log.d("tenebre", "=======PLAYLIST=======")
-//                            for (i in 0 until CurrentPlaylist.tracks.size) {
-//                                val track = CurrentPlaylist.tracks[i]
-//                                val append = if (currentWindowIndex == i) {
-//                                    " <<<<<<"
-//                                } else {
-//                                    ""
-//                                }
-//                                Log.d("tenebre", "${track.description.title} - ${track.description.subtitle} $append")
-//                            }
-//                            Log.d("tenebre", "======================")
-
                             serviceScope.launch {
                                 if (reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
                                     val trackId = CurrentPlaylist.tracks[0].uniqueId
                                     YandexApi.getStationFeedback(
                                             stationId,
-                                            YandexApi.STATION_FEEDBACK_TYPE_SKIP,
+                                            YandexApi.StationEvent.skip,
                                             CurrentPlaylist.batchId,
                                             trackId,
                                             60
@@ -156,7 +143,7 @@ open class MusicService : MediaBrowserServiceCompat() {
                                 val trackId = CurrentPlaylist.tracks[1].uniqueId
                                 YandexApi.getStationFeedback(
                                         stationId,
-                                        YandexApi.STATION_FEEDBACK_TYPE_TRACK_STARTED,
+                                        YandexApi.StationEvent.trackStarted,
                                         CurrentPlaylist.batchId,
                                         trackId
                                 )

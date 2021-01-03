@@ -16,12 +16,12 @@ class NetworkErrorsInterceptor() : Interceptor {
         Log.d("YandexApi.TAG", String.format("raw JSON response is: %s", rawJson))
         return response.newBuilder()
                 .body(rawJson.toResponseBody(response.body?.contentType())).build()
-
-        if (response.isSuccessful) {
-            return response
-        }
-        val contentType = response.body?.contentType()
-        val body = "{}".toResponseBody(contentType)
-        return response.newBuilder().body(body).build()
+//        if (response.isSuccessful) {
+//            return response
+//        }
+//
+//        val contentType = response.body?.contentType()
+//        val body = "{}".toResponseBody(contentType)
+//        return response.newBuilder().body(body).build()
     }
 }

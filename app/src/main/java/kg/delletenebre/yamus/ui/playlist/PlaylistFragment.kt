@@ -39,7 +39,7 @@ class PlaylistFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val context = this.context!!
+        val context = this.requireContext()
         val argPath = arguments?.getString("path") ?: ""
         viewModel = ViewModelProvider(this, PlaylistViewModel.Factory(argPath)).get()
         mainViewModel =

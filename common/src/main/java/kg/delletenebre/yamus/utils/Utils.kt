@@ -3,7 +3,6 @@ package kg.delletenebre.yamus.utils
 import android.content.Context
 
 
-
 object Utils {
     fun getStringIdentifier(context: Context, name: String): Int {
         return context.resources.getIdentifier(name, "string", context.packageName)

@@ -4,9 +4,7 @@ import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import com.github.kittinunf.fuel.core.FuelError
-import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
-import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
 import com.serjltt.moshi.adapters.FirstElement
@@ -20,14 +18,14 @@ import kg.delletenebre.yamus.network.AuthenticationInterceptor
 import kg.delletenebre.yamus.network.CacheInterceptor
 import kg.delletenebre.yamus.network.NetworkErrorsInterceptor
 import kg.delletenebre.yamus.utils.md5
-import kotlinx.coroutines.*
-import kotlinx.serialization.internal.ArrayListSerializer
-import kotlinx.serialization.json.Json
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.toUtf8Bytes
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -39,10 +37,6 @@ object YandexApi {
     const val AUTH_REDIRECT_URL = "https://music.yandex.ru/"
     private const val CLIENT_ID = "23cabbbdc6cd418abb4b39c32c41195d"
     // private const val CLIENT_SECRET = "53bc75238f0c4d08a118e51fe9203300"
-
-    const val STATION_FEEDBACK_TYPE_RADIO_STARTED = "radioStarted"
-    const val STATION_FEEDBACK_TYPE_TRACK_STARTED = "trackStarted"
-    const val STATION_FEEDBACK_TYPE_SKIP = "skip"
 
     const val TRACKS_TYPE_LIKE = "like"
     const val TRACKS_TYPE_DISLIKE = "dislike"
@@ -205,54 +199,166 @@ object YandexApi {
         }
     }
 
+    /**
+     * Информация о событиях радио-станции
+     *
+     * Функция должна быть вызвана при:
+     * 1. Запуске станции
+     * 2. Начале прослушивания трека
+     * 3. Переключении трека
+     *
+     * Вероятно, данная информация используется для формирования "интересов" пользователя
+     *
+     * @property stationId Id станции
+     * @property type Тип события
+     * @property batchId Id текущей очереди
+     * @property trackId Id трека
+     * @property totalPlayedSeconds позиция на которой был переключён трек
+     *
+     */
     suspend fun getStationFeedback(
             stationId: String = "",
-            type: String = STATION_FEEDBACK_TYPE_RADIO_STARTED,
+            type: String = StationEvent.radioStarted,
             batchId: String = "",
             trackId: String = "",
-            totalPlayedSeconds: Int = 60
+            totalPlayedSeconds: Int = 60 // FIX IT
     ) {
-        var url = "/rotor$stationId/feedback"
-
-        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault())
-        val now = formatter.format(Date(System.currentTimeMillis()))
-
+        val timestamp = App.instance.getUtcTimestamp()
         val jsonData = JSONObject()
         with(jsonData) {
             put("type", type)
-            put("timestamp", now)
+            put("timestamp", timestamp)
         }
 
         if (batchId.isNotEmpty()) {
-            url = "$url?batch-id=$batchId"
             jsonData.put("trackId", trackId)
-            if (type == STATION_FEEDBACK_TYPE_SKIP) {
+            if (type == StationEvent.skip) {
                 jsonData.put("totalPlayedSeconds", totalPlayedSeconds)
             }
         }
 
-        url.httpPost().jsonBody(jsonData.toString()).awaitStringResponseResult()
+        val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+        val requestBody = jsonData.toString().toRequestBody(mediaType)
+
+        try {
+            service.stationFeedback(stationId, requestBody, batchId)
+        } catch (exception: Exception) {
+            Log.e(TAG, "getStationFeedback() exception: ${exception.message}")
+        }
     }
 
-    suspend fun playAudio(trackId: String, albumId: String, trackLengthSeconds: Int = 0, fromCache: Boolean = false) {
-        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault())
-        val timestamp = formatter.format(Date(System.currentTimeMillis()))
-        val clientNow = formatter.format(Date(System.currentTimeMillis() + 54))
+    /**
+     * Информация о проигрываемом треке
+     *
+     * Функция должна быть вызвана два раза:
+     * 1. При начале прослушивания трека totalPlayedSeconds = endPositionSeconds = 0
+     * 2. При переключении/остановке трека. totalPlayedSeconds = endPositionSeconds = позиции
+     * на которой остановлен трек
+     *
+     * Вероятно, данная информация используется для формирования "интересов" пользователя
+     *
+     * @property trackId Id трека
+     * @property albumId Id альбома
+     * @property trackLengthSeconds продолжительность трека
+     * @property fromCache трек проигрывается из кэша
+     * @property totalPlayedSeconds позиция на которой был остановлен/переключён трек
+     *
+     */
+    suspend fun playAudio(trackId: String, albumId: String, trackLengthSeconds: Float = 0.0f,
+                          fromCache: Boolean = false, totalPlayedSeconds: Float = 0.0f) {
+        val playId = UUID.nameUUIDFromBytes("$trackId:$albumId".toUtf8Bytes()).toString()
+        val timestamp = App.instance.getUtcTimestamp()
+        val totalPlayedSeconds = "%.1f".format(trackLengthSeconds - 1.0f) // TODO FIX IT
 
-        val postData = listOf(
-            "track-id" to trackId,
-            "album-id" to albumId,
-            "from-cache" to fromCache,
-//            "from" to "desktop_win-radio-radio_genre_rock-default",
-            "play-id" to UUID.randomUUID(),
-            "uid" to uid,
-            "timestamp" to timestamp,
-            "track-length-seconds" to trackLengthSeconds,
-            "total-played-seconds" to "0",
-            "end-position-seconds" to "0",
-            "client-now" to clientNow
-        )
-        "/play-audio".httpPost(postData).awaitStringResponseResult()
+        try {
+            service.playAudio(
+                trackId = trackId,
+                albumId = albumId,
+                fromCache = fromCache,
+                from = "desktop_win",
+                playId = playId,
+                uid = YandexUser.uid,
+                timestamp = timestamp,
+                clientNow = timestamp,
+                trackLengthSeconds = "%.1f".format(trackLengthSeconds),
+                totalPlayedSeconds = totalPlayedSeconds,
+                endPositionSeconds = totalPlayedSeconds
+            )
+        } catch (exception: Exception) {
+            Log.e(TAG, "playAudio() exception: ${exception.message}")
+        }
+    }
+
+    /**
+     * Список треков по id альбома
+     *
+     * @property id Id альбома
+     */
+    suspend fun getAlbumTracks(id: String): List<MediaMetadataCompat> {
+        return try {
+            handleTracks(service.albumTracks(id))
+        } catch (exception: Exception) {
+            Log.e(TAG, "getAlbumTracks() exception: ${exception.message}")
+            listOf()
+        }
+    }
+
+    /**
+     * Получение плейлистов по типу и id
+     *
+     * @property type Тип плейлиста
+     * @property id Id плейлиста
+     */
+    suspend fun getPlaylists(type: String, id: String): List<Any> {
+        return when (type) {
+            "tag" -> {
+                val ids = getPlaylistIdsByTag(id)
+                getPlaylists(ids)
+            }
+            "post" -> getPromotions(id)
+            else -> listOf()
+        }
+    }
+
+    /**
+     * Получение прямой ссылки трека
+     *
+     * @property trackId Id трека
+     * @property isOnlineQuality используется ли качество для прослушивания online или для
+     * скачивания на устройство
+     */
+    fun getDirectUrl(trackId: String, isOnlineQuality: Boolean = true): String {
+        return runBlocking {
+            val downloadVariants = getDownloadVariants(trackId)
+            if (downloadVariants.isNotEmpty()) {
+                val best = downloadVariants.find { it.bitrateInKbps == 320 }
+                val better = downloadVariants.find { it.bitrateInKbps == 192 && it.codec == "aac" }
+                val good = downloadVariants.find { it.bitrateInKbps == 128 && it.codec == "aac" }
+                // 320 mp3, 192 aac, 192 mp3, 128 aac, 64 aac
+                val preferred = if (isOnlineQuality) {
+                    val preferredQuality = App.instance.getStringPreference("online_quality").split("|")
+                    val preferredBitrate = preferredQuality[0].toInt()
+                    val preferredCodec = preferredQuality[1]
+                    downloadVariants.find { it.bitrateInKbps == preferredBitrate && it.codec == preferredCodec }
+                } else {
+                    val preferredQuality = App.instance.getStringPreference("cache_quality").split("|")
+                    val preferredBitrate = preferredQuality[0].toInt()
+                    val preferredCodec = preferredQuality[1]
+                    downloadVariants.find { it.bitrateInKbps == preferredBitrate && it.codec == preferredCodec }
+                }
+
+                val downloadVariant = preferred ?: best ?: better ?: good ?: downloadVariants[0]
+                val downloadUrl = "${downloadVariant.downloadInfoUrl}&format=json"
+                try {
+                    val downloadInfo = service.trackDownload(downloadUrl)
+                    return@runBlocking buildDirectUrl(downloadInfo)
+                } catch (e: Exception) {
+                    Log.e(TAG, "getDirectUrl($downloadUrl) exception: ${e.message}")
+                }
+            }
+
+            return@runBlocking ""
+        }
     }
 
     private suspend fun getUserTracksIds(type: String): Pair<Int, MutableList<String>> {
@@ -327,17 +433,11 @@ object YandexApi {
         }
     }
 
-    suspend fun getPlaylists(type: String, id: String): List<Any> {
-        return when (type) {
-            "tag" -> {
-                val ids = getPlaylistIdsByTag(id)
-                getPlaylists(ids)
-            }
-            "post" -> getPromotions(id)
-            else -> listOf()
-        }
-    }
-
+    /**
+     * Получение списка id плейлистов по категории
+     *
+     * @property tag Категория плейлистов
+     */
     private suspend fun getPlaylistIdsByTag(tag: String): List<String> {
         return try {
             service.playlistIdsByTag(tag).map { "${it.uid}:${it.kind}" }
@@ -368,16 +468,7 @@ object YandexApi {
             service.playlists(ids.joinToString(","))
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.e(TAG, "getPlaylistIdsByTag() exception: ${e.message}")
-            listOf()
-        }
-    }
-
-    suspend fun getAlbumTracks(id: String): List<MediaMetadataCompat> {
-        return try {
-            handleTracks(service.albumTracks(id))
-        } catch (e: Exception) {
-            Log.e(TAG, "getAlbumTracks() exception: ${e.message}")
+            Log.e(TAG, "getPlaylists() exception: ${e.message}")
             listOf()
         }
     }
@@ -413,89 +504,50 @@ object YandexApi {
 //        }
     }
 
+    /**
+     * Фильтруем список треков от треков с ошибками и преобразуем в список MediaMetadataCompat
+     *
+     * @property tracks список треков
+     */
     private fun handleTracks(tracks: List<Track>): List<MediaMetadataCompat> {
         return try {
             tracks.filter { it.error.isEmpty() }.map {
                 MediaMetadataCompat.Builder().from(it).build()
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (exception: Exception) {
+            exception.printStackTrace()
             listOf()
         }
     }
 
-    fun getDirectUrl(trackId: String, isOnlineQuality: Boolean = true): String {
-        return runBlocking {
-            val downloadVariants = getDownloadVariants(trackId)
-            if (downloadVariants.isNotEmpty()) {
-                val best = downloadVariants.find { it.bitrateInKbps == 320 }
-                val better = downloadVariants.find { it.bitrateInKbps == 192 && it.codec == "aac" }
-                val good = downloadVariants.find { it.bitrateInKbps == 128 && it.codec == "aac" }
-                // 320 mp3, 192 aac, 192 mp3, 128 aac, 64 aac
-                val preferred = if (isOnlineQuality) {
-                    val preferredQuality = App.instance.getStringPreference("online_quality").split("|")
-                    val preferredBitrate = preferredQuality[0].toInt()
-                    val preferredCodec = preferredQuality[1]
-                    downloadVariants.find { it.bitrateInKbps == preferredBitrate && it.codec == preferredCodec }
-                } else {
-                    val preferredQuality = App.instance.getStringPreference("cache_quality").split("|")
-                    val preferredBitrate = preferredQuality[0].toInt()
-                    val preferredCodec = preferredQuality[1]
-                    downloadVariants.find { it.bitrateInKbps == preferredBitrate && it.codec == preferredCodec }
-                }
-
-                val downloadVariant = preferred ?: best ?: better ?: good ?: downloadVariants[0]
-                val (_, _, result) = "${downloadVariant.downloadInfoUrl}&format=json".httpGet().awaitStringResponseResult()
-
-                result.fold(
-                        { data ->
-                            try {
-                                val downloadInfo = Json.parse(DownloadInfo.serializer(), data)
-                                return@runBlocking buildDirectUrl(downloadInfo)
-                            } catch (e: Exception) {
-                                Log.e(TAG, "getDirectUrl() exception: ${e.message}")
-                            }
-                        },
-                        { error -> Log.w(TAG, "getDirectUrl() server error: ${error.response}") }
-                )
-            }
-
-            return@runBlocking ""
+    /**
+     * Информация о треках с битрейтом и ссылкой для формирования прямой ссылки для скачивания
+     *
+     * @property trackId Идентификатор трека
+     */
+    private suspend fun getDownloadVariants(trackId: String): List<TrackDownloadInfo> {
+        return try {
+            service.trackDownloadInfo(trackId).sortedByDescending { it.bitrateInKbps }
+        } catch (e: Exception) {
+            Log.e(TAG, "getDownloadVariants($trackId) exception: ${e.message}")
+            listOf()
         }
     }
 
-    private suspend fun getDownloadVariants(trackId: String): List<DownloadVariants> {
-        val (_, _, result) = "/tracks/$trackId/download-info".httpGet().awaitStringResponseResult()
-        result.fold(
-            { data ->
-                return try {
-                    val json = JSONObject(data).getJSONArray("result")
-                    Json.nonstrict.parse(
-                            ArrayListSerializer(DownloadVariants.serializer()),
-                            json.toString()
-                    ).sortedByDescending { it.bitrateInKbps }
-                } catch (e: Exception) {
-                    Log.e(TAG, "getDownloadVariants() exception: ${e.message}")
-                    listOf()
-                }
-            },
-            { error ->
-                error.printStackTrace()
-                Log.w(TAG, "getDownloadVariants() server error: ${error.response}")
-                return listOf()
-            }
-        )
-    }
-
-    private fun buildDirectUrl(downloadInfo: DownloadInfo): String {
-        val host = if (downloadInfo.regionalHosts.isNotEmpty()) {
-            downloadInfo.regionalHosts[0]
+    /**
+     * Формирование прямой ссылки для скачивания трека
+     *
+     * @property trackDownloadInfo Информация о треке
+     */
+    private fun buildDirectUrl(trackDownloadInfo: TrackDownloadVariant): String {
+        val host = if (trackDownloadInfo.regionalHosts.isNotEmpty()) {
+            trackDownloadInfo.regionalHosts[0]
         } else {
-            downloadInfo.host
+            trackDownloadInfo.host
         }
         val secret = "XGRlBW9FXlekgbPrRHuSiA"
-        val sign = ("$secret${downloadInfo.path.substring(1)}${downloadInfo.s}").md5()
-        return "https://$host/get-mp3/$sign/${downloadInfo.ts}${downloadInfo.path}"
+        val sign = ("$secret${trackDownloadInfo.path.substring(1)}${trackDownloadInfo.s}").md5()
+        return "https://$host/get-mp3/$sign/${trackDownloadInfo.ts}${trackDownloadInfo.path}"
     }
 
     private fun updateUserTrack(action: String, type: String, trackId: String): Result<String, FuelError> {
@@ -503,8 +555,6 @@ object YandexApi {
             val url = "/users/$uid/${type}s/tracks/$action"
             val postData = listOf("track-ids" to trackId)
             val (request, response, result) = url.httpPost(postData).awaitStringResponseResult()
-            Log.d("ahoha", "request: $request")
-            Log.d("ahoha", "response: $response")
             result.fold(
                 { updateUserTracksIds(action, type, trackId) },
                 { error -> error.printStackTrace() }
@@ -604,5 +654,11 @@ object YandexApi {
             item.getInt("total"),
             serializer
         )
+    }
+
+    object StationEvent {
+        const val radioStarted = "radioStarted"
+        const val trackStarted = "trackStarted"
+        const val skip = "skip"
     }
 }

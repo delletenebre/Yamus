@@ -47,7 +47,6 @@ object YandexCache {
                     val progress = (readBytes / totalBytes.toDouble()) * 100
                     downloadProgressListener?.onUpdate(progress.toLong())
                 }
-                //.also { request -> Log.d("ahoha", "downloadTrack() request: $request") }
                 .awaitStringResponseResult()
         result.fold(
             {

@@ -15,6 +15,8 @@ import kg.delletenebre.yamus.api.YandexUser
 import kg.delletenebre.yamus.media.library.MediaLibrary
 import kg.delletenebre.yamus.utils.Store
 import kg.delletenebre.yamus.utils.Utils
+import org.threeten.bp.ZonedDateTime
+import org.threeten.bp.format.DateTimeFormatter
 import java.util.*
 
 
@@ -80,9 +82,7 @@ class App : MultiDexApplication() {
         }
     }
 
-
-
-
+    fun getUtcTimestamp() = ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT)
 
     companion object {
         lateinit var instance: App

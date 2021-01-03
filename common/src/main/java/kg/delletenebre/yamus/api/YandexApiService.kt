@@ -3,6 +3,7 @@ package kg.delletenebre.yamus.api
 import com.serjltt.moshi.adapters.FirstElement
 import com.serjltt.moshi.adapters.Wrapped
 import kg.delletenebre.yamus.api.responses.*
+import okhttp3.RequestBody
 import retrofit2.http.*
 
 
@@ -64,8 +65,8 @@ interface YandexApiService {
     @Wrapped(path = ["result", "volumes"]) @FirstElement
     suspend fun albumTracks(@Path("id") id: String): List<Track>
 
-    @FormUrlEncoded
     @POST("/tracks")
+    @FormUrlEncoded
     @Wrapped(path = ["result"])
     suspend fun tracks(@Field("track-ids") trackIds: String): List<Track>
 
@@ -84,4 +85,35 @@ interface YandexApiService {
             @Path("type") type: String,
             @Query("if-modified-since-revision") revision: Long = 0
     ): StationQueue
+
+    @GET("/tracks/{trackId}/download-info")
+    @Wrapped(path = ["result"])
+    suspend fun trackDownloadInfo(@Path("trackId") trackId: String): List<TrackDownloadInfo>
+
+    @GET
+    suspend fun trackDownload(@Url url: String): TrackDownloadVariant
+
+    @FormUrlEncoded
+    @POST("/play-audio")
+    suspend fun playAudio(
+        @Field("track-id") trackId: String = "",
+        @Field("from-cache") fromCache: Boolean = false,
+        @Field("from") from: String = "",
+        @Field("play-id") playId: String = "",
+        @Field("uid") uid: Long = 0L,
+        @Field("timestamp") timestamp: String = "",
+        @Field("track-length-seconds") trackLengthSeconds: String = "",
+        @Field("total-played-seconds") totalPlayedSeconds: String = "",
+        @Field("end-position-seconds") endPositionSeconds: String = "",
+        @Field("album-id") albumId: String = "",
+        @Field("client-now") clientNow: String = ""
+    )
+
+    @POST("/rotor{stationId}/feedback")
+    @Headers("Content-Type: application/json")
+    suspend fun stationFeedback(
+            @Path("stationId") stationId: String,
+            @Body body: RequestBody,
+            @Query("batch-id") batchId: String = ""
+    )
 }

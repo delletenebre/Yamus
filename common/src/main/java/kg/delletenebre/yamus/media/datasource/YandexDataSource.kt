@@ -206,7 +206,7 @@ class YandexDataSource(
 
     @Throws(IOException::class)
     private fun makeConnection(dataSpec: DataSpec): HttpURLConnection {
-        var url = URL(YandexApi.getDirectUrl(dataSpec.uri.toString()))//URL(dataSpec.uri.toString())
+        var url = URL(YandexApi.getDirectUrl(dataSpec.uri.toString()))
 
         GlobalScope.launch {
             val track = CurrentPlaylist.tracks.find {
@@ -214,8 +214,9 @@ class YandexDataSource(
             }
             if (track != null) {
                 val uniqueId = track.uniqueId.split(":")
+                val trackLength = track.duration / 1000.0f
                 if (uniqueId.size == 2) {
-                    YandexApi.playAudio(uniqueId[0], uniqueId[1], (track.duration / 1000.0).roundToInt())
+                    YandexApi.playAudio(uniqueId[0], uniqueId[1], trackLength)
                 }
             }
         }
