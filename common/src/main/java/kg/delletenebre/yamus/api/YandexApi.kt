@@ -3,15 +3,12 @@ package kg.delletenebre.yamus.api
 import android.net.Uri
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
-import com.github.kittinunf.fuel.core.FuelError
-import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
-import com.github.kittinunf.fuel.httpPost
-import com.github.kittinunf.result.Result
 import com.serjltt.moshi.adapters.FirstElement
 import com.serjltt.moshi.adapters.Wrapped
 import com.squareup.moshi.Moshi
 import kg.delletenebre.yamus.App
 import kg.delletenebre.yamus.api.database.YandexDatabase
+import kg.delletenebre.yamus.api.database.table.UserTracksIdsEntity
 import kg.delletenebre.yamus.api.responses.*
 import kg.delletenebre.yamus.media.extensions.from
 import kg.delletenebre.yamus.network.AuthenticationInterceptor
@@ -45,7 +42,6 @@ object YandexApi {
     const val USER_TRACKS_ACTION_ADD = "add-multiple"
     const val USER_TRACKS_ACTION_REMOVE = "remove"
 
-    private var uid: Long = 0
     private val database: YandexDatabase = YandexDatabase.invoke()
 
     private var likedTracks: Pair<Int, MutableList<String>> = (0 to mutableListOf())
@@ -116,54 +112,51 @@ object YandexApi {
     fun getLikedTracksIds(): List<String> = likedTracks.second
     fun getDislikedTracksIds(): List<String> = dislikedTracks.second
 
-    suspend fun getLikedTracks(): List<MediaMetadataCompat> {
-        return getTracks(getLikedTracksIds())
-    }
-
-    suspend fun getDislikedTracks(): List<MediaMetadataCompat> {
-        return getTracks(getDislikedTracksIds())
-    }
+    suspend fun getLikedTracks() = getTracks(getLikedTracksIds())
+    suspend fun getDislikedTracks() = getTracks(getDislikedTracksIds())
 
     suspend fun search(text: String, page: Int = 0): List<SearchResult> {
-        val response = makeRequest("/search?text=$text&nocorrect=false&type=all&page=$page&playlist-in-best=true")
-        return try {
-            val json = JSONObject(response).getJSONObject("result")
-            val searchResults = mutableListOf<SearchResult>()
-            var type = "albums"
-            if (json.has(type)) {
-                searchResults.add(getSearchResult(type, json))
-            }
-            type = "artists"
-            if (json.has(type)) {
-                searchResults.add(getSearchResult(type, json))
-            }
-            type = "playlists"
-            if (json.has(type)) {
-                searchResults.add(getSearchResult(type, json))
-            }
-            type = "tracks"
-            if (json.has(type)) {
-                searchResults.add(getSearchResult(type, json))
-            }
-
-            searchResults
-        } catch (e: Exception) {
-            Log.e(TAG, "search() exception: ${e.message}")
-            listOf()
-        }
+        return listOf()
+//        val response = makeRequest("/search?text=$text&nocorrect=false&type=all&page=$page&playlist-in-best=true")
+//        return try {
+//            val json = JSONObject(response).getJSONObject("result")
+//            val searchResults = mutableListOf<SearchResult>()
+//            var type = "albums"
+//            if (json.has(type)) {
+//                searchResults.add(getSearchResult(type, json))
+//            }
+//            type = "artists"
+//            if (json.has(type)) {
+//                searchResults.add(getSearchResult(type, json))
+//            }
+//            type = "playlists"
+//            if (json.has(type)) {
+//                searchResults.add(getSearchResult(type, json))
+//            }
+//            type = "tracks"
+//            if (json.has(type)) {
+//                searchResults.add(getSearchResult(type, json))
+//            }
+//
+//            searchResults
+//        } catch (e: Exception) {
+//            Log.e(TAG, "search() exception: ${e.message}")
+//            listOf()
+//        }
     }
 
     suspend fun searchSuggest(text: String): List<String> {
-        val response = makeRequest("/search/suggest?part=$text")
-        return try {
-            val json = JSONObject(response).getJSONObject("result").getJSONArray("suggestions")
-            return Array(json.length()) { i ->
-                json.optString(i)
-            }.toList()
-        } catch (e: Exception) {
-            Log.e(TAG, "search() exception: ${e.message}")
-            listOf()
-        }
+        return listOf()
+//        val response = makeRequest("/search/suggest?part=$text")
+//        return try {
+//            val json = JSONObject(response).getJSONObject("result").getJSONArray("suggestions")
+//            return Array(json.length()) { i ->
+//                json.optString(i)
+//            }.toList()
+//        } catch (e: Exception) {
+//            Log.e(TAG, "search() exception: ${e.message}")
+//            listOf()
+//        }
     }
 
     suspend fun getPlaylistTracks(uid: String, kind: String): List<MediaMetadataCompat> {
@@ -209,11 +202,11 @@ object YandexApi {
      *
      * Вероятно, данная информация используется для формирования "интересов" пользователя
      *
-     * @property stationId Id станции
-     * @property type Тип события
-     * @property batchId Id текущей очереди
-     * @property trackId Id трека
-     * @property totalPlayedSeconds позиция на которой был переключён трек
+     * @param stationId Идентификатор станции
+     * @param type Тип события
+     * @param batchId Идентификатор текущей очереди
+     * @param trackId Идентификатор трека
+     * @param totalPlayedSeconds Позиция на которой был переключён трек
      *
      */
     suspend fun getStationFeedback(
@@ -257,11 +250,11 @@ object YandexApi {
      *
      * Вероятно, данная информация используется для формирования "интересов" пользователя
      *
-     * @property trackId Id трека
-     * @property albumId Id альбома
-     * @property trackLengthSeconds продолжительность трека
-     * @property fromCache трек проигрывается из кэша
-     * @property totalPlayedSeconds позиция на которой был остановлен/переключён трек
+     * @param trackId Идентификатор трека
+     * @param albumId Идентификатор альбома
+     * @param trackLengthSeconds Продолжительность трека
+     * @param fromCache Трек проигрывается из кэша
+     * @param totalPlayedSeconds Позиция на которой был остановлен/переключён трек
      *
      */
     suspend fun playAudio(trackId: String, albumId: String, trackLengthSeconds: Float = 0.0f,
@@ -277,7 +270,6 @@ object YandexApi {
                 fromCache = fromCache,
                 from = "desktop_win",
                 playId = playId,
-                uid = YandexUser.uid,
                 timestamp = timestamp,
                 clientNow = timestamp,
                 trackLengthSeconds = "%.1f".format(trackLengthSeconds),
@@ -290,9 +282,9 @@ object YandexApi {
     }
 
     /**
-     * Список треков по id альбома
+     * Список треков по идентификатору альбома
      *
-     * @property id Id альбома
+     * @param id Идентификатор альбома
      */
     suspend fun getAlbumTracks(id: String): List<MediaMetadataCompat> {
         return try {
@@ -304,10 +296,10 @@ object YandexApi {
     }
 
     /**
-     * Получение плейлистов по типу и id
+     * Получение плейлистов по типу и идентификатору
      *
-     * @property type Тип плейлиста
-     * @property id Id плейлиста
+     * @param type Тип плейлиста
+     * @param id Идентификатор плейлиста
      */
     suspend fun getPlaylists(type: String, id: String): List<Any> {
         return when (type) {
@@ -323,8 +315,8 @@ object YandexApi {
     /**
      * Получение прямой ссылки трека
      *
-     * @property trackId Id трека
-     * @property isOnlineQuality используется ли качество для прослушивания online или для
+     * @param trackId Идентификатор трека
+     * @param isOnlineQuality используется ли качество для прослушивания online или для
      * скачивания на устройство
      */
     fun getDirectUrl(trackId: String, isOnlineQuality: Boolean = true): String {
@@ -372,42 +364,20 @@ object YandexApi {
 
     private suspend fun updateUserTracksIds(
             type: String, revision: Int): Pair<Int, MutableList<String>> {
-        val empty = (0 to mutableListOf<String>())
-        return empty
-//        val response = makeRequest(
-//                url = "/users/$uid/${type}s/tracks?if-modified-since-revision=$revision",
-//                forceOnline = true
-//        )
-//        if (response.isEmpty()) {
-//            return empty
-//        } else {
-//            when (val jsonResult = JSONObject(response).get("result")) {
-//                is String -> return empty
-//                is JSONObject -> {
-//                    try {
-//                        val jsonLibrary = jsonResult.getJSONObject("library")
-//                        val newRevision = jsonLibrary.getInt("revision")
-//                        val jsonTracks = jsonLibrary.getJSONArray("tracks")
-//                        val tracks = tracksIdsHandler(jsonTracks)
-//
-//                        // save to cache
-//                        database.userTracksIds().insert(
-//                                UserTracksIdsEntity(
-//                                        type,
-//                                        newRevision,
-//                                        tracks.joinToString(",")
-//                                )
-//                        )
-//
-//                        return (newRevision to tracks.toMutableList())
-//                    } catch (e: Exception) {
-//                        Log.e(TAG, "updateUserTracksIds() exception: ${e.message}")
-//                        return empty
-//                    }
-//                }
-//                else -> return empty
-//            }
-//        }
+        return try {
+            val tracksLibrary = service.userTracksLibrary(type = type, revision = revision)
+            val newRevision = tracksLibrary.revision
+            val tracksIds = tracksLibrary.tracks.map { it.trackId }
+
+            // save to cache
+            database.userTracksIds().insert(
+                UserTracksIdsEntity(type, newRevision, tracksIds.joinToString(","))
+            )
+
+            (newRevision to tracksIds.toMutableList())
+        } catch (exception: Exception) {
+            (0 to mutableListOf())
+        }
     }
 
     private fun updateUserTracksIds(action: String, type: String, trackId: String) {
@@ -436,7 +406,7 @@ object YandexApi {
     /**
      * Получение списка id плейлистов по категории
      *
-     * @property tag Категория плейлистов
+     * @param tag Категория плейлистов
      */
     private suspend fun getPlaylistIdsByTag(tag: String): List<String> {
         return try {
@@ -466,14 +436,18 @@ object YandexApi {
     private suspend fun getPlaylists(ids: List<String>): List<Playlist> {
         return try {
             service.playlists(ids.joinToString(","))
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.e(TAG, "getPlaylists() exception: ${e.message}")
+        } catch (exception: Exception) {
+            Log.e(TAG, "getPlaylists() exception: ${exception.message}")
             listOf()
         }
     }
 
-    private suspend fun getTracks(tracksIds: List<String>, forceOnline: Boolean = false): List<MediaMetadataCompat> {
+    /**
+     * Получаем список треков (MediaMetadataCompat) по списку идентификаторов треков
+     *
+     * @param tracksIds Список идентификаторов треков
+     */
+    private suspend fun getTracks(tracksIds: List<String>): List<MediaMetadataCompat> {
         if (!YandexUser.isLoggedIn) {
             return listOf()
         }
@@ -484,30 +458,12 @@ object YandexApi {
         } catch (exception: Exception) {
             listOf()
         }
-
-//        val url = "/tracks"
-//        val postData = listOf(
-//            "track-ids" to tracksIds.joinToString(",")
-//        )
-//
-//        if (forceOnline) {
-//            return getTracksOnline(url, postData)
-//        }
-//
-//        val cachedResponse = withContext(Dispatchers.IO) {
-//            return@withContext database.httpCache().get(getUrlHash(url, postData))
-//        }
-//        return if (cachedResponse != null) {
-//            handleTracks(JSONObject(cachedResponse.response).getJSONArray("result").toString())
-//        } else {
-//            getTracksOnline(url, postData)
-//        }
     }
 
     /**
      * Фильтруем список треков от треков с ошибками и преобразуем в список MediaMetadataCompat
      *
-     * @property tracks список треков
+     * @param tracks список треков
      */
     private fun handleTracks(tracks: List<Track>): List<MediaMetadataCompat> {
         return try {
@@ -523,7 +479,7 @@ object YandexApi {
     /**
      * Информация о треках с битрейтом и ссылкой для формирования прямой ссылки для скачивания
      *
-     * @property trackId Идентификатор трека
+     * @param trackId Идентификатор трека
      */
     private suspend fun getDownloadVariants(trackId: String): List<TrackDownloadInfo> {
         return try {
@@ -537,7 +493,7 @@ object YandexApi {
     /**
      * Формирование прямой ссылки для скачивания трека
      *
-     * @property trackDownloadInfo Информация о треке
+     * @param trackDownloadInfo Информация о треке
      */
     private fun buildDirectUrl(trackDownloadInfo: TrackDownloadVariant): String {
         val host = if (trackDownloadInfo.regionalHosts.isNotEmpty()) {
@@ -550,89 +506,64 @@ object YandexApi {
         return "https://$host/get-mp3/$sign/${trackDownloadInfo.ts}${trackDownloadInfo.path}"
     }
 
-    private fun updateUserTrack(action: String, type: String, trackId: String): Result<String, FuelError> {
-        return runBlocking {
-            val url = "/users/$uid/${type}s/tracks/$action"
-            val postData = listOf("track-ids" to trackId)
-            val (request, response, result) = url.httpPost(postData).awaitStringResponseResult()
-            result.fold(
-                { updateUserTracksIds(action, type, trackId) },
-                { error -> error.printStackTrace() }
-            )
-            return@runBlocking result
+    /**
+     * Обновляем библиотеку любимых/нелюбимых треков
+     * (добавляем/удаляем трек в любимые/нелюбимые)
+     *
+     * @param action Действие (добавление/удаление)
+     * @param type Тип списка (любимые/нелюбимые)
+     * @param trackId Идентификатор трека
+     */
+    private fun updateUserTrack(action: String, type: String, trackId: String) {
+        runBlocking {
+            try {
+                service.updateUserTracksLibrary(type = type, action = action, trackId = trackId)
+                updateUserTracksIds(action, type, trackId)
+            } catch (exception: Exception) {
+                Log.e(TAG, "updateUserTrack() exception: ${exception.message}")
+            }
         }
     }
 
-    fun addLike(trackId: String): Result<String, FuelError> {
-        return updateUserTrack(USER_TRACKS_ACTION_ADD, USER_TRACKS_TYPE_LIKE, trackId)
+    /**
+     * Добавляем трек в список любимых
+     *
+     * @param trackId Идентификатор трека
+     */
+    fun addLike(trackId: String) {
+        updateUserTrack(USER_TRACKS_ACTION_ADD, USER_TRACKS_TYPE_LIKE, trackId)
     }
 
-    fun removeLike(trackId: String): Result<String, FuelError> {
+    /**
+     * Удаляем трек из списка любимых
+     *
+     * @param trackId Идентификатор трека
+     */
+    fun removeLike(trackId: String) {
         return updateUserTrack(USER_TRACKS_ACTION_REMOVE, USER_TRACKS_TYPE_LIKE, trackId)
     }
 
-    fun addDislike(trackId: String): Result<String, FuelError> {
+    /**
+     * Добавляем трек в список нелюбимых
+     *
+     * @param trackId Идентификатор трека
+     */
+    fun addDislike(trackId: String) {
         return updateUserTrack(USER_TRACKS_ACTION_ADD, USER_TRACKS_TYPE_DISLIKE, trackId)
     }
 
-    fun removeDislike(trackId: String): Result<String, FuelError> {
+    /**
+     * Удаляем трек из списка нелюбимых
+     *
+     * @param trackId Идентификатор трека
+     */
+    fun removeDislike(trackId: String) {
         return updateUserTrack(USER_TRACKS_ACTION_REMOVE, USER_TRACKS_TYPE_DISLIKE, trackId)
     }
 
-    private fun getUrlHash(url: String, body: List<Pair<String, String>> = listOf()): String {
-        return "$url+${body.hashCode()}"
-    }
-
-    var makeRequestRepeats = 0
-    private suspend fun makeRequest(
-            url: String,
-            body: List<Pair<String, String>> = listOf(),
-            forceOnline: Boolean = false
-    ): String {
-        if (!YandexUser.isLoggedIn) {
-            return ""
-        }
-        val urlHash = getUrlHash(url, body)
-        return ""
-//        return if (forceOnline) {
-//            val request = if (body.isEmpty()) {
-//                url.httpGet()
-//            } else {
-//                url.httpPost(body)
-//            }
-//            val (_, _, result) = request.header(getCacheHeaders(forceOnline))
-//                    .awaitStringResponseResult()
-//            result.fold(
-//                    { data ->
-//                        makeRequestRepeats = 0
-//                        database.httpCache().insert(
-//                                HttpCacheEntity(urlHash, data, System.currentTimeMillis())
-//                        )
-//                        data
-//                    },
-//                    { error ->
-//                        if (makeRequestRepeats < 3) {
-//                            Log.w(TAG, "makeRequest() server error repeating: $makeRequestRepeats")
-//                            makeRequestRepeats++
-//                            makeRequest(url, body, forceOnline)
-//                        } else {
-//                            Log.w(TAG, "makeRequest() server error: $url")
-//                            makeRequestRepeats = 0
-//                            error.printStackTrace()
-//                            ""
-//                        }
-//                    }
-//            )
-//        } else {
-//            val cachedResponse = database.httpCache().get(urlHash)
-//            if (cachedResponse != null) {
-//                GlobalScope.launch { makeRequest(url, body, true) } // Update cache
-//                cachedResponse.response
-//            } else {
-//                return makeRequest(url, body,true)
-//            }
-//        }
-    }
+//    private fun getUrlHash(url: String, body: List<Pair<String, String>> = listOf()): String {
+//        return "$url+${body.hashCode()}"
+//    }
 
     private fun getSearchResult(type: String, json: JSONObject): SearchResult {
         val item = json.getJSONObject(type)

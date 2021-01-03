@@ -34,11 +34,11 @@ interface YandexApiService {
 
     @GET("/users/{uid}/playlists/list")
     @Wrapped(path = ["result"])
-    suspend fun myPlaylists(@Path("uid") uid: Long = YandexUser.uid): List<Playlist>
+    suspend fun myPlaylists(@Path("uid") uid: String = YandexUser.uid): List<Playlist>
 
     @GET("/users/{uid}/likes/playlists")
     @Wrapped(path = ["result"])
-    suspend fun likedPlaylists(@Path("uid") uid: Long = YandexUser.uid): List<WrappedPlaylist>
+    suspend fun likedPlaylists(@Path("uid") uid: String = YandexUser.uid): List<WrappedPlaylist>
 
     @GET("/rotor/stations/dashboard")
     @Wrapped(path = ["result", "stations"])
@@ -79,12 +79,22 @@ interface YandexApiService {
     ): StationQueue
 
     @GET("/users/{uid}/{type}s/tracks")
-    @Wrapped(path = ["result"])
-    suspend fun userTracks(
-            @Path("uid") uid: String,
+    @Wrapped(path = ["result", "library"])
+    suspend fun userTracksLibrary(
+            @Path("uid") uid: String = YandexUser.uid,
             @Path("type") type: String,
-            @Query("if-modified-since-revision") revision: Long = 0
-    ): StationQueue
+            @Query("if-modified-since-revision") revision: Int = 0
+    ): UserTracksLibrary
+
+
+    @POST("/users/{uid}/{type}s/tracks/{action}")
+    @FormUrlEncoded
+    suspend fun updateUserTracksLibrary(
+            @Path("uid") uid: String = YandexUser.uid,
+            @Path("type") type: String,
+            @Path("action") action: String,
+            @Field("track-ids") trackId: String
+    )
 
     @GET("/tracks/{trackId}/download-info")
     @Wrapped(path = ["result"])
@@ -93,14 +103,14 @@ interface YandexApiService {
     @GET
     suspend fun trackDownload(@Url url: String): TrackDownloadVariant
 
-    @FormUrlEncoded
     @POST("/play-audio")
+    @FormUrlEncoded
     suspend fun playAudio(
         @Field("track-id") trackId: String = "",
         @Field("from-cache") fromCache: Boolean = false,
         @Field("from") from: String = "",
         @Field("play-id") playId: String = "",
-        @Field("uid") uid: Long = 0L,
+        @Field("uid") uid: String = YandexUser.uid,
         @Field("timestamp") timestamp: String = "",
         @Field("track-length-seconds") trackLengthSeconds: String = "",
         @Field("total-played-seconds") totalPlayedSeconds: String = "",
@@ -116,4 +126,14 @@ interface YandexApiService {
             @Body body: RequestBody,
             @Query("batch-id") batchId: String = ""
     )
+
+    @GET("/search")
+    @Wrapped(path = ["result"])
+    suspend fun search(
+            @Query("text") text: String,
+            @Query("page") page: String,
+            @Query("nocorrect") noCorrect: Boolean = false,
+            @Query("type") type: String = "all",
+            @Query("playlist-in-best") playlistInBest: Boolean = true
+    ): List<TrackDownloadInfo>
 }

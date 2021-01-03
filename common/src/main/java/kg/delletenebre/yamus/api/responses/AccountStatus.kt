@@ -24,7 +24,7 @@ data class AccountStatus(
         @Json(name = "registeredAt") val registeredAt: String = "",
         @Json(name = "secondName") val secondName: String = "",
         @Json(name = "serviceAvailable") val serviceAvailable: Boolean = false,
-        @Json(name = "uid") val uid: Long = 0L
+        @Json(name = "uid") val uid: String = ""
     )
 
     @JsonClass(generateAdapter = true)
