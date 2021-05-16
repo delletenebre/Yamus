@@ -2,6 +2,8 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:yamus/api/api.dart';
 import 'package:yamus/audio/models/media_state.dart';
 import 'package:yamus/audio/models/queue_state.dart';
 import 'package:yamus/main.dart';
@@ -18,6 +20,12 @@ class HomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            TextButton(
+              onPressed: () async {
+                await launch(Api().oauthUri.toString());
+              },
+              child: Text('auth'),
+            ),
             // Queue display/controls.
             StreamBuilder<QueueState>(
               stream: _queueStateStream,
