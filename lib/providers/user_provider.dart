@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/services.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:yamus/api/api.dart';
+import 'package:yamus/api/models/account_status.dart';
 
 export 'package:provider/provider.dart';
 
@@ -14,6 +16,7 @@ enum UserState {
 class UserProvider extends ChangeNotifier {
   var userState = UserState.unknown;
   var accessToken = '';
+  AccountStatus? accountStatus;
 
   Future<void> initUniLinks() async {
     try {
@@ -35,7 +38,13 @@ class UserProvider extends ChangeNotifier {
     initUniLinks();
   }
 
-  void setUserState(UserState userState) {
+  Future<void> setUserState(UserState userState) async {
+    if (userState == UserState.authorized) {
+      accountStatus = await Api().getAccountStatus();
+    } else {
+      accountStatus = null;
+    }
+    
     this.userState = userState;
     notifyListeners();
   }
