@@ -5,6 +5,7 @@ import 'package:yamus/api/api.dart';
 import 'package:yamus/api/models/personal_playlist.dart';
 import 'package:yamus/providers/user_provider.dart';
 import 'package:yamus/widgets/page_layout.dart';
+import 'package:yamus/widgets/personal_playlists_block.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -17,44 +18,7 @@ class HomePage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Container(
-            margin: EdgeInsets.symmetric(vertical: 0.0),
-            height: 200.0,
-            child: FutureBuilder<List<PersonalPlaylist>>(
-              future: api.getPersonalPlaylists(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-
-                }
-
-                if (snapshot.hasData) {
-                  final personalPlaylists = snapshot.data;
-                  if (personalPlaylists != null) {
-                    return Scrollbar(
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: personalPlaylists.length,
-                        itemBuilder: (context, index) {
-                          final personalPlaylist = personalPlaylists[index];
-                          print(personalPlaylist.toString());
-
-                          return Container(
-                            width: 160.0,
-                            color: Colors.red,
-                            child: Text(personalPlaylist.playlist.title)
-                          );
-                        },
-                      ),
-                    );
-                  }
-                }
-
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              },
-            )
-          ),
+          PersonalPlaylistsBlock(),
 
           user.userState == UserState.authorized
             ? TextButton(

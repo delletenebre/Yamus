@@ -1,25 +1,28 @@
-import 'package:json_annotation/json_annotation.dart';
-import 'package:yamus/api/models.dart';
-
-part 'mix.g.dart';
-
-@JsonSerializable(explicitToJson: true)
 class Mix {
-  Mix(
-    this.id,
-    this.type,
-    this.data,
-  );
+  Mix({
+    this.id = '',
+    this.type = '',
+    this.backgroundImageUri = '',
+    this.title = '',
+    this.url = '',
+    this.urlScheme = '',
+  });
 
-  @JsonKey(defaultValue: '')
   final String id;
-
-  @JsonKey(defaultValue: '')
   final String type;
-
-  final MixData data;
+  final String backgroundImageUri;
+  final String title;
+  final String url;
+  final String urlScheme;
   
-  factory Mix.fromJson(Map<String, dynamic> json) => _$MixFromJson(json);
-
-  Map<String, dynamic> toJson() => _$MixToJson(this);
+  factory Mix.fromJson(Map<String, dynamic> json) {
+    return Mix(
+      id: json['id'],
+      type: json['type'],
+      backgroundImageUri: json['data']['backgroundImageUri'],
+      title: json['data']['title'],
+      url: json['data']['url'],
+      urlScheme: json['data']['urlScheme'],
+    );
+  }
 }

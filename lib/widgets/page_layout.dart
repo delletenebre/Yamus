@@ -16,6 +16,7 @@ class PageLayout extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
         centerTitle: true,
+        elevation: 0.0,
       ),
       body: child
     );
