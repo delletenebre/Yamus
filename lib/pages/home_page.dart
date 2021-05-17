@@ -26,6 +26,12 @@ class HomePage extends StatelessWidget {
               },
               child: Text('auth'),
             ),
+            TextButton(
+              onPressed: () async {
+                await Api().getMixes();
+              },
+              child: Text('Mixes'),
+            ),
             // Queue display/controls.
             StreamBuilder<QueueState>(
               stream: _queueStateStream,

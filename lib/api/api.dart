@@ -64,4 +64,34 @@ class Api {
       return AccountStatus.fromJson(response.yandexApiResult);
     }
   }
+
+  Future<List<Map<String, dynamic>>> _getLandingBlock(String type) async {
+    final response = await _request('/landing3?blocks=$type');
+    if (response.success) {
+      return response.yandexApiResult['blocks'][0]['entities'];
+    }
+
+    return [];
+  }
+
+  Future<List<Mix>> getMixes() async {
+    final block = await _getLandingBlock('mixes');
+    if (block.isNotEmpty) {
+      block.map((element) => Mix.fromJson(element)).toList();
+    }
+
+    return [];
+  }
+
+  Future<List<PersonalPlaylist>> getPersonalPlaylists() async {
+    final block = await _getLandingBlock('personalplaylists');
+
+    if (block.isNotEmpty) {
+      block.map((element) => Mix.fromJson(element)).toList();
+    }
+
+    return [];
+  }
+
+  
 }
