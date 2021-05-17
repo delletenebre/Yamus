@@ -17,8 +17,7 @@ class Mix {
   @JsonKey(defaultValue: '')
   final String type;
 
-  @JsonKey(defaultValue: [])
-  final List<MixData> data;
+  final MixData data;
   
   factory Mix.fromJson(Map<String, dynamic> json) => _$MixFromJson(json);
 

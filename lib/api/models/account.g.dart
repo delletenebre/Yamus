@@ -15,7 +15,7 @@ Account _$AccountFromJson(Map<String, dynamic> json) {
     json['now'] as String? ?? '',
     json['region'] as int? ?? 0,
     json['serviceAvailable'] as bool? ?? false,
-    json['uid'] as String? ?? '',
+    json['uid'] as int? ?? 0,
   );
 }
 

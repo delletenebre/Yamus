@@ -63,6 +63,10 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> logout() async {
+    await updateTokens('');
+  }
+
   Future<void> setUserState(UserState userState) async {
     this.userState = userState;
     notifyListeners();

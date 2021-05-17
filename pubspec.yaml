@@ -16,10 +16,12 @@ dependencies:
   audio_service:
     path: ./packages/audio_service/audio_service
   audio_session: ^0.1.0
+  cupertino_icons: ^1.0.3
   flutter_secure_storage: ^4.1.0
   http: ^0.13.3
   json_annotation: ^4.0.0
   just_audio: ^0.7.4+1
+  persistent_bottom_nav_bar: ^4.0.2
   provider: ^5.0.0
   retrofit: ^2.0.0
   rxdart: ^0.26.0

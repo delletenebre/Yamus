@@ -1,11 +1,12 @@
 import 'dart:developer';
+import 'dart:io';
 
-import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:yamus/api/api_response.dart';
 import 'package:yamus/api/models.dart';
 import 'package:yamus/providers/user_provider.dart';
 
+export 'package:provider/provider.dart';
 export 'api_response.dart';
 export 'models/account.dart';
 export 'models/account_status.dart';
@@ -41,25 +42,33 @@ class Api {
     final uri = Uri.parse('$baseUrl$path');
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer ${userProvider?.accessToken}',
+      'Authorization': 'OAuth ${userProvider?.accessToken}',
     };
 
-    late http.Response response;
-    if (body != null) {
-      response = await http.post(uri, headers: headers, body: body);
-    } else {
-      response = await http.get(uri, headers: headers);
-    }
+    print(uri);
 
     print('==== API ====');
-    print('headers: $headers');
-    log('response: ${response.body}');
+    try {
+      late http.Response response;
+      if (body != null) {
+        response = await http.post(uri, headers: headers, body: body);
+      } else {
+        response = await http.get(uri, headers: headers);
+      }
+
+      print('headers: $headers');
+      //log('response: ${response.body}');
+
+      return ApiResponse(
+        statusCode: response.statusCode,
+        body: response.body,
+      );
+    } on SocketException catch (e) {
+      print('SocketException: ${e.message}');
+    }
     print('==== === ====');
 
-    return ApiResponse(
-      statusCode: response.statusCode,
-      body: response.body,
-    );
+    return ApiResponse();
   }
 
   Future<AccountStatus?> getAccountStatus() async {
@@ -69,7 +78,7 @@ class Api {
     }
   }
 
-  Future<List<Map<String, dynamic>>> _getLandingBlock(String type) async {
+  Future<List<dynamic>> _getLandingBlock(String type) async {
     final response = await _request('/landing3?blocks=$type');
     if (response.success) {
       return response.yandexApiResult['blocks'][0]['entities'];
@@ -81,7 +90,7 @@ class Api {
   Future<List<Mix>> getMixes() async {
     final block = await _getLandingBlock('mixes');
     if (block.isNotEmpty) {
-      block.map((element) => Mix.fromJson(element)).toList();
+      return block.map((element) => Mix.fromJson(element)).toList();
     }
 
     return [];
@@ -91,7 +100,7 @@ class Api {
     final block = await _getLandingBlock('personalplaylists');
 
     if (block.isNotEmpty) {
-      block.map((element) => Mix.fromJson(element)).toList();
+      return block.map((element) => PersonalPlaylist.fromJson(element)).toList();
     }
 
     return [];

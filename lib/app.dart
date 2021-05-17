@@ -1,6 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:yamus/api/api.dart';
 import 'package:yamus/pages/home_page.dart';
+import 'package:yamus/pages/search_page.dart';
 import 'package:yamus/providers/user_provider.dart';
 
 class App extends StatelessWidget {
@@ -9,51 +12,21 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        appBarTheme: AppBarTheme(
+          backgroundColor: CupertinoColors.white,
+        ),
+        primaryTextTheme: TextTheme(
+          headline6: TextStyle(
+            color: CupertinoColors.black // AppBar title text color
+          )
+        )
       ),
-      onGenerateRoute: (settings) {
-        print(settings);
-
-        late final Widget page;
-        switch (settings.name) {
-          case '/': page = HomePage(); break;
-          default: page = HomePage(); break;
-        }
-
-        return MaterialPageRoute(
-          builder: (context) {
-            return MultiProvider(
-              providers: [
-                ChangeNotifierProvider(
-                  create: (context) => UserProvider(),
-                  lazy: false,
-                ),
-                ProxyProvider<UserProvider, Api>(
-                  create: (_) => Api(),
-                  update: (_, userProvider, api) =>
-                    api!.updateUserProvider(userProvider),
-                  lazy: false
-                ),
-              ],
-              child: _App(
-                child: page,
-              ),
-            );
-          },
-        );
-      }
+      home: _App(),
     );
   }
 }
 
 class _App extends StatelessWidget {
-  final Widget child;
-
-  _App({
-    Key? key,
-    required this.child,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     final navigator = Navigator.of(context);
@@ -62,6 +35,95 @@ class _App extends StatelessWidget {
       navigator.pop();
     }
 
-    return child;
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => UserProvider(),
+          lazy: false,
+        ),
+        ProxyProvider<UserProvider, Api>(
+          create: (_) => Api(),
+          update: (_, userProvider, api) =>
+            api!.updateUserProvider(userProvider),
+          lazy: false
+        ),
+      ],
+      child: PersistentTabView(
+        context,
+        //controller: _controller,
+        screens: _buildScreens(),
+        items: _navBarsItems(),
+        confineInSafeArea: true,
+        backgroundColor: CupertinoColors.white, // Default is Colors.white.
+        handleAndroidBackButtonPress: true, // Default is true.
+        resizeToAvoidBottomInset: true, // This needs to be true if you want to move up the screen when keyboard appears. Default is true.
+        stateManagement: true, // Default is true.
+        hideNavigationBarWhenKeyboardShows: true, // Recommended to set 'resizeToAvoidBottomInset' as true while using this argument. Default is true.
+        decoration: NavBarDecoration(
+          borderRadius: BorderRadius.circular(10.0),
+          colorBehindNavBar: CupertinoColors.white,
+        ),
+        popAllScreensOnTapOfSelectedTab: true,
+        popActionScreens: PopActionScreensType.all,
+        itemAnimationProperties: ItemAnimationProperties( // Navigation Bar's items animation properties.
+          duration: Duration(milliseconds: 200),
+          curve: Curves.ease,
+        ),
+        screenTransitionAnimation: ScreenTransitionAnimation( // Screen transition animation on change of selected tab.
+          animateTabTransition: true,
+          curve: Curves.ease,
+          duration: Duration(milliseconds: 200),
+        ),
+        navBarStyle: NavBarStyle.style3, // Choose the nav bar style with this property.
+      ),
+    );
+  }
+
+  List<Widget> _buildScreens() {
+    return [
+      HomePage(),
+      HomePage(),
+      HomePage(),
+      HomePage(),
+      SearchPage(),
+    ];
+  }
+
+  List<PersistentBottomNavBarItem> _navBarsItems() {
+    final activeColor = CupertinoColors.activeBlue;
+    final inactiveColor = CupertinoColors.systemGrey;
+
+    return [
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.home),
+        title: 'Home',
+        activeColorPrimary: activeColor,
+        inactiveColorPrimary: inactiveColor,
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.settings),
+        title: 'Podcasts',
+        activeColorPrimary: activeColor,
+        inactiveColorPrimary: inactiveColor,
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.settings),
+        title: 'Stations',
+        activeColorPrimary: activeColor,
+        inactiveColorPrimary: inactiveColor,
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.settings),
+        title: 'Collection',
+        activeColorPrimary: activeColor,
+        inactiveColorPrimary: inactiveColor,
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.settings),
+        title: 'Search',
+        activeColorPrimary: activeColor,
+        inactiveColorPrimary: inactiveColor,
+      ),
+    ];
   }
 }

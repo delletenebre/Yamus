@@ -17,8 +17,7 @@ class PersonalPlaylist {
   @JsonKey(defaultValue: '')
   final String type;
 
-  @JsonKey(defaultValue: [])
-  final List<Playlist> data;
+  final Playlist data;
   
   factory PersonalPlaylist.fromJson(Map<String, dynamic> json) => _$PersonalPlaylistFromJson(json);
 

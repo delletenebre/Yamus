@@ -45,8 +45,8 @@ class Account {
   @JsonKey(defaultValue: false)
   final bool serviceAvailable;
 
-  @JsonKey(defaultValue: '')
-  final String uid;
+  @JsonKey(defaultValue: 0)
+  final int uid;
 
   factory Account.fromJson(Map<String, dynamic> json) => _$AccountFromJson(json);
 
