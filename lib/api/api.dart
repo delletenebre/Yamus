@@ -45,9 +45,8 @@ class Api {
       'Authorization': 'OAuth ${userProvider?.accessToken}',
     };
 
-    print(uri);
-
     print('==== API ====');
+    print(uri);
     try {
       late http.Response response;
       if (body != null) {
@@ -57,7 +56,8 @@ class Api {
       }
 
       print('headers: $headers');
-      //log('response: ${response.body}');
+      print('response:');
+      log(response.body);
 
       return ApiResponse(
         statusCode: response.statusCode,

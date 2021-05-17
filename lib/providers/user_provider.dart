@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/services.dart';
@@ -16,6 +18,8 @@ enum UserState {
 
 class UserProvider extends ChangeNotifier {
   static const String PREF_KEY_ACCESS_TOKEN = 'access_token';
+
+  StreamSubscription? _deepLinksSubscription;
   
   var userState = UserState.unknown;
   var accessToken = '';
@@ -23,29 +27,46 @@ class UserProvider extends ChangeNotifier {
 
   UserProvider() {
     initialize();
-    print('UserProvider initialize');
+  }
+
+  @override
+  void dispose() {
+    _deepLinksSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> initialize() async {
-    try {
-      /// Проверяем наличие app (deep) link
-      final initialLink = await getInitialUri();
-      if (initialLink != null) {
-        final link = initialLink.toString().replaceFirst('#', '?');
-        final uri = Uri.parse(link);
-        if (uri.queryParameters.containsKey('access_token')) {
-          updateTokens(uri.queryParameters['access_token']!);
-        }
-      }
-    } on PlatformException {
+    if (_deepLinksSubscription == null) {
+      try {
+        /// Проверяем наличие app (deep) link
+        final deepLink = await getInitialUri();
+        await _handleDeepLink(deepLink);
+      } on PlatformException {
 
-    } finally {
-      /// Если пользователь ещё не авторизован, то проверяем сохранённые данные
-      if (accessToken.isEmpty) {
-        final savedAccessToken = await Storage.secureRead(PREF_KEY_ACCESS_TOKEN,
-          defaultValue: ''
-        );
-        updateTokens(savedAccessToken);
+      }
+    }
+    
+    _deepLinksSubscription = uriLinkStream.listen((Uri? deepLink) async {
+      await _handleDeepLink(deepLink);
+    }, onError: (err) {
+      // Handle exception by warning the user their action did not succeed
+    });
+
+    /// Если пользователь ещё не авторизован, то проверяем сохранённые данные
+    if (accessToken.isEmpty) {
+      final savedAccessToken = await Storage.secureRead(PREF_KEY_ACCESS_TOKEN,
+        defaultValue: ''
+      );
+      await updateTokens(savedAccessToken);
+    }
+  }
+
+  Future<void> _handleDeepLink(Uri? deepLink) async {
+    if (deepLink != null) {
+      final link = deepLink.toString().replaceFirst('#', '?');
+      final uri = Uri.parse(link);
+      if (uri.queryParameters.containsKey('access_token')) {
+        await updateTokens(uri.queryParameters['access_token']!);
       }
     }
   }

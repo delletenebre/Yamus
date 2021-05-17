@@ -1,10 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
-import 'package:yamus/api/api.dart';
 import 'package:yamus/pages/home_page.dart';
-import 'package:yamus/pages/search_page.dart';
-import 'package:yamus/providers/user_provider.dart';
 
 class App extends StatelessWidget {
   @override
@@ -30,52 +27,38 @@ class _App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final navigator = Navigator.of(context);
-
+    
     if (navigator.canPop()) {
       navigator.pop();
     }
 
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (context) => UserProvider(),
-          lazy: false,
-        ),
-        ProxyProvider<UserProvider, Api>(
-          create: (_) => Api(),
-          update: (_, userProvider, api) =>
-            api!.updateUserProvider(userProvider),
-          lazy: false
-        ),
-      ],
-      child: PersistentTabView(
-        context,
-        //controller: _controller,
-        screens: _buildScreens(),
-        items: _navBarsItems(),
-        confineInSafeArea: true,
-        backgroundColor: CupertinoColors.white, // Default is Colors.white.
-        handleAndroidBackButtonPress: true, // Default is true.
-        resizeToAvoidBottomInset: true, // This needs to be true if you want to move up the screen when keyboard appears. Default is true.
-        stateManagement: true, // Default is true.
-        hideNavigationBarWhenKeyboardShows: true, // Recommended to set 'resizeToAvoidBottomInset' as true while using this argument. Default is true.
-        decoration: NavBarDecoration(
-          borderRadius: BorderRadius.circular(10.0),
-          colorBehindNavBar: CupertinoColors.white,
-        ),
-        popAllScreensOnTapOfSelectedTab: true,
-        popActionScreens: PopActionScreensType.all,
-        itemAnimationProperties: ItemAnimationProperties( // Navigation Bar's items animation properties.
-          duration: Duration(milliseconds: 200),
-          curve: Curves.ease,
-        ),
-        screenTransitionAnimation: ScreenTransitionAnimation( // Screen transition animation on change of selected tab.
-          animateTabTransition: true,
-          curve: Curves.ease,
-          duration: Duration(milliseconds: 200),
-        ),
-        navBarStyle: NavBarStyle.style3, // Choose the nav bar style with this property.
+    return PersistentTabView(
+      context,
+      //controller: _controller,
+      screens: _buildScreens(),
+      items: _navBarsItems(),
+      confineInSafeArea: true,
+      backgroundColor: CupertinoColors.white, // Default is Colors.white.
+      handleAndroidBackButtonPress: true, // Default is true.
+      resizeToAvoidBottomInset: true, // This needs to be true if you want to move up the screen when keyboard appears. Default is true.
+      stateManagement: true, // Default is true.
+      hideNavigationBarWhenKeyboardShows: true, // Recommended to set 'resizeToAvoidBottomInset' as true while using this argument. Default is true.
+      decoration: NavBarDecoration(
+        borderRadius: BorderRadius.circular(10.0),
+        colorBehindNavBar: CupertinoColors.white,
       ),
+      popAllScreensOnTapOfSelectedTab: true,
+      popActionScreens: PopActionScreensType.all,
+      itemAnimationProperties: ItemAnimationProperties( // Navigation Bar's items animation properties.
+        duration: Duration(milliseconds: 200),
+        curve: Curves.ease,
+      ),
+      screenTransitionAnimation: ScreenTransitionAnimation( // Screen transition animation on change of selected tab.
+        animateTabTransition: true,
+        curve: Curves.ease,
+        duration: Duration(milliseconds: 200),
+      ),
+      navBarStyle: NavBarStyle.style3, // Choose the nav bar style with this property.
     );
   }
 
@@ -85,7 +68,7 @@ class _App extends StatelessWidget {
       HomePage(),
       HomePage(),
       HomePage(),
-      SearchPage(),
+      HomePage(),
     ];
   }
 

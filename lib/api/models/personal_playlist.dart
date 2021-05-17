@@ -1,25 +1,21 @@
-import 'package:json_annotation/json_annotation.dart';
 import 'package:yamus/api/models.dart';
 
-part 'personal_playlist.g.dart';
-
-@JsonSerializable(explicitToJson: true)
 class PersonalPlaylist {
-  PersonalPlaylist(
-    this.id,
-    this.type,
-    this.data,
-  );
+  const PersonalPlaylist({
+    this.id = '',
+    this.type = '',
+    this.playlist = const Playlist(),
+  });
 
-  @JsonKey(defaultValue: '')
   final String id;
-
-  @JsonKey(defaultValue: '')
   final String type;
-
-  final Playlist data;
+  final Playlist playlist;
   
-  factory PersonalPlaylist.fromJson(Map<String, dynamic> json) => _$PersonalPlaylistFromJson(json);
-
-  Map<String, dynamic> toJson() => _$PersonalPlaylistToJson(this);
+  factory PersonalPlaylist.fromJson(Map<String, dynamic> json) {
+    return PersonalPlaylist(
+      id: json['id'],
+      type: json['data']['type'],
+      playlist: Playlist.fromJson(json['data']['data']),
+    );
+  }
 }

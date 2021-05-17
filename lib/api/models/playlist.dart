@@ -1,49 +1,37 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'playlist.g.dart';
-
-@JsonSerializable()
 class Playlist {
-  Playlist(
-    this.available,
-    this.durationMs,
-    this.kind,
-    this.modified,
-    this.ogImage,
-    this.revision,
-    this.title,
-    this.trackCount,
-    this.uid,
-  );
+  const Playlist({
+    this.available = false,
+    this.durationMs = 0,
+    this.kind = 0,
+    this.modified = '',
+    this.ogImage = '',
+    this.revision = 0,
+    this.title = '',
+    this.trackCount = 0,
+    this.uid = 0,
+  });
 
-  @JsonKey(defaultValue: false)
   final bool available;
-
-  @JsonKey(defaultValue: 0)
   final int durationMs;
-
-  @JsonKey(defaultValue: 0)
   final int kind;
-
-  @JsonKey(defaultValue: '')
   final String modified;
-
-  @JsonKey(defaultValue: '')
   final String ogImage;
-
-  @JsonKey(defaultValue: 0)
   final int revision;
-
-  @JsonKey(defaultValue: '')
   final String title;
-
-  @JsonKey(defaultValue: 0)
   final int trackCount;
-
-  @JsonKey(defaultValue: 0)
   final int uid;
 
-  factory Playlist.fromJson(Map<String, dynamic> json) => _$PlaylistFromJson(json);
-
-  Map<String, dynamic> toJson() => _$PlaylistToJson(this);
+  factory Playlist.fromJson(Map<String, dynamic> json) {
+    return Playlist(
+      available: json['available'],
+      durationMs: json['durationMs'],
+      kind: json['kind'],
+      modified: json['modified'],
+      ogImage: json['ogImage'],
+      revision: json['revision'],
+      title: json['title'],
+      trackCount: json['trackCount'],
+      uid: json['uid'],
+    );
+  }
 }

@@ -36,10 +36,12 @@ class HomePage extends StatelessWidget {
                         itemCount: personalPlaylists.length,
                         itemBuilder: (context, index) {
                           final personalPlaylist = personalPlaylists[index];
+                          print(personalPlaylist.toString());
+
                           return Container(
                             width: 160.0,
                             color: Colors.red,
-                            child: Text(personalPlaylist.data.title)
+                            child: Text(personalPlaylist.playlist.title)
                           );
                         },
                       ),
