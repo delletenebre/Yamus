@@ -17,7 +17,7 @@ class Api {
 
   final baseUrl = 'https://api.music.yandex.net';
 
-  BuildContext? context;
+  UserProvider? userProvider;
 
   final oauthUri = Uri(
     scheme: 'https',
@@ -32,12 +32,16 @@ class Api {
     }
   );
 
+  Api updateUserProvider(UserProvider userProvider) {
+    this.userProvider = userProvider;
+    return this;
+  }
+
   Future<ApiResponse> _request(String path, {Map<String, dynamic>? body}) async {
-    final user = context?.read<UserProvider>();
     final uri = Uri.parse('$baseUrl$path');
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer ${user?.accessToken}',
+      'Authorization': 'Bearer ${userProvider?.accessToken}',
     };
 
     late http.Response response;

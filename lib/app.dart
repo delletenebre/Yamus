@@ -28,6 +28,12 @@ class App extends StatelessWidget {
                   create: (context) => UserProvider(),
                   lazy: false,
                 ),
+                ProxyProvider<UserProvider, Api>(
+                  create: (_) => Api(),
+                  update: (_, userProvider, api) =>
+                    api!.updateUserProvider(userProvider),
+                  lazy: false
+                ),
               ],
               child: _App(
                 child: page,
@@ -50,8 +56,6 @@ class _App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Api().context = context;
-
     final navigator = Navigator.of(context);
 
     if (navigator.canPop()) {
