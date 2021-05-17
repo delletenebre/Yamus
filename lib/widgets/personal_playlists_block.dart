@@ -11,9 +11,8 @@ class PersonalPlaylistsBlock extends StatelessWidget {
     final theme = Theme.of(context);
     timeago.setLocaleMessages('ru', timeago.RuMessages());
 
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 0.0),
-      height: 220.0,
+    return SizedBox(
+      height: 234.0,
       child: FutureBuilder<List<PersonalPlaylist>>(
         future: api.getPersonalPlaylists(),
         builder: (context, snapshot) {
@@ -24,39 +23,59 @@ class PersonalPlaylistsBlock extends StatelessWidget {
           if (snapshot.hasData) {
             final personalPlaylists = snapshot.data;
             if (personalPlaylists != null) {
-              return Scrollbar(
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: personalPlaylists.length,
-                  itemBuilder: (context, index) {
-                    final personalPlaylist = personalPlaylists[index];
-                    print(personalPlaylist.toString());
+              return ListView.separated(
+                padding: EdgeInsets.all(8),
+                scrollDirection: Axis.horizontal,
+                separatorBuilder: (BuildContext context, int index) {
+                  return const SizedBox(
+                    width: 8,
+                  );
+                },
+                itemCount: personalPlaylists.length,
+                itemBuilder: (context, index) {
+                  final personalPlaylist = personalPlaylists[index];
 
-                    final imageUrl = Utils.coverUrl(
-                      url: personalPlaylist.playlist.ogImage
-                    );
-                    final title = personalPlaylist.playlist.title;
-                    final subtitle = timeago.format(
-                      personalPlaylist.playlist.modified!,
-                      locale: 'ru'
-                    );
+                  final imageUrl = Utils.coverUrl(
+                    url: personalPlaylist.playlist.ogImage
+                  );
+                  final title = personalPlaylist.playlist.title;
+                  final subtitle = timeago.format(
+                    personalPlaylist.playlist.modified!,
+                    locale: 'ru'
+                  );
 
-                    return Container(
+                  return InkWell(
+                    onTap: () {
+                      
+                    },
+                    child: Container(
                       width: 180.0,
-                      padding: EdgeInsets.symmetric(horizontal: 4),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Image.network(imageUrl),
-                          Text(title),
-                          Text('Обновлён $subtitle',
-                            style: theme.textTheme.caption,
+                          Ink.image(
+                            image: NetworkImage(imageUrl),
+                            width: 180.0,
+                            height: 180.0,
                           ),
+                          Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(title),
+                                Text('Обновлён $subtitle',
+                                  style: theme.textTheme.caption,
+                                ),
+                              ],
+                            ),
+                          ),
+                          
                         ],
                       )
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               );
             }
           }
