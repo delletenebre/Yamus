@@ -9,7 +9,6 @@ class PersonalPlaylistsBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final api = context.read<Api>();
     final theme = Theme.of(context);
-    timeago.setLocaleMessages('ru', timeago.RuMessages());
 
     return SizedBox(
       height: 234.0,
@@ -24,6 +23,7 @@ class PersonalPlaylistsBlock extends StatelessWidget {
             final personalPlaylists = snapshot.data;
             if (personalPlaylists != null) {
               return ListView.separated(
+                shrinkWrap: true,
                 padding: EdgeInsets.all(8),
                 scrollDirection: Axis.horizontal,
                 separatorBuilder: (BuildContext context, int index) {
@@ -39,41 +39,41 @@ class PersonalPlaylistsBlock extends StatelessWidget {
                     url: personalPlaylist.playlist.ogImage
                   );
                   final title = personalPlaylist.playlist.title;
-                  final subtitle = timeago.format(
-                    personalPlaylist.playlist.modified!,
-                    locale: 'ru'
-                  );
+                  final modifiedAt = DateTime.parse(personalPlaylist.playlist.modified);
+                  final subtitle = timeago.format(modifiedAt, locale: 'ru');
 
                   return InkWell(
                     onTap: () {
                       
                     },
-                    child: Container(
-                      width: 180.0,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Ink.image(
-                            image: NetworkImage(imageUrl),
-                            width: 180.0,
-                            height: 180.0,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Ink.image(
+                          image: NetworkImage(imageUrl),
+                          width: 180.0,
+                          height: 180.0,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(4),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(title,
+                                softWrap: false,
+                                overflow: TextOverflow.fade,
+                              ),
+                              Text('Обновлён $subtitle',
+                                style: theme.textTheme.caption,
+                                softWrap: false,
+                                overflow: TextOverflow.fade,
+                              ),
+                            ],
                           ),
-                          Padding(
-                            padding: EdgeInsets.all(4),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(title),
-                                Text('Обновлён $subtitle',
-                                  style: theme.textTheme.caption,
-                                ),
-                              ],
-                            ),
-                          ),
-                          
-                        ],
-                      )
-                    ),
+                        ),
+                        
+                      ],
+                    )
                   );
                 },
               );

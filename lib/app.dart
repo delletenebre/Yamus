@@ -1,11 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:yamus/pages/home_page.dart';
 
 class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    timeago.setLocaleMessages('ru', timeago.RuMessages());
+
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(

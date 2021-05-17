@@ -3,7 +3,7 @@ class Playlist {
     this.available = false,
     this.durationMs = 0,
     this.kind = 0,
-    this.modified,
+    this.modified = '',
     this.ogImage = '',
     this.revision = 0,
     this.title = '',
@@ -14,7 +14,7 @@ class Playlist {
   final bool available;
   final int durationMs;
   final int kind;
-  final DateTime? modified;
+  final String modified;
   final String ogImage;
   final int revision;
   final String title;
@@ -22,13 +22,13 @@ class Playlist {
   final int uid;
 
   factory Playlist.fromJson(Map<String, dynamic> json) {
-    final modified = DateTime.tryParse(json['modified']) ?? DateTime.now();
+    
 
     return Playlist(
       available: json['available'],
       durationMs: json['durationMs'],
       kind: json['kind'],
-      modified: modified,
+      modified: json['modified'],
       ogImage: json['ogImage'],
       revision: json['revision'],
       title: json['title'],
