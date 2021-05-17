@@ -16,12 +16,14 @@ dependencies:
   audio_service:
     path: ./packages/audio_service/audio_service
   audio_session: ^0.1.0
+  flutter_secure_storage: ^4.1.0
   http: ^0.13.3
   json_annotation: ^4.0.0
   just_audio: ^0.7.4+1
   provider: ^5.0.0
   retrofit: ^2.0.0
   rxdart: ^0.26.0
+  shared_preferences: ^2.0.5
   uni_links: ^0.5.1
   url_launcher: ^6.0.3
 

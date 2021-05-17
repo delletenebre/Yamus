@@ -4,10 +4,15 @@ import 'package:yamus/app.dart';
 import 'package:yamus/audio/handlers/audio_player_handler.dart';
 import 'package:yamus/audio/handlers/main_switch_handler.dart';
 import 'package:yamus/audio/handlers/logging_audio_handler.dart';
+import 'package:yamus/storage.dart';
 
 late final AudioHandler audioHandler;
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Storage.initialize();
+
   audioHandler = await AudioService.init(
     builder: () => LoggingAudioHandler(
       MainSwitchHandler([
