@@ -21,9 +21,10 @@ class PageLayout extends StatelessWidget {
         elevation: 0.0,
         actions: actions,
       ),
-      body: SingleChildScrollView(
-        child: child
-      )
+      body: child
+      // body: SingleChildScrollView(
+      //   child: child
+      // )
     );
   }
 }

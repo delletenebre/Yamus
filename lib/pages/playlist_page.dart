@@ -29,33 +29,43 @@ class PlaylistPage extends StatelessWidget {
 
     return PageLayout(
       title: title,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FutureBuilder<Playlist?>(
-              future: api.getPlaylistWithTracks(uid, kind),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
+      child: FutureBuilder<Playlist?>(
+        future: api.getPlaylistWithTracks(uid, kind),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+          }
+
+          if (snapshot.hasData) {
+            final playlist = snapshot.data;
+
+            if (playlist != null) {
+              return ListView.builder(
+                itemCount: playlist.tracks.length,
+                itemBuilder: (context, index) {
+                  final track = playlist.tracks[index];
+
+                  final artistNames = track.artists.map((artist) {
+                    return artist.name;
+                  }).toList();
+
+                  return ListTile(
+                    onTap: () {
+
+                    },
+                    title: Text(track.title),
+                    subtitle: Text(artistNames.join(', ')),
+                  );
                 }
+              );
+            }
+          }
 
-                if (snapshot.hasData) {
-                  final playlist = snapshot.data;
-
-                  if (playlist != null) {
-                    return Container(
-                      width: 100,
-                      height: 100,
-                      color: Colors.red,
-                    );
-                  }
-                }
-
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-            ),
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      )
+    );
             // Queue display/controls.
             // StreamBuilder<QueueState>(
             //   stream: _queueStateStream,
@@ -149,10 +159,6 @@ class PlaylistPage extends StatelessWidget {
             //     );
             //   },
             // ),
-          ],
-        ),
-      ),
-    );
   }
 
   /// A stream reporting the combined state of the current media item and its

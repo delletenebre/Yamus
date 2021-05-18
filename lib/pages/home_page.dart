@@ -39,32 +39,34 @@ class HomePage extends StatelessWidget {
     return PageLayout(
       title: 'Home',
       actions: actions,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          PersonalPlaylistsBlock(),
-          MixesBlock(),
-          user.userState == UserState.authorized
-            ? TextButton(
-                onPressed: () async {
-                  await user.logout();
-                },
-                child: Text('logout'),
-              )
-            : TextButton(
-                onPressed: () async {
-                  await launch(api.oauthUri.toString());
-                },
-                child: Text('auth'),
-              ),
-          TextButton(
-            onPressed: () async {
-              final response = await api.getMixes();
-            },
-            child: Text('Mixes'),
-          ),
-          
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            PersonalPlaylistsBlock(),
+            MixesBlock(),
+            user.userState == UserState.authorized
+              ? TextButton(
+                  onPressed: () async {
+                    await user.logout();
+                  },
+                  child: Text('logout'),
+                )
+              : TextButton(
+                  onPressed: () async {
+                    await launch(api.oauthUri.toString());
+                  },
+                  child: Text('auth'),
+                ),
+            TextButton(
+              onPressed: () async {
+                final response = await api.getMixes();
+              },
+              child: Text('Mixes'),
+            ),
+            
+          ],
+        ),
       ),
     );
   }
