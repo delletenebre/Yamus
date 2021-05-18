@@ -1,37 +1,57 @@
+import 'package:yamus/api/models.dart';
+
 class Playlist {
   const Playlist({
+    this.uid = 0,
+    this.kind = 0,
+    this.title = '',
     this.available = false,
     this.durationMs = 0,
-    this.kind = 0,
     this.modified = '',
-    this.ogImage = '',
+    this.coverUri = '',
     this.revision = 0,
-    this.title = '',
     this.trackCount = 0,
-    this.uid = 0,
+    this.tracks = const [],
+    this.trackIds = const [],
   });
 
+  final int uid;
+  final int kind;
+  final String title;
   final bool available;
   final int durationMs;
-  final int kind;
   final String modified;
-  final String ogImage;
+  final String coverUri;
   final int revision;
-  final String title;
   final int trackCount;
-  final int uid;
+  final List<Track> tracks;
+  final List<TrackId> trackIds;
 
   factory Playlist.fromJson(Map<String, dynamic> json) {
+    List<Track> tracks = [];
+    List<TrackId> trackIds = [];
+    if (json.containsKey('tracks')) {
+      json['tracks'].forEach((item) {
+        if (item.containsKey('track')) {
+          tracks.add(Track.fromJson(item['track']));
+        } else {
+          trackIds.add(TrackId.fromJson(item));
+        }
+      });
+    }
+
     return Playlist(
+      uid: json['uid'],
+      kind: json['kind'],
+      title: json['title'],
       available: json['available'],
       durationMs: json['durationMs'],
-      kind: json['kind'],
       modified: json['modified'],
-      ogImage: json['ogImage'],
+      coverUri: json['cover']['uri'],
       revision: json['revision'],
-      title: json['title'],
       trackCount: json['trackCount'],
-      uid: json['uid'],
+      tracks: tracks,
+      trackIds: trackIds,
     );
   }
 }

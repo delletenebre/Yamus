@@ -4,14 +4,14 @@ class Account {
     this.login = '',
     this.region = 0,
     this.serviceAvailable = false,
-    this.uid = 0,
+    this.uid = '',
   });
 
   final String displayName;
   final String login;
   final int region;
   final bool serviceAvailable;
-  final int uid;
+  final String uid;
 
   factory Account.fromJson(Map<String, dynamic> json) {
     return Account(
@@ -19,7 +19,7 @@ class Account {
       login: json['login'],
       region: json['region'],
       serviceAvailable: json['serviceAvailable'],
-      uid: json['uid'],
+      uid: json['uid'].toString(),
     );
   }
 }

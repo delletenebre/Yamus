@@ -57,7 +57,10 @@ class Api {
         final body = await Utils.computeJsonEncode(data);
         response = await http.post(uri, headers: headers, body: body);
       } else if (form != null) {
-        headers.update('Content-Type', (value) => 'application/x-www-form-urlencoded');
+        headers.update(
+          'Content-Type',
+          (value) => 'application/x-www-form-urlencoded'
+        );
         //final body = await Utils.computeJsonEncode(data);
         response = await http.post(uri, headers: headers, body: form);
       } else {
@@ -125,7 +128,9 @@ class Api {
     final form = {
       'track-ids': trackIds.join(',')
     };
+
     final response = await _request('/tracks', form: form);
+
     if (response.success) {
       return List<Track>.from(
         response.yandexApiResult.map((element) => Track.fromJson(element))
@@ -134,5 +139,32 @@ class Api {
     
     return const [];
   }
+
+  Future<List<TrackId>> getPlaylistsTracks(String uid, List<String> kinds) async {
+    final form = {
+      'kinds': kinds.join(',')
+    };
+
+    final response = await _request('/users/$uid/playlists', form: form);
+
+    if (response.success) {
+      return List<TrackId>.from(
+        response.yandexApiResult[''].map((element) => Track.fromJson(element))
+      );
+    }
+    
+    return const [];
+  }
+
+  Future<Playlist?> getPlaylistWithTracks(String uid, String kind) async {
+    final response = await _request('/users/$uid/playlists/$kind');
+
+    if (response.success) {
+      return Playlist.fromJson(response.yandexApiResult);
+    }
+  }
+
+
+  
   
 }

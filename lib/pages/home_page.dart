@@ -15,9 +15,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final api = context.read<Api>();
     final user = context.watch<UserProvider>();
-
-    api.getTracks(['29949927:3804589', '34475387:3804589']);
-
+    
     final actions = [
       IconButton(
         icon: Icon(Icons.close),

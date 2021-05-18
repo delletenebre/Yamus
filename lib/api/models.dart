@@ -6,3 +6,4 @@ export 'models/normalization.dart';
 export 'models/personal_playlist.dart';
 export 'models/playlist.dart';
 export 'models/track.dart';
+export 'models/track_id.dart';

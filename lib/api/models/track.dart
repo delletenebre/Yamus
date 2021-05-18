@@ -11,6 +11,7 @@ class Track {
     this.normalization = const Normalization(),
     this.artists = const [],
     this.coverUri = '',
+    this.contentWarning = '',
   });
 
   final String id;
@@ -22,6 +23,8 @@ class Track {
   final Normalization normalization;
   final List<Artist> artists;
   final String coverUri;
+  final String contentWarning; // explicit
+  // final List<Album> albums; // TODO parse album
 
   factory Track.fromJson(Map<String, dynamic> json) {
     final artists = List<Artist>.from(
@@ -38,6 +41,7 @@ class Track {
       normalization: Normalization.fromJson(json['normalization']),
       artists: artists,
       coverUri: json['coverUri'],
+      contentWarning: json['contentWarning'] ?? '',
     );
   }
 }

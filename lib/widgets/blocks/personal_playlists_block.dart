@@ -38,7 +38,7 @@ class PersonalPlaylistsBlock extends StatelessWidget {
                   final personalPlaylist = personalPlaylists[index];
 
                   final imageUrl = Utils.coverUrl(
-                    url: personalPlaylist.playlist.ogImage
+                    url: personalPlaylist.playlist.coverUri
                   );
                   final title = personalPlaylist.playlist.title;
                   final modifiedAt = DateTime.parse(personalPlaylist.playlist.modified);
