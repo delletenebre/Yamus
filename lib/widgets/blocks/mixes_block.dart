@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:yamus/api/api.dart';
 import 'package:yamus/api/models.dart';
 import 'package:yamus/utils.dart';
@@ -14,15 +13,17 @@ class MixesBlock extends StatelessWidget {
       future: api.getMixes(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-
+          return SizedBox();
         }
+
+        late final Widget content; 
 
         if (snapshot.hasData) {
           final mixes = snapshot.data ?? [];
           print(snapshot.data);
 
-          return GridView.count(
-            padding: const EdgeInsets.all(8.0),
+          content = GridView.count(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 3,
@@ -67,10 +68,23 @@ class MixesBlock extends StatelessWidget {
               );
             }).toList()
           );
+        } else {
+          content = Center(
+            child: CircularProgressIndicator(),
+          );
         }
 
-        return Center(
-          child: CircularProgressIndicator(),
+        return Column(
+          children: [
+            SizedBox(height: 16),
+            Text('Mixes',
+              style: theme.textTheme.headline5
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: content,
+            ),
+          ],
         );
       },
     );

@@ -17,9 +17,6 @@ class Api {
   Api._internal();
 
   final baseUrl = 'https://api.music.yandex.net';
-
-  UserProvider? userProvider;
-
   final oauthUri = Uri(
     scheme: 'https',
     host: 'oauth.yandex.ru',
@@ -32,6 +29,12 @@ class Api {
       'language': 'ru'
     }
   );
+  Map<String, String> get headers => {
+    'Content-Type': 'application/json',
+    'Authorization': 'OAuth ${userProvider?.accessToken}',
+  };
+
+  UserProvider? userProvider;
 
   Api updateUserProvider(UserProvider userProvider) {
     this.userProvider = userProvider;
@@ -40,10 +43,6 @@ class Api {
 
   Future<ApiResponse> _request(String path, {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('$baseUrl$path');
-    final headers = {
-      'Content-Type': 'application/json',
-      'Authorization': 'OAuth ${userProvider?.accessToken}',
-    };
 
     print('==== API ====');
     print(uri);

@@ -14,6 +14,9 @@ class App extends StatelessWidget {
       theme: ThemeData(
         appBarTheme: AppBarTheme(
           backgroundColor: CupertinoColors.white,
+          actionsIconTheme: IconThemeData(
+            color: CupertinoColors.black,
+          )
         ),
         primaryTextTheme: TextTheme(
           headline6: TextStyle(

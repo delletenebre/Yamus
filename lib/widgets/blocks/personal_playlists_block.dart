@@ -10,19 +10,21 @@ class PersonalPlaylistsBlock extends StatelessWidget {
     final api = context.read<Api>();
     final theme = Theme.of(context);
 
-    return SizedBox(
-      height: 234.0,
-      child: FutureBuilder<List<PersonalPlaylist>>(
-        future: api.getPersonalPlaylists(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
+    return FutureBuilder<List<PersonalPlaylist>>(
+      future: api.getPersonalPlaylists(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return SizedBox();
+        }
 
-          }
+        late final Widget content;
 
-          if (snapshot.hasData) {
-            final personalPlaylists = snapshot.data;
-            if (personalPlaylists != null) {
-              return ListView.separated(
+        if (snapshot.hasData) {
+          final personalPlaylists = snapshot.data;
+          if (personalPlaylists != null) {
+            content = SizedBox(
+              height: 234,
+              child: ListView.separated(
                 shrinkWrap: true,
                 padding: EdgeInsets.all(8),
                 scrollDirection: Axis.horizontal,
@@ -76,15 +78,29 @@ class PersonalPlaylistsBlock extends StatelessWidget {
                     )
                   );
                 },
-              );
-            }
+              )
+            );
           }
-
-          return Center(
+        } else {
+          content = Center(
             child: CircularProgressIndicator(),
           );
-        },
-      )
+        }
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 16),
+            Text('Personal Playlists',
+              style: theme.textTheme.headline5,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: content
+            ),
+          ],
+        );
+      },
     );
   }
 }
