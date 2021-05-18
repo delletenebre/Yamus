@@ -1,54 +1,25 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'account.g.dart';
-
-@JsonSerializable()
 class Account {
-  Account(
-    this.displayName,
-    this.firstName,
-    this.secondName,
-    this.fullName,
-    this.now,
-    this.region,
-    this.serviceAvailable,
-    this.uid,
-  );
+  const Account({
+    this.displayName = '',
+    this.login = '',
+    this.region = 0,
+    this.serviceAvailable = false,
+    this.uid = 0,
+  });
 
-  @JsonKey(defaultValue: '')
   final String displayName;
-
-  @JsonKey(defaultValue: '')
-  final String firstName;
-
-  @JsonKey(defaultValue: '')
-  final String secondName;
-
-  @JsonKey(defaultValue: '')
-  final String fullName;
-
-  // @JsonKey(defaultValue: false)
-  // final bool hostedUser;
-
-  // @JsonKey(defaultValue: '')
-  // final String login;
-
-  @JsonKey(defaultValue: '')
-  final String now;
-
-  @JsonKey(defaultValue: 0)
+  final String login;
   final int region;
-
-  // @JsonKey(defaultValue: '')
-  // final String registeredAt;
-
-  @JsonKey(defaultValue: false)
   final bool serviceAvailable;
-
-  @JsonKey(defaultValue: 0)
   final int uid;
 
-  factory Account.fromJson(Map<String, dynamic> json) => _$AccountFromJson(json);
-
-  Map<String, dynamic> toJson() => _$AccountToJson(this);
+  factory Account.fromJson(Map<String, dynamic> json) {
+    return Account(
+      displayName: json['displayName'],
+      login: json['login'],
+      region: json['region'],
+      serviceAvailable: json['serviceAvailable'],
+      uid: json['uid'],
+    );
+  }
 }

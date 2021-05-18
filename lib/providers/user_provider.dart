@@ -23,7 +23,7 @@ class UserProvider extends ChangeNotifier {
   
   var userState = UserState.unknown;
   var accessToken = '';
-  AccountStatus? accountStatus;
+  AccountStatus accountStatus = AccountStatus();
 
   UserProvider() {
     initialize();
@@ -76,10 +76,10 @@ class UserProvider extends ChangeNotifier {
     this.accessToken = accessToken;
 
     if (accessToken.isEmpty) {
-      accountStatus = null;
+      accountStatus = AccountStatus();
       setUserState(UserState.unauthorized);
     } else {
-      accountStatus = await Api().getAccountStatus();
+      accountStatus = await Api().getAccountStatus() ?? AccountStatus();
       setUserState(UserState.authorized);
     }
   }

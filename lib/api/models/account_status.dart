@@ -1,18 +1,15 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'package:yamus/api/models.dart';
 
-import 'account.dart';
-
-part 'account_status.g.dart';
-
-@JsonSerializable(explicitToJson: true)
 class AccountStatus {
-  AccountStatus(
-    this.account,
-  );
+  AccountStatus({
+    this.account = const Account(),
+  });
 
   final Account account;
 
-  factory AccountStatus.fromJson(Map<String, dynamic> json) => _$AccountStatusFromJson(json);
-
-  Map<String, dynamic> toJson() => _$AccountStatusToJson(this);
+  factory AccountStatus.fromJson(Map<String, dynamic> json) {
+    return AccountStatus(
+      account: Account.fromJson(json['account'])
+    );
+  }
 }

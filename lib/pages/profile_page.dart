@@ -12,11 +12,22 @@ class ProfilePage extends StatelessWidget {
 
     return PageLayout(
       title: 'Profile',
-      
+      actions: [
+        IconButton(
+          icon: Icon(Icons.logout),
+          onPressed: () => user.logout()
+        ),
+      ],
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          
+          ListTile(
+            leading: CircleAvatar(
+              
+            ),
+            title: Text(user.accountStatus.account.displayName),
+            subtitle: Text(user.accountStatus.account.login),
+          )
         ],
       ),
     );
