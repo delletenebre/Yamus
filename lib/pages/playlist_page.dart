@@ -2,7 +2,6 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:yamus/api/api.dart';
 import 'package:yamus/audio/models/media_state.dart';
 import 'package:yamus/audio/models/queue_state.dart';
@@ -10,115 +9,146 @@ import 'package:yamus/main.dart';
 import 'package:yamus/providers/user_provider.dart';
 import 'package:yamus/utils.dart';
 import 'package:yamus/widgets/page_layout.dart';
-import 'package:yamus/widgets/seekbar.dart';
 
 class PlaylistPage extends StatelessWidget {
+  final String title;
+  final String uid;
+  final String kind;
+
+  PlaylistPage({
+    Key? key,
+    this.title = '',
+    required this.uid,
+    required this.kind,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final api = context.read<Api>();
     final user = context.watch<UserProvider>();
 
-    final args = Utils.parsePageArgs(context);
-
     return PageLayout(
-      title: 'Playlist',
+      title: title,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            FutureBuilder<Playlist?>(
+              future: api.getPlaylistWithTracks(uid, kind),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                }
+
+                if (snapshot.hasData) {
+                  final playlist = snapshot.data;
+
+                  if (playlist != null) {
+                    return Container(
+                      width: 100,
+                      height: 100,
+                      color: Colors.red,
+                    );
+                  }
+                }
+
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            ),
             // Queue display/controls.
-            StreamBuilder<QueueState>(
-              stream: _queueStateStream,
-              builder: (context, snapshot) {
-                final queueState = snapshot.data;
-                final queue = queueState?.queue ?? const [];
-                final mediaItem = queueState?.mediaItem;
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (queue.isNotEmpty)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.skip_previous),
-                            iconSize: 64.0,
-                            onPressed: mediaItem == queue.first
-                                ? null
-                                : audioHandler.skipToPrevious,
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.skip_next),
-                            iconSize: 64.0,
-                            onPressed: mediaItem == queue.last
-                                ? null
-                                : audioHandler.skipToNext,
-                          ),
-                        ],
-                      ),
-                    if (mediaItem?.title != null) Text(mediaItem!.title),
-                  ],
-                );
-              },
-            ),
-            // Play/pause/stop buttons.
-            StreamBuilder<bool>(
-              stream: audioHandler.playbackState
-                  .map((state) => state.playing)
-                  .distinct(),
-              builder: (context, snapshot) {
-                final playing = snapshot.data ?? false;
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (playing) pauseButton() else playButton(),
-                    stopButton(),
-                  ],
-                );
-              },
-            ),
-            // A seek bar.
-            StreamBuilder<MediaState>(
-              stream: _mediaStateStream,
-              builder: (context, snapshot) {
-                final mediaState = snapshot.data;
-                return SeekBar(
-                  duration: mediaState?.mediaItem?.duration ?? Duration.zero,
-                  position: mediaState?.position ?? Duration.zero,
-                  onChangeEnd: (newPosition) {
-                    audioHandler.seek(newPosition);
-                  },
-                );
-              },
-            ),
-            // Display the processing state.
-            StreamBuilder<AudioProcessingState>(
-              stream: audioHandler.playbackState
-                  .map((state) => state.processingState)
-                  .distinct(),
-              builder: (context, snapshot) {
-                final processingState =
-                    snapshot.data ?? AudioProcessingState.idle;
-                return Text(
-                    "Processing state: ${describeEnum(processingState)}");
-              },
-            ),
-            // Display the latest custom event.
-            StreamBuilder<dynamic>(
-              stream: audioHandler.customEvent,
-              builder: (context, snapshot) {
-                return Text("custom event: ${snapshot.data}");
-              },
-            ),
-            // Display the notification click status.
-            StreamBuilder<bool>(
-              stream: AudioService.notificationClickEvent,
-              builder: (context, snapshot) {
-                return Text(
-                  'Notification Click Status: ${snapshot.data}',
-                );
-              },
-            ),
+            // StreamBuilder<QueueState>(
+            //   stream: _queueStateStream,
+            //   builder: (context, snapshot) {
+            //     final queueState = snapshot.data;
+            //     final queue = queueState?.queue ?? const [];
+            //     final mediaItem = queueState?.mediaItem;
+            //     return Column(
+            //       mainAxisSize: MainAxisSize.min,
+            //       children: [
+            //         if (queue.isNotEmpty)
+            //           Row(
+            //             mainAxisAlignment: MainAxisAlignment.center,
+            //             children: [
+            //               IconButton(
+            //                 icon: Icon(Icons.skip_previous),
+            //                 iconSize: 64.0,
+            //                 onPressed: mediaItem == queue.first
+            //                     ? null
+            //                     : audioHandler.skipToPrevious,
+            //               ),
+            //               IconButton(
+            //                 icon: Icon(Icons.skip_next),
+            //                 iconSize: 64.0,
+            //                 onPressed: mediaItem == queue.last
+            //                     ? null
+            //                     : audioHandler.skipToNext,
+            //               ),
+            //             ],
+            //           ),
+            //         if (mediaItem?.title != null) Text(mediaItem!.title),
+            //       ],
+            //     );
+            //   },
+            // ),
+            // // Play/pause/stop buttons.
+            // StreamBuilder<bool>(
+            //   stream: audioHandler.playbackState
+            //       .map((state) => state.playing)
+            //       .distinct(),
+            //   builder: (context, snapshot) {
+            //     final playing = snapshot.data ?? false;
+            //     return Row(
+            //       mainAxisAlignment: MainAxisAlignment.center,
+            //       children: [
+            //         if (playing) pauseButton() else playButton(),
+            //         stopButton(),
+            //       ],
+            //     );
+            //   },
+            // ),
+            // // A seek bar.
+            // StreamBuilder<MediaState>(
+            //   stream: _mediaStateStream,
+            //   builder: (context, snapshot) {
+            //     final mediaState = snapshot.data;
+            //     return SeekBar(
+            //       duration: mediaState?.mediaItem?.duration ?? Duration.zero,
+            //       position: mediaState?.position ?? Duration.zero,
+            //       onChangeEnd: (newPosition) {
+            //         audioHandler.seek(newPosition);
+            //       },
+            //     );
+            //   },
+            // ),
+            // // Display the processing state.
+            // StreamBuilder<AudioProcessingState>(
+            //   stream: audioHandler.playbackState
+            //       .map((state) => state.processingState)
+            //       .distinct(),
+            //   builder: (context, snapshot) {
+            //     final processingState =
+            //         snapshot.data ?? AudioProcessingState.idle;
+            //     return Text(
+            //         "Processing state: ${describeEnum(processingState)}");
+            //   },
+            // ),
+            // // Display the latest custom event.
+            // StreamBuilder<dynamic>(
+            //   stream: audioHandler.customEvent,
+            //   builder: (context, snapshot) {
+            //     return Text("custom event: ${snapshot.data}");
+            //   },
+            // ),
+            // // Display the notification click status.
+            // StreamBuilder<bool>(
+            //   stream: AudioService.notificationClickEvent,
+            //   builder: (context, snapshot) {
+            //     return Text(
+            //       'Notification Click Status: ${snapshot.data}',
+            //     );
+            //   },
+            // ),
           ],
         ),
       ),

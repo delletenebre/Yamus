@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:yamus/api/api.dart';
 import 'package:yamus/api/models.dart';
+import 'package:yamus/pages/playlist_page.dart';
 import 'package:yamus/utils.dart';
 
 class PersonalPlaylistsBlock extends StatelessWidget {
@@ -46,7 +48,15 @@ class PersonalPlaylistsBlock extends StatelessWidget {
 
                   return InkWell(
                     onTap: () {
-                      
+                      /// Переходим на страницу плейлиста
+                      pushNewScreen(
+                        context,
+                        screen: PlaylistPage(
+                          title: title,
+                          uid: personalPlaylist.playlist.uid,
+                          kind: personalPlaylist.playlist.kind,
+                        ),
+                      );
                     },
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

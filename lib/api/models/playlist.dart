@@ -2,8 +2,8 @@ import 'package:yamus/api/models.dart';
 
 class Playlist {
   const Playlist({
-    this.uid = 0,
-    this.kind = 0,
+    this.uid = '',
+    this.kind = '',
     this.title = '',
     this.available = false,
     this.durationMs = 0,
@@ -15,8 +15,8 @@ class Playlist {
     this.trackIds = const [],
   });
 
-  final int uid;
-  final int kind;
+  final String uid;
+  final String kind;
   final String title;
   final bool available;
   final int durationMs;
@@ -41,8 +41,8 @@ class Playlist {
     }
 
     return Playlist(
-      uid: json['uid'],
-      kind: json['kind'],
+      uid: json['uid'].toString(),
+      kind: json['kind'].toString(),
       title: json['title'],
       available: json['available'],
       durationMs: json['durationMs'],

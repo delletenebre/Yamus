@@ -9,8 +9,7 @@ import 'package:yamus/utils.dart';
 
 export 'package:provider/provider.dart';
 export 'api_response.dart';
-export 'models/account.dart';
-export 'models/account_status.dart';
+export 'models.dart';
 
 class Api {
   static final Api _instance = Api._internal();
@@ -70,7 +69,7 @@ class Api {
 
       print('headers: $headers');
       print('response:');
-      log(response.body);
+      //log(response.body);
 
       return ApiResponse(
         statusCode: response.statusCode,
