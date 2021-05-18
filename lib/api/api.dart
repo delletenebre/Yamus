@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:yamus/api/api_response.dart';
 import 'package:yamus/api/models.dart';
 import 'package:yamus/providers/user_provider.dart';
+import 'package:yamus/utils.dart';
 
 export 'package:provider/provider.dart';
 export 'api_response.dart';
@@ -29,10 +30,6 @@ class Api {
       'language': 'ru'
     }
   );
-  Map<String, String> get headers => {
-    'Content-Type': 'application/json',
-    'Authorization': 'OAuth ${userProvider?.accessToken}',
-  };
 
   UserProvider? userProvider;
 
@@ -41,16 +38,30 @@ class Api {
     return this;
   }
 
-  Future<ApiResponse> _request(String path, {Map<String, dynamic>? body}) async {
+  Future<ApiResponse> _request(String path, {
+    Map<String, dynamic>? data,
+    Map<String, dynamic>? form,
+  }) async {
     final uri = Uri.parse('$baseUrl$path');
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'OAuth ${userProvider?.accessToken}',
+    };
 
     print('==== API ====');
     print(uri);
     try {
       late http.Response response;
-      if (body != null) {
+      if (data != null) {
+        //headers.putIfAbsent('Content-Type', () => 'application/json');
+        final body = await Utils.computeJsonEncode(data);
         response = await http.post(uri, headers: headers, body: body);
+      } else if (form != null) {
+        headers.update('Content-Type', (value) => 'application/x-www-form-urlencoded');
+        //final body = await Utils.computeJsonEncode(data);
+        response = await http.post(uri, headers: headers, body: form);
       } else {
+        //headers.putIfAbsent('Content-Type', () => 'application/json');
         response = await http.get(uri, headers: headers);
       }
 
@@ -61,6 +72,7 @@ class Api {
       return ApiResponse(
         statusCode: response.statusCode,
         body: response.body,
+        json: await Utils.computeJsonDecode(response.body),
       );
     } on SocketException catch (e) {
       print('SocketException: ${e.message}');
@@ -83,27 +95,44 @@ class Api {
       return response.yandexApiResult['blocks'][0]['entities'];
     }
 
-    return [];
+    return const [];
   }
 
   Future<List<Mix>> getMixes() async {
     final block = await _getLandingBlock('mixes');
     if (block.isNotEmpty) {
-      return block.map((element) => Mix.fromJson(element)).toList();
+      return List<Mix>.from(
+        block.map((element) => Mix.fromJson(element))
+      );
     }
 
-    return [];
+    return const [];
   }
 
   Future<List<PersonalPlaylist>> getPersonalPlaylists() async {
     final block = await _getLandingBlock('personalplaylists');
 
     if (block.isNotEmpty) {
-      return block.map((element) => PersonalPlaylist.fromJson(element)).toList();
+      return List<PersonalPlaylist>.from(
+        block.map((element) => PersonalPlaylist.fromJson(element))
+      );
     }
 
-    return [];
+    return const [];
   }
 
+  Future<List<Track>> getTracks(List<String> trackIds) async {
+    final form = {
+      'track-ids': trackIds.join(',')
+    };
+    final response = await _request('/tracks', form: form);
+    if (response.success) {
+      return List<Track>.from(
+        response.yandexApiResult.map((element) => Track.fromJson(element))
+      );
+    }
+    
+    return const [];
+  }
   
 }

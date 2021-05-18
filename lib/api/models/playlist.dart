@@ -22,8 +22,6 @@ class Playlist {
   final int uid;
 
   factory Playlist.fromJson(Map<String, dynamic> json) {
-    
-
     return Playlist(
       available: json['available'],
       durationMs: json['durationMs'],
