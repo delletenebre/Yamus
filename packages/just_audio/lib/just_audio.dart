@@ -1540,8 +1540,6 @@ abstract class AudioSource {
     } else if (hasExtension(uri, 'm3u8')) {
       return HlsAudioSource(uri, headers: headers, tag: tag);
     } else {
-      print('*********************************************************');
-      print(uri);
       return ProgressiveAudioSource(uri, headers: headers, tag: tag);
     }
   }
