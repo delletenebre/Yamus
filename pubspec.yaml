@@ -16,6 +16,8 @@ dependencies:
   audio_service:
     path: ./packages/audio_service/audio_service
   audio_session: ^0.1.0
+  collection: ^1.15.0
+  crypto: ^3.0.1
   cupertino_icons: ^1.0.3
   flutter_secure_storage: ^4.1.0
   http: ^0.13.3

@@ -174,7 +174,7 @@ packages:
     source: hosted
     version: "4.0.0"
   collection:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: collection
       url: "https://pub.dartlang.org"
@@ -188,7 +188,7 @@ packages:
     source: hosted
     version: "3.0.0"
   crypto:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: crypto
       url: "https://pub.dartlang.org"

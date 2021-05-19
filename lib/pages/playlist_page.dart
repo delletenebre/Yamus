@@ -52,8 +52,25 @@ class PlaylistPage extends StatelessWidget {
                     onTap: () {
 
                     },
+                    leading: Container(
+                      width: 56,
+                      child: Ink.image(
+                        image: NetworkImage(
+                          Utils.coverUrl(
+                            url: track.coverUri,
+                            size: 100,
+                          )
+                        )
+                      )
+                    ),
                     title: Text(track.title),
                     subtitle: Text(artistNames.join(', ')),
+                    trailing: IconButton(
+                      icon: Icon(Icons.more_vert),
+                      onPressed: () {
+                        
+                      },
+                    ),
                   );
                 }
               );

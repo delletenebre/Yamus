@@ -20,7 +20,6 @@ class MixesBlock extends StatelessWidget {
 
         if (snapshot.hasData) {
           final mixes = snapshot.data ?? [];
-          print(snapshot.data);
 
           content = GridView.count(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
