@@ -2,6 +2,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:yamus/audio/medial_library.dart';
+import 'package:yamus/main.dart';
 
 class AudioPlayerHandler extends BaseAudioHandler
     with QueueHandler, SeekHandler {
@@ -9,9 +10,9 @@ class AudioPlayerHandler extends BaseAudioHandler
   final BehaviorSubject<List<MediaItem>> _recentSubject =
       BehaviorSubject<List<MediaItem>>();
   final _mediaLibrary = MediaLibrary();
-  final _player = AudioPlayer();
+  
 
-  int? get index => _player.currentIndex;
+  int? get index => audioPlayer.currentIndex;
 
   AudioPlayerHandler() {
     _init();
@@ -25,22 +26,22 @@ class AudioPlayerHandler extends BaseAudioHandler
         .whereType<MediaItem>()
         .listen((item) => _recentSubject.add([item]));
     // Broadcast media item changes.
-    _player.currentIndexStream.listen((index) {
+    audioPlayer.currentIndexStream.listen((index) {
       if (index != null) mediaItem.add(queue.value![index]);
     });
     // Propagate all events from the audio player to AudioService clients.
-    _player.playbackEventStream.listen(_broadcastState);
+    audioPlayer.playbackEventStream.listen(_broadcastState);
     // In this example, the service stops when reaching the end.
-    _player.processingStateStream.listen((state) {
+    audioPlayer.processingStateStream.listen((state) {
       if (state == ProcessingState.completed) stop();
     });
     try {
-      print("### _player.load");
-      // After a cold restart (on Android), _player.load jumps straight from
+      print("### audioPlayer.load");
+      // After a cold restart (on Android), audioPlayer.load jumps straight from
       // the loading state to the completed state. Inserting a delay makes it
       // work. Not sure why!
-      //await Future.delayed(Duration(seconds: 2)); // magic delay
-      await _player.setAudioSource(ConcatenatingAudioSource(
+      await Future.delayed(Duration(seconds: 2)); // magic delay
+      await audioPlayer.setAudioSource(ConcatenatingAudioSource(
         children: queue.value!
             .map((item) => AudioSource.uri(Uri.parse(item.id)))
             .toList(),
@@ -51,7 +52,17 @@ class AudioPlayerHandler extends BaseAudioHandler
     }
   }
 
-  
+  @override
+  Future<void> prepareFromMediaId(String mediaId, [Map<String, dynamic>? extras]) {
+    print('^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+    return super.prepareFromMediaId(mediaId, extras);
+  }
+
+  @override
+  Future<void> prepare() {
+    print('^^^^^^^^^^^^^^^^^^^^^^^^^^^2222');
+    return super.prepare();
+  }
 
   @override
   Future<List<MediaItem>> getChildren(String parentMediaId,
@@ -97,30 +108,30 @@ class AudioPlayerHandler extends BaseAudioHandler
     // the [QueueHandler] mixin will delegate to this method.
     if (index < 0 || index >= queue.value!.length) return;
     // This jumps to the beginning of the queue item at newIndex.
-    _player.seek(Duration.zero, index: index);
+    audioPlayer.seek(Duration.zero, index: index);
     // Demonstrate custom events.
     customEventSubject.add('skip to $index');
   }
 
   @override
-  Future<void> play() => _player.play();
+  Future<void> play() => audioPlayer.play();
 
   @override
-  Future<void> pause() => _player.pause();
+  Future<void> pause() => audioPlayer.pause();
 
   @override
-  Future<void> seek(Duration position) => _player.seek(position);
+  Future<void> seek(Duration position) => audioPlayer.seek(position);
 
   @override
   Future<void> stop() async {
-    await _player.stop();
+    await audioPlayer.stop();
     await playbackState.firstWhere(
         (state) => state.processingState == AudioProcessingState.idle);
   }
 
   /// Broadcasts the current state to all clients.
   void _broadcastState(PlaybackEvent event) {
-    final playing = _player.playing;
+    final playing = audioPlayer.playing;
     playbackState.add(playbackState.value!.copyWith(
       controls: [
         MediaControl.skipToPrevious,
@@ -140,11 +151,11 @@ class AudioPlayerHandler extends BaseAudioHandler
         ProcessingState.buffering: AudioProcessingState.buffering,
         ProcessingState.ready: AudioProcessingState.ready,
         ProcessingState.completed: AudioProcessingState.completed,
-      }[_player.processingState]!,
+      }[audioPlayer.processingState]!,
       playing: playing,
-      updatePosition: _player.position,
-      bufferedPosition: _player.bufferedPosition,
-      speed: _player.speed,
+      updatePosition: audioPlayer.position,
+      bufferedPosition: audioPlayer.bufferedPosition,
+      speed: audioPlayer.speed,
       queueIndex: event.currentIndex,
     ));
   }

@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:yamus/api/models.dart';
 
 class Track {
@@ -44,4 +45,17 @@ class Track {
       contentWarning: json['contentWarning'] ?? '',
     );
   }
+}
+
+extension TrackExtensions on Track {
+  MediaItem asMediaItem() {
+    return MediaItem(
+      id: this.id,
+      album: 'album',
+      title: this.title,
+      duration: Duration(milliseconds: this.durationMs),
+      artist: this.artists.map((artist) => artist.name).join(', '),
+    );
+  }
+  // ···
 }

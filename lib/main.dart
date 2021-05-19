@@ -1,14 +1,19 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:yamus/api/api.dart';
 import 'package:yamus/app.dart';
 import 'package:yamus/audio/handlers/audio_player_handler.dart';
 import 'package:yamus/audio/handlers/main_switch_handler.dart';
 import 'package:yamus/audio/handlers/logging_audio_handler.dart';
+import 'package:yamus/models/audio_playlist.dart';
 import 'package:yamus/providers/user_provider.dart';
 import 'package:yamus/storage.dart';
 
+
 late final AudioHandler audioHandler;
+AudioPlaylist audioPlaylist = AudioPlaylist();
+AudioPlayer audioPlayer = AudioPlayer();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

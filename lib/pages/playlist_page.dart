@@ -3,9 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:yamus/api/api.dart';
+import 'package:yamus/audio/handlers/audio_player_handler.dart';
 import 'package:yamus/audio/models/media_state.dart';
 import 'package:yamus/audio/models/queue_state.dart';
 import 'package:yamus/main.dart';
+import 'package:yamus/models/audio_playlist.dart';
 import 'package:yamus/providers/user_provider.dart';
 import 'package:yamus/utils.dart';
 import 'package:yamus/widgets/page_layout.dart';
@@ -34,7 +36,7 @@ class PlaylistPage extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasError) {
           }
-
+          
           if (snapshot.hasData) {
             final playlist = snapshot.data;
 
@@ -50,7 +52,17 @@ class PlaylistPage extends StatelessWidget {
 
                   return ListTile(
                     onTap: () {
+                      if (audioPlaylist.id != playlist.kind) {
+                        audioHandler.stop();
+                        audioPlaylist = AudioPlaylist(
+                          id: playlist.kind,
+                          tracks: playlist.tracks.map((it) => it.asMediaItem()).toList()
+                        );
+                        audioHandler.updateQueue(audioPlaylist.tracks);
+                      }
 
+                      audioHandler.skipToQueueItem(index);
+                      
                     },
                     leading: Container(
                       width: 56,

@@ -22,7 +22,8 @@ dependencies:
   flutter_secure_storage: ^4.1.0
   http: ^0.13.3
   json_annotation: ^4.0.0
-  just_audio: ^0.7.4+1
+  just_audio: #^0.7.4+1
+    path: packages/just_audio
   persistent_bottom_nav_bar: ^4.0.2
   provider: ^5.0.0
   retrofit: ^2.0.0

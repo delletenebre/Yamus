@@ -8,6 +8,7 @@ import 'package:yamus/api/models.dart';
 import 'package:yamus/api/models/track_download_parts.dart';
 import 'package:yamus/models/preferred_quality.dart';
 import 'package:yamus/providers/user_provider.dart';
+import 'package:yamus/storage.dart';
 import 'package:yamus/utils.dart';
 
 export 'package:provider/provider.dart';
@@ -46,9 +47,11 @@ class Api {
     bool directUrl = false,
   }) async {
     final uri = Uri.parse(directUrl ? path : '$baseUrl$path');
+    final accessToken = userProvider?.accessToken
+      ?? await Storage.secureRead(UserProvider.PREF_KEY_ACCESS_TOKEN, defaultValue: '');
     final headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'OAuth ${userProvider?.accessToken}',
+      'Authorization': 'OAuth $accessToken',
     };
 
     print('==== API ====');
